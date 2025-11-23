@@ -180,7 +180,6 @@ funciones_libro = {
     "(z**3 - 1)/(z*(z-2))": "(z**3 - 1)/(z*(z-2))",
     "1/(z**4 - 1)": "1/(z**4 - 1)",
     "tan(z)/z": "tan(z)/z",
-    "1/(sin(z)*cos(z))": "1/(sin(z)*cos(z))",
     "exp(z)/(z*(z-1))": "exp(z)/(z*(z-1))",
     "exp(-1/z)": "exp(-1/z)",
     "log(z)/z": "log(z)/z",
