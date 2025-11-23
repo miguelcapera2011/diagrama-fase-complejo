@@ -1,12 +1,9 @@
+
 # -*- coding: utf-8 -*-
 """
 Created on Sun Nov 23 16:39:11 2025
-
-@author: miguel angel capera
+@author: caper
 """
-
-# -*- coding: utf-8 -*-
-
 
 import streamlit as st
 import numpy as np
@@ -137,12 +134,27 @@ def actualizar_manual():
     st.session_state.modo = "manual"
     st.session_state.ultima_funcion = st.session_state.input_manual
 
+# -------------------------------
+# Campo de entrada con placeholder casi invisible
+# -------------------------------
 entrada_manual = st.sidebar.text_input(
     "Escribe una función de z",
     st.session_state.ultima_funcion,
     key="input_manual",
-    on_change=actualizar_manual
+    on_change=actualizar_manual,
+    placeholder="ejemplo z**z"
 )
+
+# Estilo CSS para el placeholder tenue
+st.markdown("""
+<style>
+input::placeholder {
+    color: #cccccc;
+    opacity: 0.4;
+    font-style: italic;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # =================================================================
 # SELECTOR DE FUNCIONES
@@ -350,3 +362,4 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 plot_phase(entrada, resolucion, ceros, polos)
+
