@@ -269,13 +269,18 @@ tipo, ceros, polos = analizar_funcion(entrada)
 # Mostrar tipo
 st.markdown(f"<div style='display:flex; gap:25px; font-size:17px; margin-top:10px;'><div><b>Tipo:</b> {tipo}</div></div>", unsafe_allow_html=True)
 
-# Mostrar ceros y polos en la misma línea, horizontal y notación matemática
-st.markdown("<div style='display:flex; gap:50px; font-size:17px; margin-top:10px; align-items:center;'><div><b>Ceros:</b></div>", unsafe_allow_html=True)
-for c in ceros:
-    st.latex(sp.latex(c))
-st.markdown("<div><b>Polos:</b></div>", unsafe_allow_html=True)
-for p in polos:
-    st.latex(sp.latex(p))
-st.markdown("</div>", unsafe_allow_html=True)
+# Mostrar ceros y polos en **una sola línea**, horizontal, con notación matemática
+from sympy import latex
+ceros_latex = ", ".join([latex(c) for c in ceros]) if ceros else "∅"
+polos_latex = ", ".join([latex(p) for p in polos]) if polos else "∅"
+st.markdown(
+    f"""
+    <div style='display:flex; gap:50px; font-size:17px; margin-top:10px; align-items:center;'>
+        <div><b>Ceros:</b> ${ceros_latex}$</div>
+        <div><b>Polos:</b> ${polos_latex}$</div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 plot_phase(entrada, resolucion, ceros, polos)
