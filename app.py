@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Sun Nov 23 16:39:11 2025
+@author: caper
+"""
 
 import streamlit as st
 import numpy as np
@@ -265,13 +269,13 @@ tipo, ceros, polos = analizar_funcion(entrada)
 # Mostrar tipo
 st.markdown(f"<div style='display:flex; gap:25px; font-size:17px; margin-top:10px;'><div><b>Tipo:</b> {tipo}</div></div>", unsafe_allow_html=True)
 
-# Mostrar ceros y polos en notación matemática
-st.markdown("<div style='display:flex; gap:25px; font-size:17px; margin-top:10px;'><div><b>Ceros:</b></div></div>", unsafe_allow_html=True)
+# Mostrar ceros y polos en la misma línea, horizontal y notación matemática
+st.markdown("<div style='display:flex; gap:50px; font-size:17px; margin-top:10px; align-items:center;'><div><b>Ceros:</b></div>", unsafe_allow_html=True)
 for c in ceros:
     st.latex(sp.latex(c))
-
-st.markdown("<div style='display:flex; gap:25px; font-size:17px; margin-top:10px;'><div><b>Polos:</b></div></div>", unsafe_allow_html=True)
+st.markdown("<div><b>Polos:</b></div>", unsafe_allow_html=True)
 for p in polos:
     st.latex(sp.latex(p))
+st.markdown("</div>", unsafe_allow_html=True)
 
 plot_phase(entrada, resolucion, ceros, polos)
