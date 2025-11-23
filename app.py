@@ -2,14 +2,11 @@
 """
 Created on Sun Nov 23 16:39:11 2025
 
-@author: caper
+@author: miguel angel capera
 """
 
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Feb 20 14:34:24 2025
-@author: angel capera
-"""
+
 
 import streamlit as st
 import numpy as np
