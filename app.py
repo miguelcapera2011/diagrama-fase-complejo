@@ -1,7 +1,6 @@
 # =================================================================
 # LIBRERIAS
 # =================================================================
-
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
@@ -158,7 +157,7 @@ input::placeholder {
 # =================================================================
 st.sidebar.markdown("<br><b>Elegir función </b>", unsafe_allow_html=True)
 
-funciones_complejas = {
+funciones_libro = {
     "Selecciona una función": "",
     "z": "z",
     "z²": "z**2",
@@ -173,24 +172,8 @@ funciones_complejas = {
     "tan(z)": "tan(z)",
     "log(z)": "log(z)",
     "√z": "sqrt(z)",
-    "z^(1/3)": "z**(1/3)",
-    # Funciones nuevas y sorprendentes
-    "z*(z-1)*(z+1)/(z-2)/(z+2)": "z*(z-1)*(z+1)/(z-2)/(z+2)",
-    "(z**2 + 1)/(z**2 - 1)": "(z**2 + 1)/(z**2 - 1)",
-    "(z**3 - 1)/(z*(z-2))": "(z**3 - 1)/(z*(z-2))",
-    "1/(z**4 - 1)": "1/(z**4 - 1)",
-    "tan(z)/z": "tan(z)/z",
-    "1/(sin(z)*cos(z))": "1/(sin(z)*cos(z))",
-    "exp(z)/(z*(z-1))": "exp(z)/(z*(z-1))",
-    "exp(-1/z)": "exp(-1/z)",
-    "log(z)/z": "log(z)/z",
-    "sqrt(z*(z-1)*(z+1))": "sqrt(z*(z-1)*(z+1))",
-    "(z**2 - 1)**(1/3)": "(z**2 - 1)**(1/3)",
-    "(z**2 + 1)/(z**2 - 4)": "(z**2 + 1)/(z**2 - 4)",
-    "(z**3 + 1)/(z**2 + 1)": "(z**3 + 1)/(z**2 + 1)",
-    "(z**4 - 1)/(z**2 + 1)": "(z**4 - 1)/(z**2 + 1)"
+    "z^(1/3)": "z**(1/3)"
 }
-
 
 def actualizar_lista():
     st.session_state.modo = "lista"
