@@ -45,7 +45,7 @@ st.markdown("""
 
     /* Texto “Bienvenido” con estilo atractivo */
    .welcome-text {
-    font-size: 55px;
+    font-size: 52px;
     color: #003366;
     font-weight: 900;
     font-family: 'Segoe UI', sans-serif;
@@ -200,7 +200,7 @@ color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "twilight", "rainbow
 resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
 
 # =================================================================
-# FIRMA DEL AUTOR (AQUÍ SE AGREGA)
+# FIRMA DEL AUTOR
 # =================================================================
 st.sidebar.markdown("""
 <style>
