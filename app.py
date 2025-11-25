@@ -50,7 +50,7 @@ st.markdown("""
     font-weight: 900;
     font-family: 'Segoe UI', sans-serif;
     text-align: center;
-    margin-top: 110px;
+    margin-top: 51px;
     text-shadow: 2px 2px 4px #bcd2ff;
 }
     </style>
@@ -67,7 +67,7 @@ st.markdown("""
             margin-bottom: 8px;
         }
         .main-title {
-            font-size: 38px;
+            font-size: 35px;
             font-weight: 800;
             color: #1a1a1a;
             font-family: 'Segoe UI', sans-serif;
@@ -76,7 +76,7 @@ st.markdown("""
             font-size: 20px;
             font-weight: 300;
             color: #444444;
-            margin-top: 10px;
+            margin-top: 9px;
             font-family: 'Segoe UI', sans-serif;
         }
         .logo-title {
@@ -388,7 +388,7 @@ if activar_3d:
     ax3.set_zlabel("|f(z)|")
 
     # TÍTULO nuevo dentro
-    ax3.set_title(f"Gráfica 3D de |f(z)| — f(z) = {entrada}", fontsize=12, pad=10)
+    ax3.set_title(f"Gráfica 3D de |f(z)|", fontsize=10, pad=8)
 
     st.pyplot(fig3)
 
