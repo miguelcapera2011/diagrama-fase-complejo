@@ -28,12 +28,10 @@ st.markdown("""
         background-size: 25px 25px;
     }
 
-    /* Sidebar más ancho */
     section[data-testid="stSidebar"] {
         width: 307px !important;
     }
 
-    /* Icono Home */
     .home-icon {
         width: 22px;
         cursor: pointer;
@@ -43,16 +41,15 @@ st.markdown("""
         transform: scale(1.15);
     }
 
-    /* Texto “Bienvenido” con estilo atractivo */
-   .welcome-text {
-    font-size: 52px;
-    color: #003366;
-    font-weight: 900;
-    font-family: 'Segoe UI', sans-serif;
-    text-align: center;
-    margin-top: 110px;
-    text-shadow: 2px 2px 4px #bcd2ff;
-}
+    .welcome-text {
+        font-size: 52px;
+        color: #003366;
+        font-weight: 900;
+        font-family: 'Segoe UI', sans-serif;
+        text-align: center;
+        margin-top: 110px;
+        text-shadow: 2px 2px 4px #bcd2ff;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -130,9 +127,6 @@ def actualizar_manual():
     st.session_state.modo = "manual"
     st.session_state.ultima_funcion = st.session_state.input_manual
 
-# -------------------------------
-# Campo de entrada con placeholder casi invisible
-# -------------------------------
 entrada_manual = st.sidebar.text_input(
     "Escribe una función de z",
     st.session_state.ultima_funcion,
@@ -141,7 +135,6 @@ entrada_manual = st.sidebar.text_input(
     placeholder="ejemplo z**z"
 )
 
-# Estilo CSS para el placeholder tenue
 st.markdown("""
 <style>
 input::placeholder {
@@ -200,7 +193,7 @@ color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "twilight", "rainbow
 resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
 
 # =================================================================
-# FIRMA DEL AUTOR
+# FIRMA
 # =================================================================
 st.sidebar.markdown("""
 <style>
@@ -237,7 +230,7 @@ def f(z, expr):
         raise ValueError(f"Error al interpretar la función: {e}")
 
 # =================================================================
-# PLOTEAR FASE + CEROS Y POLOS
+# PLOTEAR FASE — ADAPTADO A LA PANTALLA
 # =================================================================
 def plot_phase(expr, N, ceros, polos):
 
@@ -253,7 +246,9 @@ def plot_phase(expr, N, ceros, polos):
     W = np.where(np.isfinite(W), W, np.nan + 1j*np.nan)
     phase = np.angle(W)
 
-    fig, ax = plt.subplots(figsize=(8, 8))
+    # 🔹 AJUSTE AUTOMÁTICO DEL TAMAÑO
+    fig, ax = plt.subplots(figsize=(6, 6))
+    fig.set_dpi(100)
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
 
     ax.imshow(phase, extent=(-LIM, LIM, -LIM, LIM), cmap=color_map, alpha=0.96)
@@ -286,7 +281,8 @@ def plot_phase(expr, N, ceros, polos):
         except:
             pass
 
-    st.pyplot(fig)
+    # 🔹 SE ADAPTA AUTOMÁTICAMENTE A LA PANTALLA
+    st.pyplot(fig, use_container_width=True)
 
     buf = io.BytesIO()
     fig.savefig(buf, format="png", dpi=300)
@@ -330,7 +326,7 @@ def analizar_funcion(expr):
     return tipo, ceros, polos
 
 # =================================================================
-# MOSTRAR O IMAGEN REDUCIDA
+# MOSTRAR PORTADA O GRAFICAR
 # =================================================================
 if entrada.strip() == "":
     col1, col2 = st.columns([1, 1])
@@ -339,7 +335,7 @@ if entrada.strip() == "":
     with col1:
         st.image(
             "https://www.software-shop.com/images/productos/maple/img2023-1.png",
-            width=430 , 
+            width=430,
         )
 
     with col2:
