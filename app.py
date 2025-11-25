@@ -179,7 +179,10 @@ st.sidebar.selectbox(
     on_change=actualizar_lista
 )
 
-entrada = st.session_state.ultima_funcion
+# =================================================================
+# 🔥 CORRECCIÓN IMPORTANTE: convertir todo a minúsculas
+# =================================================================
+entrada = st.session_state.ultima_funcion.lower()
 
 # =================================================================
 # OPCIONES
@@ -267,7 +270,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # =================================================================
-# DIAGRAMA DE FASE — ahora con título dentro
+# DIAGRAMA DE FASE — con título dentro
 # =================================================================
 def plot_phase(expr, N, ceros, polos):
 
@@ -288,10 +291,9 @@ def plot_phase(expr, N, ceros, polos):
 
     ax.imshow(phase, extent=(-LIM, LIM, -LIM, LIM), cmap=color_map, alpha=0.96)
 
-    # Título dentro de la imagen
+    # Título dentro
     ax.set_title(f" f(z) = {expr}", fontsize=14, pad=12)
 
-    # Grillas
     ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
     ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
     ax.grid(which='minor', color='#ffffff', linewidth=0.03)
@@ -300,21 +302,18 @@ def plot_phase(expr, N, ceros, polos):
     ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/2))
     ax.grid(which='major', color='#f8f8f8', linewidth=0.08)
 
-    # Ejes
     ax.axhline(0, color='#bfbfbf', linewidth=0.6)
     ax.axvline(0, color='#bfbfbf', linewidth=0.6)
 
     ax.set_xlabel("Re(z)", fontsize=12)
     ax.set_ylabel("Im(z)", fontsize=12)
 
-    # Ceros
     for c in ceros:
         try:
             ax.scatter(float(sp.re(c)), float(sp.im(c)), color="blue", s=40)
         except:
             pass
 
-    # Polos
     for p in polos:
         try:
             ax.scatter(float(sp.re(p)), float(sp.im(p)), color="red", s=40)
@@ -326,16 +325,14 @@ def plot_phase(expr, N, ceros, polos):
 fig_phase = plot_phase(entrada, resolucion, ceros, polos)
 st.pyplot(fig_phase)
 
-# Botón de descarga del diagrama de fase
 buf1 = io.BytesIO()
 fig_phase.savefig(buf1, format="png", dpi=300)
 st.download_button("Descargar Diagrama de Fase", buf1.getvalue(), "diagrama_fase.png", "image/png")
 
-# Espacio
 st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
 
 # =================================================================
-# GRÁFICA 3D (si está activada)
+# GRÁFICA 3D
 # =================================================================
 if activar_3d:
 
@@ -357,7 +354,7 @@ if activar_3d:
     fig3 = plt.figure(figsize=(8, 7))
     ax3 = fig3.add_subplot(111, projection="3d")
 
-    surf = ax3.plot_surface(
+    ax3.plot_surface(
         X3, Y3, A3,
         cmap=color_map,
         rstride=1,
@@ -366,21 +363,15 @@ if activar_3d:
         alpha=0.95
     )
 
-    # Ceros
     for c in ceros:
         try:
-            x0 = float(sp.re(c))
-            y0 = float(sp.im(c))
-            ax3.scatter(x0, y0, 0, color="blue", s=50)
+            ax3.scatter(float(sp.re(c)), float(sp.im(c)), 0, color="blue", s=50)
         except:
             pass
 
-    # Polos
     for p in polos:
         try:
-            x0 = float(sp.re(p))
-            y0 = float(sp.im(p))
-            ax3.scatter(x0, y0, np.nanmax(A3), color="red", s=60)
+            ax3.scatter(float(sp.re(p)), float(sp.im(p)), np.nanmax(A3), color="red", s=60)
         except:
             pass
 
@@ -388,12 +379,11 @@ if activar_3d:
     ax3.set_ylabel("Im(z)")
     ax3.set_zlabel("|f(z)|")
 
-    # 🔥 NUEVO TÍTULO DENTRO DE LA GRÁFICA
-    ax3.set_title(f"Gráfica 3D de |f(z)| ", fontsize=10, pad=8)
+    # TÍTULO nuevo dentro
+    ax3.set_title("Gráfica 3D de |f(z)|", fontsize=10, pad=8)
 
     st.pyplot(fig3)
 
-    # Botón de descarga
     buf2 = io.BytesIO()
     fig3.savefig(buf2, format="png", dpi=300)
     st.download_button("Descargar Gráfica 3D", buf2.getvalue(), "grafica_3d.png", "image/png")
