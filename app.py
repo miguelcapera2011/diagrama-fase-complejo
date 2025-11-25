@@ -73,10 +73,10 @@ st.markdown("""
             font-family: 'Segoe UI', sans-serif;
         }
         .subtitle {
-            font-size: 20px;
+            font-size: 17px;
             font-weight: 300;
             color: #444444;
-            margin-top: 9px;
+            margin-top: 7px;
             font-family: 'Segoe UI', sans-serif;
         }
         .logo-title {
