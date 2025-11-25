@@ -50,7 +50,7 @@ st.markdown("""
     font-weight: 900;
     font-family: 'Segoe UI', sans-serif;
     text-align: center;
-    margin-top: 80px;
+    margin-top: 50px;
     text-shadow: 2px 2px 4px #bcd2ff;
 }
     </style>
