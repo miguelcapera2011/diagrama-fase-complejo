@@ -389,7 +389,7 @@ if activar_3d:
     ax3.set_zlabel("|f(z)|")
 
     # 🔥 NUEVO TÍTULO DENTRO DE LA GRÁFICA
-    ax3.set_title(f"Gráfica 3D de |f(z)| — f(z) = {entrada}", fontsize=14, pad=12)
+    ax3.set_title(f"Gráfica 3D de |f(z)| ", fontsize=10, pad=8)
 
     st.pyplot(fig3)
 
