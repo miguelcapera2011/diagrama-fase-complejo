@@ -76,7 +76,7 @@ st.markdown("""
             font-size: 17px;
             font-weight: 300;
             color: #444444;
-            margin-top: 6px;
+            margin-top: 7px;
             font-family: 'Segoe UI', sans-serif;
         }
         .logo-title {
@@ -180,7 +180,7 @@ st.sidebar.selectbox(
 )
 
 # =================================================================
-# 🔥 CORRECCIÓN IMPORTANTE: convertir todo a minúsculas
+#  convertir todo a minúsculas
 # =================================================================
 entrada = st.session_state.ultima_funcion.lower()
 
@@ -190,7 +190,7 @@ entrada = st.session_state.ultima_funcion.lower()
 color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "twilight", "rainbow", "turbo"])
 resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
 
-activar_3d = st.sidebar.checkbox("Mostrar gráfica 3D")
+activar_3d = st.sidebar.checkbox("Mostrar Gráfica 3D")
 
 # =================================================================
 # FUNCIÓN PRINCIPAL f(z)
