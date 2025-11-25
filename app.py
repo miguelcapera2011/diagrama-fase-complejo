@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-# =================================================================
 # LIBRERIAS
 # =================================================================
 import streamlit as st
@@ -43,15 +41,15 @@ st.markdown("""
         transform: scale(1.15);
     }
 
-    .welcome-text {
-        font-size: 52px;
-        color: #003366;
-        font-weight: 900;
-        font-family: 'Segoe UI', sans-serif;
-        text-align: center;
-        margin-top: 110px;
-        text-shadow: 2px 2px 4px #bcd2ff;
-    }
+   .welcome-text {
+    font-size: 52px;
+    color: #003366;
+    font-weight: 900;
+    font-family: 'Segoe UI', sans-serif;
+    text-align: center;
+    margin-top: 110px;
+    text-shadow: 2px 2px 4px #bcd2ff;
+}
     </style>
 """, unsafe_allow_html=True)
 
@@ -119,23 +117,20 @@ st.sidebar.markdown("""
 
 st.sidebar.markdown("<h4 style='font-size:16px;'>Configuración</h4>", unsafe_allow_html=True)
 
-# ESTADO INICIAL
+# Estado inicial
 if "modo" not in st.session_state:
     st.session_state.modo = "manual"
 if "ultima_funcion" not in st.session_state:
     st.session_state.ultima_funcion = ""
-if "input_manual" not in st.session_state:
-    st.session_state.input_manual = ""
 
 def actualizar_manual():
     st.session_state.modo = "manual"
     st.session_state.ultima_funcion = st.session_state.input_manual
 
-# =================================================================
-# INPUT MANUAL
-# =================================================================
+
 entrada_manual = st.sidebar.text_input(
     "Escribe una función de z",
+    st.session_state.ultima_funcion,
     key="input_manual",
     on_change=actualizar_manual,
     placeholder="ejemplo z**z"
@@ -198,6 +193,7 @@ entrada = st.session_state.ultima_funcion
 color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "twilight", "rainbow", "turbo"])
 resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
 
+# ⬇️⬇️ **AQUÍ AGREGO LO QUE PEDISTE: CHECKBOX PARA GRAFICA 3D** ⬇️⬇️
 activar_3d = st.sidebar.checkbox("Mostrar gráfica 3D")
 
 # =================================================================
@@ -356,9 +352,11 @@ st.markdown(f"""
 plot_phase(entrada, resolucion, ceros, polos)
 
 # =================================================================
-# GRÁFICA 3D (MEJORADA)
+# ⬇️⬇️ **AQUÍ APARECE LA GRAFICA 3D** ⬇️⬇️
 # =================================================================
 if activar_3d:
+
+    st.markdown("<h3 style='text-align:center; margin-top:35px;'>Gráfica 3D de |f(z)|</h3>", unsafe_allow_html=True)
 
     LIM = 6 if entrada in ["sin(z)", "cos(z)", "tan(z)"] else 2
 
@@ -404,32 +402,6 @@ if activar_3d:
     ax3.set_xlabel("Re(z)")
     ax3.set_ylabel("Im(z)")
     ax3.set_zlabel("|f(z)|")
-
-    # ✔ NUEVO TÍTULO INTERNO
-    ax3.set_title("Gráfica 3D de |f(z)|", fontsize=14, pad=18)
-
-    # ✔ FUNCIÓN DENTRO DE LA GRÁFICA
-    ax3.text2D(
-        0.5, -0.15,
-        f"f(z) = {entrada}",
-        transform=ax3.transAxes,
-        ha='center',
-        va='center',
-        fontsize=12,
-        color="#333333"
-    )
+    ax3.set_title("Relieve de |f(z)|")
 
     st.pyplot(fig3)
-
-    # ✔ BOTÓN DE DESCARGA
-    buffer = io.BytesIO()
-    fig3.savefig(buffer, format="png", dpi=300, bbox_inches="tight")
-    buffer.seek(0)
-
-    st.download_button(
-        label="📥 Descargar gráfica 3D",
-        data=buffer,
-        file_name="grafica_3D.png",
-        mime="image/png",
-        help="Descargar imagen de la gráfica 3D en alta resolución"
-    )
