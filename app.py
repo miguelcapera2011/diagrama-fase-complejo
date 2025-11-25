@@ -1,8 +1,9 @@
- # LIBRERIAS
+# LIBRERIAS
 # =================================================================
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import sympy as sp
 import io
 
@@ -27,12 +28,10 @@ st.markdown("""
         background-size: 25px 25px;
     }
 
-    /* Sidebar más ancho */
     section[data-testid="stSidebar"] {
         width: 307px !important;
     }
 
-    /* Icono Home */
     .home-icon {
         width: 22px;
         cursor: pointer;
@@ -42,7 +41,6 @@ st.markdown("""
         transform: scale(1.15);
     }
 
-    /* Texto “Bienvenido” con estilo atractivo */
    .welcome-text {
     font-size: 52px;
     color: #003366;
@@ -129,9 +127,7 @@ def actualizar_manual():
     st.session_state.modo = "manual"
     st.session_state.ultima_funcion = st.session_state.input_manual
 
-# -------------------------------
-# Campo de entrada con placeholder casi invisible
-# -------------------------------
+
 entrada_manual = st.sidebar.text_input(
     "Escribe una función de z",
     st.session_state.ultima_funcion,
@@ -140,7 +136,6 @@ entrada_manual = st.sidebar.text_input(
     placeholder="ejemplo z**z"
 )
 
-# Estilo CSS para el placeholder tenue
 st.markdown("""
 <style>
 input::placeholder {
@@ -198,8 +193,11 @@ entrada = st.session_state.ultima_funcion
 color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "twilight", "rainbow", "turbo"])
 resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
 
+# ⬇️⬇️ **AQUÍ AGREGO LO QUE PEDISTE: CHECKBOX PARA GRAFICA 3D** ⬇️⬇️
+activar_3d = st.sidebar.checkbox("Mostrar gráfica 3D")
+
 # =================================================================
-# FIRMA DEL AUTOR
+# FIRMA
 # =================================================================
 st.sidebar.markdown("""
 <style>
@@ -212,9 +210,6 @@ st.sidebar.markdown("""
     padding-top: 10px;
     border-top: 1px solid #cccccc;
     opacity: 0.85;
-}
-.autor-sidebar:hover {
-    opacity: 1;
 }
 </style>
 
@@ -236,7 +231,7 @@ def f(z, expr):
         raise ValueError(f"Error al interpretar la función: {e}")
 
 # =================================================================
-# PLOTEAR FASE + CEROS Y POLOS
+# PLOT FASE
 # =================================================================
 def plot_phase(expr, N, ceros, polos):
 
@@ -287,11 +282,6 @@ def plot_phase(expr, N, ceros, polos):
 
     st.pyplot(fig)
 
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=300)
-    st.download_button("Descargar imagen", buf.getvalue(),
-                       file_name="fase.png", mime="image/png")
-
 # =================================================================
 # ANALIZAR
 # =================================================================
@@ -329,7 +319,7 @@ def analizar_funcion(expr):
     return tipo, ceros, polos
 
 # =================================================================
-# MOSTRAR O IMAGEN REDUCIDA
+# MOSTRAR INICIO
 # =================================================================
 if entrada.strip() == "":
     col1, col2 = st.columns([1, 1])
@@ -356,4 +346,62 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# =================================================================
+# MOSTRAR DIAGRAMA DE FASE
+# =================================================================
 plot_phase(entrada, resolucion, ceros, polos)
+
+# =================================================================
+# ⬇️⬇️ **AQUÍ APARECE LA GRAFICA 3D** ⬇️⬇️
+# =================================================================
+if activar_3d:
+
+    st.markdown("<h3 style='text-align:center; margin-top:35px;'>Gráfica 3D de |f(z)|</h3>", unsafe_allow_html=True)
+
+    LIM = 6 if entrada in ["sin(z)", "cos(z)", "tan(z)"] else 2
+
+    x3 = np.linspace(-LIM, LIM, 150)
+    y3 = np.linspace(-LIM, LIM, 150)
+    X3, Y3 = np.meshgrid(x3, y3)
+    Z3 = X3 + 1j * Y3
+
+    W3 = f(Z3, entrada)
+    W3 = np.asarray(W3, dtype=np.complex128)
+    W3 = np.where(np.isfinite(W3), W3, np.nan + 1j*np.nan)
+
+    A3 = np.abs(W3)
+
+    fig3 = plt.figure(figsize=(8, 7))
+    ax3 = fig3.add_subplot(111, projection="3d")
+
+    surf = ax3.plot_surface(
+        X3, Y3, A3,
+        cmap=color_map,
+        rstride=1,
+        cstride=1,
+        antialiased=True,
+        alpha=0.95
+    )
+
+    for c in ceros:
+        try:
+            x0 = float(sp.re(c))
+            y0 = float(sp.im(c))
+            ax3.scatter(x0, y0, 0, color="blue", s=50)
+        except:
+            pass
+
+    for p in polos:
+        try:
+            x0 = float(sp.re(p))
+            y0 = float(sp.im(p))
+            ax3.scatter(x0, y0, np.nanmax(A3), color="red", s=60)
+        except:
+            pass
+
+    ax3.set_xlabel("Re(z)")
+    ax3.set_ylabel("Im(z)")
+    ax3.set_zlabel("|f(z)|")
+    ax3.set_title("Relieve de |f(z)|")
+
+    st.pyplot(fig3)
