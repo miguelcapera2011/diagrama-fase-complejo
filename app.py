@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
+
+# =================================================================
+# LIBRERÍAS
 # =================================================================
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import sympy as sp
 import io
 
@@ -26,12 +31,10 @@ st.markdown("""
         background-size: 25px 25px;
     }
 
-    /* Sidebar más ancho */
     section[data-testid="stSidebar"] {
         width: 307px !important;
     }
 
-    /* Icono Home */
     .home-icon {
         width: 22px;
         cursor: pointer;
@@ -41,14 +44,13 @@ st.markdown("""
         transform: scale(1.15);
     }
 
-    /* Texto “Bienvenido” con estilo atractivo */
    .welcome-text {
     font-size: 52px;
     color: #003366;
     font-weight: 900;
     font-family: 'Segoe UI', sans-serif;
     text-align: center;
-    margin-top: 110px;
+    margin-top: 51px;
     text-shadow: 2px 2px 4px #bcd2ff;
 }
     </style>
@@ -65,16 +67,16 @@ st.markdown("""
             margin-bottom: 8px;
         }
         .main-title {
-            font-size: 38px;
+            font-size: 39px;
             font-weight: 800;
             color: #1a1a1a;
             font-family: 'Segoe UI', sans-serif;
         }
         .subtitle {
-            font-size: 20px;
+            font-size: 17px;
             font-weight: 300;
             color: #444444;
-            margin-top: 10px;
+            margin-top: 7px;
             font-family: 'Segoe UI', sans-serif;
         }
         .logo-title {
@@ -118,37 +120,25 @@ st.sidebar.markdown("""
 
 st.sidebar.markdown("<h4 style='font-size:16px;'>Configuración</h4>", unsafe_allow_html=True)
 
-# Estado inicial
+# Estado inicial sin conflicto en Session State
 if "modo" not in st.session_state:
     st.session_state.modo = "manual"
 if "ultima_funcion" not in st.session_state:
     st.session_state.ultima_funcion = ""
+if "input_manual" not in st.session_state:
+    st.session_state.input_manual = ""
 
 def actualizar_manual():
     st.session_state.modo = "manual"
     st.session_state.ultima_funcion = st.session_state.input_manual
 
-# -------------------------------
-# Campo de entrada con placeholder casi invisible
-# -------------------------------
 entrada_manual = st.sidebar.text_input(
     "Escribe una función de z",
-    st.session_state.ultima_funcion,
+    value=st.session_state.input_manual,
     key="input_manual",
     on_change=actualizar_manual,
     placeholder="ejemplo z**z"
 )
-
-# Estilo CSS para el placeholder tenue
-st.markdown("""
-<style>
-input::placeholder {
-    color: #cccccc;
-    opacity: 0.4;
-    font-style: italic;
-}
-</style>
-""", unsafe_allow_html=True)
 
 # =================================================================
 # SELECTOR DE FUNCIONES
@@ -189,7 +179,10 @@ st.sidebar.selectbox(
     on_change=actualizar_lista
 )
 
-entrada = st.session_state.ultima_funcion
+# =================================================================
+#  convertir todo a minúsculas
+# =================================================================
+entrada = st.session_state.ultima_funcion.lower()
 
 # =================================================================
 # OPCIONES
@@ -197,33 +190,10 @@ entrada = st.session_state.ultima_funcion
 color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "twilight", "rainbow", "turbo"])
 resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
 
-# =================================================================
-# FIRMA DEL AUTOR
-# =================================================================
-st.sidebar.markdown("""
-<style>
-.autor-sidebar {
-    font-size: 14px;
-    color: #003366;
-    font-weight: 600;
-    font-family: 'Segoe UI', sans-serif;
-    margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px solid #cccccc;
-    opacity: 0.85;
-}
-.autor-sidebar:hover {
-    opacity: 1;
-}
-</style>
-
-<div class="autor-sidebar">
-    Autor: Miguel Ángel Capera
-</div>
-""", unsafe_allow_html=True)
+activar_3d = st.sidebar.checkbox("Mostrar Gráfica 3D")
 
 # =================================================================
-# FUNCIÓN PRINCIPAL
+# FUNCIÓN PRINCIPAL f(z)
 # =================================================================
 def f(z, expr):
     try:
@@ -235,68 +205,12 @@ def f(z, expr):
         raise ValueError(f"Error al interpretar la función: {e}")
 
 # =================================================================
-# PLOTEAR FASE + CEROS Y POLOS
-# =================================================================
-def plot_phase(expr, N, ceros, polos):
-
-    LIM = 6 if expr in ["sin(z)", "cos(z)", "tan(z)"] else 2
-
-    x = np.linspace(-LIM, LIM, N)
-    y = np.linspace(-LIM, LIM, N)
-    X, Y = np.meshgrid(x, y)
-    Z = X + 1j * Y
-
-    W = f(Z, expr)
-    W = np.asarray(W, dtype=np.complex128)
-    W = np.where(np.isfinite(W), W, np.nan + 1j*np.nan)
-    phase = np.angle(W)
-
-    fig, ax = plt.subplots(figsize=(8, 8))
-    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-
-    ax.imshow(phase, extent=(-LIM, LIM, -LIM, LIM), cmap=color_map, alpha=0.96)
-
-    ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
-    ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
-    ax.grid(which='minor', color='#ffffff', linewidth=0.03)
-
-    ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/2))
-    ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/2))
-    ax.grid(which='major', color='#f8f8f8', linewidth=0.08)
-
-    ax.axhline(0, color='#bfbfbf', linewidth=0.6)
-    ax.axvline(0, color='#bfbfbf', linewidth=0.6)
-
-    ax.set_xlabel("Re(z)", fontsize=12)
-    ax.set_ylabel("Im(z)", fontsize=12)
-
-    for c in ceros:
-        try:
-            ax.scatter(float(sp.re(c)), float(sp.im(c)), color="blue", s=40)
-            ax.text(float(sp.re(c))+0.15, float(sp.im(c))+0.1, "Cero", color="blue", fontsize=10)
-        except:
-            pass
-
-    for p in polos:
-        try:
-            ax.scatter(float(sp.re(p)), float(sp.im(p)), color="red", s=40)
-            ax.text(float(sp.re(p))+0.15, float(sp.im(p))+0.1, "Polo", color="red", fontsize=10)
-        except:
-            pass
-
-    st.pyplot(fig)
-
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=300)
-    st.download_button("Descargar imagen", buf.getvalue(),
-                       file_name="fase.png", mime="image/png")
-
-# =================================================================
 # ANALIZAR
 # =================================================================
 def analizar_funcion(expr):
     if expr.strip() == "":
         return "sin función", [], []
+
     z = sp.Symbol('z')
     try:
         f_expr = sp.sympify(expr)
@@ -328,7 +242,7 @@ def analizar_funcion(expr):
     return tipo, ceros, polos
 
 # =================================================================
-# MOSTRAR O IMAGEN REDUCIDA
+# MOSTRAR INICIO
 # =================================================================
 if entrada.strip() == "":
     col1, col2 = st.columns([1, 1])
@@ -355,4 +269,132 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-plot_phase(entrada, resolucion, ceros, polos)
+# ---- AÑADIDO: espacio entre el bloque de texto y la imagen ----
+st.markdown("<div style='margin-top:25px;'></div>", unsafe_allow_html=True)
+
+# =================================================================
+# DIAGRAMA DE FASE — con título dentro y etiquetas de ceros/polos
+# =================================================================
+def plot_phase(expr, N, ceros, polos):
+
+    LIM = 6 if expr in ["sin(z)", "cos(z)", "tan(z)"] else 2
+
+    x = np.linspace(-LIM, LIM, N)
+    y = np.linspace(-LIM, LIM, N)
+    X, Y = np.meshgrid(x, y)
+    Z = X + 1j * Y
+
+    W = f(Z, expr)
+    W = np.asarray(W, dtype=np.complex128)
+    W = np.where(np.isfinite(W), W, np.nan + 1j*np.nan)
+    phase = np.angle(W)
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+
+    ax.imshow(phase, extent=(-LIM, LIM, -LIM, LIM), cmap=color_map, alpha=0.96)
+
+    # Título dentro
+    ax.set_title(f" f(z) = {expr}", fontsize=14, pad=12)
+
+    ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
+    ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
+    ax.grid(which='minor', color='#ffffff', linewidth=0.03)
+
+    ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/2))
+    ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/2))
+    ax.grid(which='major', color='#f8f8f8', linewidth=0.08)
+
+    ax.axhline(0, color='#bfbfbf', linewidth=0.6)
+    ax.axvline(0, color='#bfbfbf', linewidth=0.6)
+
+    ax.set_xlabel("Re(z)", fontsize=12)
+    ax.set_ylabel("Im(z)", fontsize=12)
+
+    # Ceros con etiqueta
+    for c in ceros:
+        try:
+            xr = float(sp.re(c))
+            yr = float(sp.im(c))
+            ax.scatter(xr, yr, color="blue", s=40)
+            ax.text(xr + 0.12, yr + 0.08, "Cero", color="blue", fontsize=10)
+        except Exception:
+            pass
+
+    # Polos con etiqueta
+    for p in polos:
+        try:
+            xr = float(sp.re(p))
+            yr = float(sp.im(p))
+            ax.scatter(xr, yr, color="red", s=40)
+            ax.text(xr + 0.12, yr + 0.08, "Polo", color="red", fontsize=10)
+        except Exception:
+            pass
+
+    return fig
+
+fig_phase = plot_phase(entrada, resolucion, ceros, polos)
+st.pyplot(fig_phase)
+
+buf1 = io.BytesIO()
+fig_phase.savefig(buf1, format="png", dpi=300)
+st.download_button("Descargar Diagrama de Fase", buf1.getvalue(), "diagrama_fase.png", "image/png")
+
+st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
+
+# =================================================================
+# GRÁFICA 3D
+# =================================================================
+if activar_3d:
+
+    st.markdown("<div style='margin-top:30px'></div>", unsafe_allow_html=True)
+
+    LIM = 6 if entrada in ["sin(z)", "cos(z)", "tan(z)"] else 2
+
+    x3 = np.linspace(-LIM, LIM, 150)
+    y3 = np.linspace(-LIM, LIM, 150)
+    X3, Y3 = np.meshgrid(x3, y3)
+    Z3 = X3 + 1j * Y3
+
+    W3 = f(Z3, entrada)
+    W3 = np.asarray(W3, dtype=np.complex128)
+    W3 = np.where(np.isfinite(W3), W3, np.nan + 1j*np.nan)
+
+    A3 = np.abs(W3)
+
+    fig3 = plt.figure(figsize=(8, 7))
+    ax3 = fig3.add_subplot(111, projection="3d")
+
+    ax3.plot_surface(
+        X3, Y3, A3,
+        cmap=color_map,
+        rstride=1,
+        cstride=1,
+        antialiased=True,
+        alpha=0.95
+    )
+
+    for c in ceros:
+        try:
+            ax3.scatter(float(sp.re(c)), float(sp.im(c)), 0, color="blue", s=50)
+        except:
+            pass
+
+    for p in polos:
+        try:
+            ax3.scatter(float(sp.re(p)), float(sp.im(p)), np.nanmax(A3), color="red", s=60)
+        except:
+            pass
+
+    ax3.set_xlabel("Re(z)")
+    ax3.set_ylabel("Im(z)")
+    ax3.set_zlabel("|f(z)|")
+
+    # TÍTULO nuevo dentro
+    ax3.set_title(f"Gráfica 3D de |f(z)|", fontsize=10, pad=8)
+
+    st.pyplot(fig3)
+
+    buf2 = io.BytesIO()
+    fig3.savefig(buf2, format="png", dpi=300)
+    st.download_button("Descargar Gráfica 3D", buf2.getvalue(), "grafica_3d.png", "image/png")
