@@ -43,15 +43,15 @@ st.markdown("""
         transform: scale(1.15);
     }
 
-   .welcome-text {
-    font-size: 52px;
-    color: #003366;
-    font-weight: 900;
-    font-family: 'Segoe UI', sans-serif;
-    text-align: center;
-    margin-top: 110px;
-    text-shadow: 2px 2px 4px #bcd2ff;
-}
+    .welcome-text {
+        font-size: 52px;
+        color: #003366;
+        font-weight: 900;
+        font-family: 'Segoe UI', sans-serif;
+        text-align: center;
+        margin-top: 110px;
+        text-shadow: 2px 2px 4px #bcd2ff;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -125,18 +125,18 @@ if "modo" not in st.session_state:
 if "ultima_funcion" not in st.session_state:
     st.session_state.ultima_funcion = ""
 if "input_manual" not in st.session_state:
-    st.session_state.input_manual = ""   # ← FIX agregado
+    st.session_state.input_manual = ""
 
 def actualizar_manual():
     st.session_state.modo = "manual"
     st.session_state.ultima_funcion = st.session_state.input_manual
 
 # =================================================================
-# INPUT MANUAL (SIN ERROR)
+# INPUT MANUAL
 # =================================================================
 entrada_manual = st.sidebar.text_input(
     "Escribe una función de z",
-    key="input_manual",           # ← NO valor por defecto → NO error
+    key="input_manual",
     on_change=actualizar_manual,
     placeholder="ejemplo z**z"
 )
@@ -356,11 +356,9 @@ st.markdown(f"""
 plot_phase(entrada, resolucion, ceros, polos)
 
 # =================================================================
-# GRÁFICA 3D
+# GRÁFICA 3D (MEJORADA)
 # =================================================================
 if activar_3d:
-
-    st.markdown("<h3 style='text-align:center; margin-top:35px;'>Gráfica 3D de |f(z)|</h3>", unsafe_allow_html=True)
 
     LIM = 6 if entrada in ["sin(z)", "cos(z)", "tan(z)"] else 2
 
@@ -406,6 +404,32 @@ if activar_3d:
     ax3.set_xlabel("Re(z)")
     ax3.set_ylabel("Im(z)")
     ax3.set_zlabel("|f(z)|")
-    ax3.set_title("Relieve de |f(z)|")
+
+    # ✔ NUEVO TÍTULO INTERNO
+    ax3.set_title("Gráfica 3D de |f(z)|", fontsize=14, pad=18)
+
+    # ✔ FUNCIÓN DENTRO DE LA GRÁFICA
+    ax3.text2D(
+        0.5, -0.15,
+        f"f(z) = {entrada}",
+        transform=ax3.transAxes,
+        ha='center',
+        va='center',
+        fontsize=12,
+        color="#333333"
+    )
 
     st.pyplot(fig3)
+
+    # ✔ BOTÓN DE DESCARGA
+    buffer = io.BytesIO()
+    fig3.savefig(buffer, format="png", dpi=300, bbox_inches="tight")
+    buffer.seek(0)
+
+    st.download_button(
+        label="📥 Descargar gráfica 3D",
+        data=buffer,
+        file_name="grafica_3D.png",
+        mime="image/png",
+        help="Descargar imagen de la gráfica 3D en alta resolución"
+    )
