@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 # =================================================================
 # LIBRERÍAS
@@ -44,15 +43,15 @@ st.markdown("""
         transform: scale(1.15);
     }
 
-    .welcome-text {
-        font-size: 52px;
-        color: #003366;
-        font-weight: 900;
-        font-family: 'Segoe UI', sans-serif;
-        text-align: center;
-        margin-top: 51px;
-        text-shadow: 2px 2px 4px #bcd2ff;
-    }
+   .welcome-text {
+    font-size: 52px;
+    color: #003366;
+    font-weight: 900;
+    font-family: 'Segoe UI', sans-serif;
+    text-align: center;
+    margin-top: 51px;
+    text-shadow: 2px 2px 4px #bcd2ff;
+}
     </style>
 """, unsafe_allow_html=True)
 
@@ -141,12 +140,13 @@ entrada_manual = st.sidebar.text_input(
 )
 
 # =================================================================
-# SELECTOR DE FUNCIONES + NUEVAS FUNCIONES BONITAS
+# SELECTOR DE FUNCIONES
 # =================================================================
-st.sidebar.markdown("<br><b>Elegir función</b>", unsafe_allow_html=True)
+st.sidebar.markdown("<br><b>Elegir función </b>", unsafe_allow_html=True)
 
 funciones_libro = {
     "Selecciona una función": "",
+    # ---- FUNCIONES ORIGINALES ----
     "z": "z",
     "z²": "z**2",
     "z³ - 1": "z**3 - 1",
@@ -164,19 +164,9 @@ funciones_libro = {
     "(z - 1)/(z + 1)": "(z - 1)/(z + 1)",
     "(z⁵ - 1)/(z² - 1)": "(z**5 - 1)/(z**2 - 1)",
     "1/(z² + 1)": "1/(z**2 + 1)",
-    "(z² + z + 1)/(z² - z + 1)": "(z**2 + z + 1)/(z**2 - z + 1)",
-
-    # -----------------------------
-    # FUNCIONES BONITAS AÑADIDAS
-    # -----------------------------
-    "1/(z*(z-1))": "1/(z*(z-1))",
-    "(z² - 1)/(z³ + 2)": "(z**2 - 1)/(z**3 + 2)",
-    "exp(1/z)": "exp(1/z)",
-    "sin(1/z)": "sin(1/z)",
-    "(z - i)/(z + i)": "(z - I)/(z + I)",
-    "(z² + 1)/(z² - 1)": "(z**2 + 1)/(z**2 - 1)",
-    "(z³ + 2z)/(z² - 4)": "(z**3 + 2*z)/(z**2 - 4)"
+    "(z² + z + 1)/(z² - z + 1)": "(z**2 + z + 1)/(z**2 - z + 1)"  
 }
+
 
 def actualizar_lista():
     st.session_state.modo = "lista"
@@ -195,7 +185,7 @@ st.sidebar.selectbox(
 )
 
 # =================================================================
-# Convertir todo a minúsculas
+#  convertir todo a minúsculas
 # =================================================================
 entrada = st.session_state.ultima_funcion.lower()
 
@@ -204,10 +194,11 @@ entrada = st.session_state.ultima_funcion.lower()
 # =================================================================
 color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "twilight", "rainbow", "turbo"])
 resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
+
 activar_3d = st.sidebar.checkbox("Mostrar Gráfica 3D")
 
 # =================================================================
-# FUNCIÓN PRINCIPAL f(z) — con CONTROL DE ERRORES ELEGANTE
+# FUNCIÓN PRINCIPAL f(z)
 # =================================================================
 def f(z, expr):
     try:
@@ -215,11 +206,11 @@ def f(z, expr):
         f_sym = sp.sympify(expr)
         f_lamb = sp.lambdify(z_sym, f_sym, modules=['numpy'])
         return f_lamb(z)
-    except Exception:
-        raise ValueError("La función no se puede graficar.")
+    except Exception as e:
+        raise ValueError(f"Error al interpretar la función: {e}")
 
 # =================================================================
-# ANALIZAR FUNCIÓN
+# ANALIZAR
 # =================================================================
 def analizar_funcion(expr):
     if expr.strip() == "":
@@ -256,7 +247,7 @@ def analizar_funcion(expr):
     return tipo, ceros, polos
 
 # =================================================================
-# MOSTRAR PANTALLA DE INICIO
+# MOSTRAR INICIO
 # =================================================================
 if entrada.strip() == "":
     col1, col2 = st.columns([1, 1])
@@ -273,9 +264,6 @@ if entrada.strip() == "":
 
     st.stop()
 
-# =================================================================
-# ANALIZAR FUNCIÓN
-# =================================================================
 tipo, ceros, polos = analizar_funcion(entrada)
 
 st.markdown(f"""
@@ -286,162 +274,132 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# ---- AÑADIDO: espacio entre el bloque de texto y la imagen ----
 st.markdown("<div style='margin-top:25px;'></div>", unsafe_allow_html=True)
+
 # =================================================================
-# DIAGRAMA DE FASE — con manejo elegante de errores, título y etiquetas
+# DIAGRAMA DE FASE — con título dentro y etiquetas de ceros/polos
 # =================================================================
 def plot_phase(expr, N, ceros, polos):
-    try:
-        LIM = 6 if expr in ["sin(z)", "cos(z)", "tan(z)"] else 2
 
-        x = np.linspace(-LIM, LIM, N)
-        y = np.linspace(-LIM, LIM, N)
-        X, Y = np.meshgrid(x, y)
-        Z = X + 1j * Y
+    LIM = 6 if expr in ["sin(z)", "cos(z)", "tan(z)"] else 2
 
-        # Evaluar f en la malla — f lanzará ValueError si no es graficable
-        W = f(Z, expr)
+    x = np.linspace(-LIM, LIM, N)
+    y = np.linspace(-LIM, LIM, N)
+    X, Y = np.meshgrid(x, y)
+    Z = X + 1j * Y
 
-        # Si la función devolvió None o no dio valores, consideramos no graficable
-        if W is None:
-            return None
+    W = f(Z, expr)
+    W = np.asarray(W, dtype=np.complex128)
+    W = np.where(np.isfinite(W), W, np.nan + 1j*np.nan)
+    phase = np.angle(W)
 
-        W = np.asarray(W, dtype=np.complex128)
-        W = np.where(np.isfinite(W), W, np.nan + 1j*np.nan)
-        phase = np.angle(W)
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
 
-        fig, ax = plt.subplots(figsize=(8, 8))
-        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    ax.imshow(phase, extent=(-LIM, LIM, -LIM, LIM), cmap=color_map, alpha=0.96)
 
-        # Mostrar mapa de fase
-        ax.imshow(phase, extent=(-LIM, LIM, -LIM, LIM), cmap=color_map, alpha=0.96)
+    # Título dentro
+    ax.set_title(f" f(z) = {expr}", fontsize=14, pad=12)
 
-        # Título dentro (arriba, centrado)
-        ax.set_title(f"Diagrama de Fase — f(z) = {expr}", fontsize=14, pad=12)
+    ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
+    ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
+    ax.grid(which='minor', color='#ffffff', linewidth=0.03)
 
-        # Grillas y ejes
-        ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
-        ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
-        ax.grid(which='minor', color='#ffffff', linewidth=0.03)
+    ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/2))
+    ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/2))
+    ax.grid(which='major', color='#f8f8f8', linewidth=0.08)
 
-        ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/2))
-        ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/2))
-        ax.grid(which='major', color='#f8f8f8', linewidth=0.08)
+    ax.axhline(0, color='#bfbfbf', linewidth=0.6)
+    ax.axvline(0, color='#bfbfbf', linewidth=0.6)
 
-        ax.axhline(0, color='#bfbfbf', linewidth=0.6)
-        ax.axvline(0, color='#bfbfbf', linewidth=0.6)
+    ax.set_xlabel("Re(z)", fontsize=12)
+    ax.set_ylabel("Im(z)", fontsize=12)
 
-        ax.set_xlabel("Re(z)", fontsize=12)
-        ax.set_ylabel("Im(z)", fontsize=12)
+    # Ceros con etiqueta
+    for c in ceros:
+        try:
+            xr = float(sp.re(c))
+            yr = float(sp.im(c))
+            ax.scatter(xr, yr, color="blue", s=40)
+            ax.text(xr + 0.12, yr + 0.08, "Cero", color="blue", fontsize=10)
+        except Exception:
+            pass
 
-        # Ceros con etiqueta
-        for c in ceros:
-            try:
-                xr = float(sp.re(c))
-                yr = float(sp.im(c))
-                ax.scatter(xr, yr, color="blue", s=40)
-                ax.text(xr + 0.12, yr + 0.08, "Cero", color="blue", fontsize=10)
-            except Exception:
-                pass
+    # Polos con etiqueta
+    for p in polos:
+        try:
+            xr = float(sp.re(p))
+            yr = float(sp.im(p))
+            ax.scatter(xr, yr, color="red", s=40)
+            ax.text(xr + 0.12, yr + 0.08, "Polo", color="red", fontsize=10)
+        except Exception:
+            pass
 
-        # Polos con etiqueta
-        for p in polos:
-            try:
-                xr = float(sp.re(p))
-                yr = float(sp.im(p))
-                ax.scatter(xr, yr, color="red", s=40)
-                ax.text(xr + 0.12, yr + 0.08, "Polo", color="red", fontsize=10)
-            except Exception:
-                pass
+    return fig
 
-        return fig
-
-    except Exception:
-        # Cualquier fallo durante la generación se captura aquí y se informa arriba
-        return None
-
-
-# =================================================================
-# GENERAR DIAGRAMA DE FASE (llamada protegida)
-# =================================================================
 fig_phase = plot_phase(entrada, resolucion, ceros, polos)
+st.pyplot(fig_phase)
 
-if fig_phase is None:
-    # Mensaje elegante — no mostrar traza de error
-    st.warning("⚠️ La función no se puede graficar. Intenta otra expresión o revisa la sintaxis.")
-else:
-    # Mostrar figura y permitir descarga únicamente si la figura se creó
-    st.pyplot(fig_phase)
+buf1 = io.BytesIO()
+fig_phase.savefig(buf1, format="png", dpi=300)
+st.download_button("Descargar Diagrama de Fase", buf1.getvalue(), "diagrama_fase.png", "image/png")
 
-    buf1 = io.BytesIO()
-    fig_phase.savefig(buf1, format="png", dpi=300, bbox_inches='tight')
-    st.download_button("Descargar Diagrama de Fase", buf1.getvalue(), "diagrama_fase.png", "image/png")
-
-# Espacio inferior antes de la siguiente sección
 st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
-# =================================================================
-# GRÁFICA 3D — |f(z)| con título interno y manejo de errores
-# =================================================================
 
+# =================================================================
+# GRÁFICA 3D
+# =================================================================
 if activar_3d:
 
-    try:
-        LIM3 = 2
-        N3 = resolucion
-        x3 = np.linspace(-LIM3, LIM3, N3)
-        y3 = np.linspace(-LIM3, LIM3, N3)
-        X3, Y3 = np.meshgrid(x3, y3)
-        Z3 = X3 + 1j * Y3
+    st.markdown("<div style='margin-top:30px'></div>", unsafe_allow_html=True)
 
-        # Intentar evaluar f
-        W3 = f(Z3, entrada)
+    LIM = 6 if entrada in ["sin(z)", "cos(z)", "tan(z)"] else 2
 
-        if W3 is None:
-            raise ValueError("No se pudo evaluar f(z).")
+    x3 = np.linspace(-LIM, LIM, 150)
+    y3 = np.linspace(-LIM, LIM, 150)
+    X3, Y3 = np.meshgrid(x3, y3)
+    Z3 = X3 + 1j * Y3
 
-        W3 = np.asarray(W3, dtype=np.complex128)
+    W3 = f(Z3, entrada)
+    W3 = np.asarray(W3, dtype=np.complex128)
+    W3 = np.where(np.isfinite(W3), W3, np.nan + 1j*np.nan)
 
-        # Magnitud |f(z)| (relieve)
-        R = np.abs(W3)
+    A3 = np.abs(W3)
 
-        # Donde hay polos → dejar huecos
-        R = np.where(np.isfinite(R), R, np.nan)
+    fig3 = plt.figure(figsize=(8, 7))
+    ax3 = fig3.add_subplot(111, projection="3d")
 
-        # Crear figura
-        fig3 = plt.figure(figsize=(10, 8))
-        ax3 = fig3.add_subplot(111, projection='3d')
+    ax3.plot_surface(
+        X3, Y3, A3,
+        cmap=color_map,
+        rstride=1,
+        cstride=1,
+        antialiased=True,
+        alpha=0.95
+    )
 
-        # Título dentro de la gráfica 3D
-        ax3.set_title(f"Gráfica 3D de |f(z)| — f(z) = {entrada}",
-                      fontsize=14, pad=20)
+    for c in ceros:
+        try:
+            ax3.scatter(float(sp.re(c)), float(sp.im(c)), 0, color="blue", s=50)
+        except:
+            pass
 
-        # Superficie
-        surf = ax3.plot_surface(
-            X3, Y3, R,
-            cmap="viridis",
-            edgecolor='none',
-            alpha=0.95,
-            antialiased=True
-        )
+    for p in polos:
+        try:
+            ax3.scatter(float(sp.re(p)), float(sp.im(p)), np.nanmax(A3), color="red", s=60)
+        except:
+            pass
 
-        ax3.set_xlabel("Re(z)", fontsize=12)
-        ax3.set_ylabel("Im(z)", fontsize=12)
-        ax3.set_zlabel("|f(z)|", fontsize=12)
+    ax3.set_xlabel("Re(z)")
+    ax3.set_ylabel("Im(z)")
+    ax3.set_zlabel("|f(z)|")
 
-        fig3.colorbar(surf, shrink=0.6)
+    # TÍTULO nuevo dentro
+    ax3.set_title(f"Gráfica 3D de |f(z)|", fontsize=10, pad=8)
 
-        # Mostrar
-        st.pyplot(fig3)
+    st.pyplot(fig3)
 
-        # Botón de descarga
-        buf3 = io.BytesIO()
-        fig3.savefig(buf3, format="png", dpi=300, bbox_inches='tight')
-        st.download_button("Descargar Gráfica 3D", buf3.getvalue(),
-                           "grafica3d.png", "image/png")
-
-    except Exception:
-        st.warning("⚠️ La función no se puede graficar en 3D. Revisa la expresión o prueba otra.")
-
-# Espacio final
-st.markdown("<div style='margin-top:60px'></div>", unsafe_allow_html=True)
-
+    buf2 = io.BytesIO()
+    fig3.savefig(buf2, format="png", dpi=300)
+    st.download_button("Descargar Gráfica 3D", buf2.getvalue(), "grafica_3d.png", "image/png")
