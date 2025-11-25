@@ -50,7 +50,7 @@ st.markdown("""
     font-weight: 900;
     font-family: 'Segoe UI', sans-serif;
     text-align: center;
-    margin-top: 50px;
+    margin-top: 110px;
     text-shadow: 2px 2px 4px #bcd2ff;
 }
     </style>
@@ -270,7 +270,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # =================================================================
-# DIAGRAMA DE FASE — con título dentro
+# DIAGRAMA DE FASE — con título dentro y etiquetas de ceros/polos
 # =================================================================
 def plot_phase(expr, N, ceros, polos):
 
@@ -308,16 +308,24 @@ def plot_phase(expr, N, ceros, polos):
     ax.set_xlabel("Re(z)", fontsize=12)
     ax.set_ylabel("Im(z)", fontsize=12)
 
+    # Ceros con etiqueta
     for c in ceros:
         try:
-            ax.scatter(float(sp.re(c)), float(sp.im(c)), color="blue", s=40)
-        except:
+            xr = float(sp.re(c))
+            yr = float(sp.im(c))
+            ax.scatter(xr, yr, color="blue", s=40)
+            ax.text(xr + 0.12, yr + 0.08, "Cero", color="blue", fontsize=10)
+        except Exception:
             pass
 
+    # Polos con etiqueta
     for p in polos:
         try:
-            ax.scatter(float(sp.re(p)), float(sp.im(p)), color="red", s=40)
-        except:
+            xr = float(sp.re(p))
+            yr = float(sp.im(p))
+            ax.scatter(xr, yr, color="red", s=40)
+            ax.text(xr + 0.12, yr + 0.08, "Polo", color="red", fontsize=10)
+        except Exception:
             pass
 
     return fig
@@ -380,7 +388,7 @@ if activar_3d:
     ax3.set_zlabel("|f(z)|")
 
     # TÍTULO nuevo dentro
-    ax3.set_title("Gráfica 3D de |f(z)|", fontsize=10, pad=8)
+    ax3.set_title(f"Gráfica 3D de |f(z)| — f(z) = {entrada}", fontsize=12, pad=10)
 
     st.pyplot(fig3)
 
