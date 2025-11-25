@@ -76,7 +76,7 @@ st.markdown("""
             font-size: 17px;
             font-weight: 300;
             color: #444444;
-            margin-top: 5px;
+            margin-top: 6px;
             font-family: 'Segoe UI', sans-serif;
         }
         .logo-title {
