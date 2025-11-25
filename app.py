@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sympy as sp
 import io
+from mpl_toolkits.mplot3d import Axes3D
 
 # =================================================================
 # CONFIGURACIÓN DE PÁGINA
@@ -16,7 +17,7 @@ st.set_page_config(
 )
 
 # =================================================================
-# FONDO TIPO GEOGEBRA + SIDEBAR ANCHO + ICONO HOME
+# FONDO TIPO GEOGEBRA + SIDEBAR + ESTILOS
 # =================================================================
 st.markdown("""
     <style>
@@ -28,24 +29,10 @@ st.markdown("""
         background-size: 25px 25px;
     }
 
-    section[data-testid="stSidebar"] {
-        width: 307px !important;
-    }
-
-    .home-icon {
-        width: 22px;
-        cursor: pointer;
-        margin-bottom: 8px;
-    }
-    .home-icon:hover {
-        transform: scale(1.15);
-    }
-
     .welcome-text {
         font-size: 52px;
         color: #003366;
         font-weight: 900;
-        font-family: 'Segoe UI', sans-serif;
         text-align: center;
         margin-top: 110px;
         text-shadow: 2px 2px 4px #bcd2ff;
@@ -54,77 +41,24 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =================================================================
-# TÍTULO PRINCIPAL SUPERIOR
+# TÍTULO
 # =================================================================
 st.markdown("""
-    <style>
-        .title-container {
-            text-align: center;
-            margin-top: -60px;
-            margin-bottom: 8px;
-        }
-        .main-title {
-            font-size: 38px;
-            font-weight: 800;
-            color: #1a1a1a;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .subtitle {
-            font-size: 20px;
-            font-weight: 300;
-            color: #444444;
-            margin-top: 10px;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .logo-title {
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            gap:6px;
-            margin-bottom:10px;
-        }
-        .logo-title img {
-            width:45px;
-            height:45px;
-        }
-        .logo-title span {
-            font-size:18px;
-            font-weight:700;
-            color:#003366;
-            font-family:'Segoe UI', sans-serif;
-        }
-    </style>
-
-    <div class="title-container">
-        <div class="main-title">Diagrama De Fase</div>
-        <div class="subtitle">Inspirado en <i>Visual Complex Functions</i> — Wegert (2012)</div>
-    </div>
-""", unsafe_allow_html=True)
-
-# =================================================================
-# SIDEBAR — ICONO + VARIABLE COMPLEJA
-# =================================================================
-st.sidebar.markdown("""
-<a href="/" target="_self">
-    <img class="home-icon" src="https://cdn-icons-png.flaticon.com/128/54/54759.png">
-</a>
-
-<div class="logo-title">
-    <img src="https://content.gnoss.ws/imagenes/Usuarios/ImagenesCKEditor/c513da9b-6419-42be-82ef-3c448a0b5a79/a65dee0c-c70f-4ce1-b363-cfc36a980918.png">
-    <span>VARIABLE COMPLEJA</span>
+<div style='text-align:center; margin-top:-40px;'>
+    <h1 style='font-size:38px; font-weight:800;'>Diagrama De Fase</h1>
+    <p style='font-size:20px;'>Inspirado en <i>Visual Complex Functions</i> — Wegert (2012)</p>
 </div>
 """, unsafe_allow_html=True)
 
-st.sidebar.markdown("<h4 style='font-size:16px;'>Configuración</h4>", unsafe_allow_html=True)
+# =================================================================
+# SIDEBAR — INGRESO DE FUNCIÓN
+# =================================================================
+st.sidebar.markdown("### Configuración de función")
 
-# Estado inicial
-if "modo" not in st.session_state:
-    st.session_state.modo = "manual"
 if "ultima_funcion" not in st.session_state:
     st.session_state.ultima_funcion = ""
 
 def actualizar_manual():
-    st.session_state.modo = "manual"
     st.session_state.ultima_funcion = st.session_state.input_manual
 
 entrada_manual = st.sidebar.text_input(
@@ -132,165 +66,64 @@ entrada_manual = st.sidebar.text_input(
     st.session_state.ultima_funcion,
     key="input_manual",
     on_change=actualizar_manual,
-    placeholder="ejemplo z**z"
+    placeholder="ejemplo z**3 - 1"
 )
-
-st.markdown("""
-<style>
-input::placeholder {
-    color: #cccccc;
-    opacity: 0.4;
-    font-style: italic;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# =================================================================
-# SELECTOR DE FUNCIONES
-# =================================================================
-st.sidebar.markdown("<br><b>Elegir función </b>", unsafe_allow_html=True)
 
 funciones_libro = {
     "Selecciona una función": "",
     "z": "z",
     "z²": "z**2",
     "z³ - 1": "z**3 - 1",
-    "(z+1)(z-2)": "(z+1)*(z-2)",
     "1/z": "1/z",
     "(z³-1)/(z²+1)": "(z**3 - 1)/(z**2 + 1)",
     "exp(z)": "exp(z)",
-    "exp(-2π/z)": "exp(-2*pi/z)",
     "sin(z)": "sin(z)",
     "cos(z)": "cos(z)",
     "tan(z)": "tan(z)",
     "log(z)": "log(z)",
-    "√z": "sqrt(z)",
-    "z^(1/3)": "z**(1/3)"
+    "√z": "sqrt(z)"
 }
 
 def actualizar_lista():
-    st.session_state.modo = "lista"
     seleccion = funciones_libro[st.session_state.select_libro]
     if seleccion != "":
         st.session_state.ultima_funcion = seleccion
         st.session_state.input_manual = ""
 
 st.sidebar.selectbox(
-    "Seleccionar función del libro",
+    "Función del libro",
     list(funciones_libro.keys()),
-    index=0,
     key="select_libro",
-    label_visibility="collapsed",
     on_change=actualizar_lista
 )
 
 entrada = st.session_state.ultima_funcion
 
 # =================================================================
-# OPCIONES
+# OPCIONES AVANZADAS — ZOOM + LIM + 3D
 # =================================================================
-color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "twilight", "rainbow", "turbo"])
-resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
+st.sidebar.markdown("### Opciones del plano complejo")
 
-# =================================================================
-# FIRMA
-# =================================================================
-st.sidebar.markdown("""
-<style>
-.autor-sidebar {
-    font-size: 14px;
-    color: #003366;
-    font-weight: 600;
-    font-family: 'Segoe UI', sans-serif;
-    margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px solid #cccccc;
-    opacity: 0.85;
-}
-.autor-sidebar:hover {
-    opacity: 1;
-}
-</style>
+LIM = st.sidebar.slider("Tamaño del plano (Zoom)", 1.0, 10.0, 3.0, 0.5)
+resolucion = st.sidebar.slider("Resolución del gráfico", 200, 900, 500)
+color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "turbo", "twilight", "rainbow"])
 
-<div class="autor-sidebar">
-    Autor: Miguel Ángel Capera
-</div>
-""", unsafe_allow_html=True)
+modo_3D = st.sidebar.checkbox("Mostrar gráfico 3D de |f(z)|")
 
 # =================================================================
 # FUNCIÓN PRINCIPAL
 # =================================================================
 def f(z, expr):
+    z_sym = sp.Symbol('z')
     try:
-        z_sym = sp.Symbol('z')
-        f_sym = sp.sympify(expr)
-        f_lamb = sp.lambdify(z_sym, f_sym, modules=['numpy'])
+        f_expr = sp.sympify(expr)
+        f_lamb = sp.lambdify(z_sym, f_expr, 'numpy')
         return f_lamb(z)
-    except Exception as e:
-        raise ValueError(f"Error al interpretar la función: {e}")
+    except:
+        return np.nan
 
 # =================================================================
-# PLOTEAR FASE — ADAPTADO A LA PANTALLA
-# =================================================================
-def plot_phase(expr, N, ceros, polos):
-
-    LIM = 6 if expr in ["sin(z)", "cos(z)", "tan(z)"] else 2
-
-    x = np.linspace(-LIM, LIM, N)
-    y = np.linspace(-LIM, LIM, N)
-    X, Y = np.meshgrid(x, y)
-    Z = X + 1j * Y
-
-    W = f(Z, expr)
-    W = np.asarray(W, dtype=np.complex128)
-    W = np.where(np.isfinite(W), W, np.nan + 1j*np.nan)
-    phase = np.angle(W)
-
-    # 🔹 AJUSTE AUTOMÁTICO DEL TAMAÑO
-    fig, ax = plt.subplots(figsize=(6, 6))
-    fig.set_dpi(100)
-    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-
-    ax.imshow(phase, extent=(-LIM, LIM, -LIM, LIM), cmap=color_map, alpha=0.96)
-
-    ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
-    ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
-    ax.grid(which='minor', color='#ffffff', linewidth=0.03)
-
-    ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/2))
-    ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/2))
-    ax.grid(which='major', color='#f8f8f8', linewidth=0.08)
-
-    ax.axhline(0, color='#bfbfbf', linewidth=0.6)
-    ax.axvline(0, color='#bfbfbf', linewidth=0.6)
-
-    ax.set_xlabel("Re(z)", fontsize=12)
-    ax.set_ylabel("Im(z)", fontsize=12)
-
-    for c in ceros:
-        try:
-            ax.scatter(float(sp.re(c)), float(sp.im(c)), color="blue", s=40)
-            ax.text(float(sp.re(c))+0.15, float(sp.im(c))+0.1, "Cero", color="blue", fontsize=10)
-        except:
-            pass
-
-    for p in polos:
-        try:
-            ax.scatter(float(sp.re(p)), float(sp.im(p)), color="red", s=40)
-            ax.text(float(sp.re(p))+0.15, float(sp.im(p))+0.1, "Polo", color="red", fontsize=10)
-        except:
-            pass
-
-    # 🔹 SE ADAPTA AUTOMÁTICAMENTE A LA PANTALLA
-    st.pyplot(fig, use_container_width=True)
-
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=300)
-    st.download_button("Descargar imagen", buf.getvalue(),
-                       file_name="fase.png", mime="image/png")
-
-# =================================================================
-# ANALIZAR
+# ANALIZAR FUNCIÓN
 # =================================================================
 def analizar_funcion(expr):
     if expr.strip() == "":
@@ -303,15 +136,11 @@ def analizar_funcion(expr):
 
     tipo = "desconocida"
     if f_expr.is_polynomial():
-        tipo = f"polinómica de grado {sp.degree(f_expr)}"
+        tipo = f"polinómica grado {sp.degree(f_expr)}"
     elif sp.denom(f_expr) != 1:
         tipo = "racional"
     elif "exp" in str(f_expr):
         tipo = "exponencial"
-    elif "sin" in str(f_expr) or "cos" in str(f_expr):
-        tipo = "trigonométrica"
-    elif "log" in str(f_expr):
-        tipo = "logarítmica"
 
     try:
         ceros = sp.solve(sp.Eq(f_expr, 0), z)
@@ -326,31 +155,83 @@ def analizar_funcion(expr):
     return tipo, ceros, polos
 
 # =================================================================
-# MOSTRAR PORTADA O GRAFICAR
+# GRAFICAR FASE (2D)
+# =================================================================
+def plot_phase(expr, N, ceros, polos, LIM):
+
+    x = np.linspace(-LIM, LIM, N)
+    y = np.linspace(-LIM, LIM, N)
+    X, Y = np.meshgrid(x, y)
+    Z = X + 1j*Y
+
+    W = f(Z, expr)
+    W = np.where(np.isfinite(W), W, np.nan)
+    phase = np.angle(W)
+
+    fig, ax = plt.subplots(figsize=(6, 6))
+    fig.set_dpi(100)
+
+    ax.imshow(phase, extent=(-LIM, LIM, -LIM, LIM), cmap=color_map)
+
+    ax.set_xlabel("Re(z)", fontsize=12)
+    ax.set_ylabel("Im(z)", fontsize=12)
+
+    for c in ceros:
+        ax.scatter(float(sp.re(c)), float(sp.im(c)), color="blue", s=40)
+
+    for p in polos:
+        ax.scatter(float(sp.re(p)), float(sp.im(p)), color="red", s=40)
+
+    st.pyplot(fig, use_container_width=True)
+
+# =================================================================
+# GRAFICAR MODO 3D |f(z)|
+# =================================================================
+def plot_3D(expr, N, LIM):
+
+    x = np.linspace(-LIM, LIM, N)
+    y = np.linspace(-LIM, LIM, N)
+    X, Y = np.meshgrid(x, y)
+    Z = X + 1j*Y
+
+    W = f(Z, expr)
+    M = np.abs(W)
+
+    fig = plt.figure(figsize=(7, 6))
+    ax = fig.add_subplot(111, projection='3d')
+
+    ax.plot_surface(X, Y, M, rstride=1, cstride=1, cmap='viridis', linewidth=0)
+
+    ax.set_xlabel("Re(z)")
+    ax.set_ylabel("Im(z)")
+    ax.set_zlabel("|f(z)|")
+
+    st.pyplot(fig, use_container_width=True)
+
+# =================================================================
+# SI NO HAY FUNCIÓN MOSTRAR MENSAJE
 # =================================================================
 if entrada.strip() == "":
-    col1, col2 = st.columns([1, 1])
-    
-    st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
-    with col1:
-        st.image(
-            "https://www.software-shop.com/images/productos/maple/img2023-1.png",
-            width=430,
-        )
-
-    with col2:
-        st.markdown("<div class='welcome-text'>¡Bienvenidos!</div>", unsafe_allow_html=True)
-
+    st.markdown("<div class='welcome-text'>¡Bienvenido!</div>", unsafe_allow_html=True)
     st.stop()
 
+# =================================================================
+# MOSTRAR TIPO, CEROS, POLOS
+# =================================================================
 tipo, ceros, polos = analizar_funcion(entrada)
 
 st.markdown(f"""
-<div style='display:flex; gap:25px; font-size:17px; margin-top:10px;'>
-    <div><b>Tipo:</b> {tipo}</div>
-    <div><b>Ceros:</b> {ceros}</div>
-    <div><b>Polos:</b> {polos}</div>
-</div>
-""", unsafe_allow_html=True)
+### Detalles de la función  
+**Tipo:** {tipo}  
+**Ceros:** {ceros}  
+**Polos:** {polos}
+""")
 
-plot_phase(entrada, resolucion, ceros, polos)
+# =================================================================
+# GRAFICAR
+# =================================================================
+plot_phase(entrada, resolucion, ceros, polos, LIM)
+
+if modo_3D:
+    st.markdown("### Gráfico 3D de |f(z)|")
+    plot_3D(entrada, 200, LIM)
