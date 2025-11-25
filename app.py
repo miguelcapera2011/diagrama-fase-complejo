@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+# =================================================================
 # LIBRERIAS
 # =================================================================
 import streamlit as st
@@ -117,21 +119,24 @@ st.sidebar.markdown("""
 
 st.sidebar.markdown("<h4 style='font-size:16px;'>Configuración</h4>", unsafe_allow_html=True)
 
-# Estado inicial
+# ESTADO INICIAL
 if "modo" not in st.session_state:
     st.session_state.modo = "manual"
 if "ultima_funcion" not in st.session_state:
     st.session_state.ultima_funcion = ""
+if "input_manual" not in st.session_state:
+    st.session_state.input_manual = ""   # ← FIX agregado
 
 def actualizar_manual():
     st.session_state.modo = "manual"
     st.session_state.ultima_funcion = st.session_state.input_manual
 
-
+# =================================================================
+# INPUT MANUAL (SIN ERROR)
+# =================================================================
 entrada_manual = st.sidebar.text_input(
     "Escribe una función de z",
-    st.session_state.ultima_funcion,
-    key="input_manual",
+    key="input_manual",           # ← NO valor por defecto → NO error
     on_change=actualizar_manual,
     placeholder="ejemplo z**z"
 )
@@ -193,7 +198,6 @@ entrada = st.session_state.ultima_funcion
 color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "twilight", "rainbow", "turbo"])
 resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
 
-# ⬇️⬇️ **AQUÍ AGREGO LO QUE PEDISTE: CHECKBOX PARA GRAFICA 3D** ⬇️⬇️
 activar_3d = st.sidebar.checkbox("Mostrar gráfica 3D")
 
 # =================================================================
@@ -352,7 +356,7 @@ st.markdown(f"""
 plot_phase(entrada, resolucion, ceros, polos)
 
 # =================================================================
-# ⬇️⬇️ **AQUÍ APARECE LA GRAFICA 3D** ⬇️⬇️
+# GRÁFICA 3D
 # =================================================================
 if activar_3d:
 
