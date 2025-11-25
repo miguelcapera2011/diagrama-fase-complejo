@@ -289,7 +289,7 @@ def plot_phase(expr, N, ceros, polos):
     ax.imshow(phase, extent=(-LIM, LIM, -LIM, LIM), cmap=color_map, alpha=0.96)
 
     # Título dentro de la imagen
-    ax.set_title(f"Diagrama de Fase — f(z) = {expr}", fontsize=14, pad=12)
+    ax.set_title(f" f(z) = {expr}", fontsize=14, pad=12)
 
     # Grillas
     ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
