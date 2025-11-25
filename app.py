@@ -1,4 +1,3 @@
-solo coloque un checkbox debajo de rsolucion de grafico y al seleccionarlo que aparezca respectivamente debajo de el dagrama de fase,su grafica en 3d,con polo,como relieves y su color segun la app y tambien los ceros como huecos.  nada mas cambie,deje todo como esta porfavor,este es el codigo  # LIBRERIAS
 # =================================================================
 import streamlit as st
 import numpy as np
