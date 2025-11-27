@@ -1,5 +1,5 @@
 
-# =================================================================
+
 # LIBRERÍAS
 # =================================================================
 import streamlit as st
@@ -9,7 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import sympy as sp
 import io
 
-# =================================================================
+
 # CONFIGURACIÓN DE PÁGINA
 # =================================================================
 st.set_page_config(
@@ -17,7 +17,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# =================================================================
+
 # FONDO TIPO GEOGEBRA + SIDEBAR ANCHO + ICONO HOME
 # =================================================================
 st.markdown("""
@@ -55,7 +55,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# =================================================================
+
 # TÍTULO PRINCIPAL SUPERIOR
 # =================================================================
 st.markdown("""
@@ -103,7 +103,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# =================================================================
+
 # SIDEBAR — ICONO + VARIABLE COMPLEJA
 # =================================================================
 st.sidebar.markdown("""
@@ -139,7 +139,6 @@ entrada_manual = st.sidebar.text_input(
     placeholder="ejemplo z**z"
 )
 
-# =================================================================
 # SELECTOR DE FUNCIONES
 # =================================================================
 st.sidebar.markdown("<br><b>Elegir función </b>", unsafe_allow_html=True)
@@ -184,12 +183,12 @@ st.sidebar.selectbox(
     on_change=actualizar_lista
 )
 
-# =================================================================
+
 #  convertir todo a minúsculas
 # =================================================================
 entrada = st.session_state.ultima_funcion.lower()
 
-# =================================================================
+
 # OPCIONES
 # =================================================================
 color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "twilight", "rainbow", "turbo"])
@@ -197,7 +196,6 @@ resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
 
 activar_3d = st.sidebar.checkbox("Mostrar Gráfica 3D")
 
-# =================================================================
 # FUNCIÓN PRINCIPAL f(z)
 # =================================================================
 def f(z, expr):
@@ -209,7 +207,7 @@ def f(z, expr):
     except Exception as e:
         raise ValueError(f"Error al interpretar la función: {e}")
 
-# =================================================================
+
 # ANALIZAR
 # =================================================================
 def analizar_funcion(expr):
@@ -246,7 +244,7 @@ def analizar_funcion(expr):
 
     return tipo, ceros, polos
 
-# =================================================================
+
 # MOSTRAR INICIO
 # =================================================================
 if entrada.strip() == "":
@@ -277,7 +275,6 @@ st.markdown(f"""
 # ---- AÑADIDO: espacio entre el bloque de texto y la imagen ----
 st.markdown("<div style='margin-top:25px;'></div>", unsafe_allow_html=True)
 
-# =================================================================
 # DIAGRAMA DE FASE — con título dentro y etiquetas de ceros/polos
 # =================================================================
 def plot_phase(expr, N, ceros, polos):
@@ -347,7 +344,7 @@ st.download_button("Descargar Diagrama de Fase", buf1.getvalue(), "diagrama_fase
 
 st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
 
-# =================================================================
+
 # GRÁFICA 3D
 # =================================================================
 if activar_3d:
