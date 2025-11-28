@@ -1,214 +1,481 @@
+# LIBRERÍAS
+# =================================================================
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
+import sympy as sp
 import io
 
-# ===============================================================
-# 1. Configuración de página
-# ===============================================================
+
+# CONFIGURACIÓN DE PÁGINA
+# =================================================================
 st.set_page_config(
-    page_title="Variable Compleja | Miguel",
+    page_title="Diagrama de fase",
     layout="wide"
 )
 
-st.markdown("<h1 style='text-align:center;'>🧩 Variable Compleja – Diagramas y Arte</h1>", unsafe_allow_html=True)
-st.write("Este programa calcula módulo, fase, derivadas, diagramas de flujo, fractales y arte basado en f(z).")
+
+# FONDO TIPO GEOGEBRA + SIDEBAR ANCHO + ICONO HOME
+# =================================================================
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: white;
+        background-image:
+            linear-gradient(#e5e5e5 1px, transparent 1px),
+            linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+        background-size: 25px 25px;
+    }
+
+    section[data-testid="stSidebar"] {
+        width: 307px !important;
+    }
+
+    .home-icon {
+        width: 22px;
+        cursor: pointer;
+        margin-bottom: 8px;
+    }
+    .home-icon:hover {
+        transform: scale(1.15);
+    }
+
+   .welcome-text {
+    font-size: 52px;
+    color: #003366;
+    font-weight: 900;
+    font-family: 'Segoe UI', sans-serif;
+    text-align: center;
+    margin-top: 51px;
+    text-shadow: 2px 2px 4px #bcd2ff;
+}
+    </style>
+""", unsafe_allow_html=True)
 
 
-# ===============================================================
-# 2. Entrada de la función
-# ===============================================================
-st.sidebar.header("Función")
-entrada = st.sidebar.text_input("Ingresa la función f(z):", "z**2 + 1")
+# TÍTULO PRINCIPAL SUPERIOR
+# =================================================================
+st.markdown("""
+    <style>
+        .title-container {
+            text-align: center;
+            margin-top: -60px;
+            margin-bottom: 8px;
+        }
+        .main-title {
+            font-size: 39px;
+            font-weight: 800;
+            color: #1a1a1a;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .subtitle {
+            font-size: 17px;
+            font-weight: 300;
+            color: #444444;
+            margin-top: 7px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .logo-title {
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:6px;
+            margin-bottom:10px;
+        }
+        .logo-title img {
+            width:45px;
+            height:45px;
+        }
+        .logo-title span {
+            font-size:18px;
+            font-weight:700;
+            color:#003366;
+            font-family:'Segoe UI', sans-serif;
+        }
+    </style>
+
+    <div class="title-container">
+        <div class="main-title">Diagrama De Fase</div>
+        <div class="subtitle">Inspirado en <i>Visual Complex Functions</i> — Wegert (2012)</div>
+    </div>
+""", unsafe_allow_html=True)
 
 
-# ===============================================================
-# 3. Definición segura de f(z)
-# ===============================================================
-def f(z, expr):
-    try:
-        return eval(expr, {"z": z, "np": np})
-    except:
-        return np.nan
+# SIDEBAR — ICONO + VARIABLE COMPLEJA
+# =================================================================
+st.sidebar.markdown("""
+<a href="/" target="_self">
+    <img class="home-icon" src="https://cdn-icons-png.flaticon.com/128/54/54759.png">
+</a>
+
+<div class="logo-title">
+    <img src="https://content.gnoss.ws/imagenes/Usuarios/ImagenesCKEditor/c513da9b-6419-42be-82ef-3c448a0b5a79/a65dee0c-c70f-4ce1-b363-cfc36a980918.png">
+    <span>VARIABLE COMPLEJA</span>
+</div>
+""", unsafe_allow_html=True)
+
+st.sidebar.markdown("<h4 style='font-size:16px;'>Configuración</h4>", unsafe_allow_html=True)
+
+# Estado inicial sin conflicto en Session State
+if "modo" not in st.session_state:
+    st.session_state.modo = "manual"
+if "ultima_funcion" not in st.session_state:
+    st.session_state.ultima_funcion = ""
+if "input_manual" not in st.session_state:
+    st.session_state.input_manual = ""
+
+def actualizar_manual():
+    st.session_state.modo = "manual"
+    st.session_state.ultima_funcion = st.session_state.input_manual
+
+entrada_manual = st.sidebar.text_input(
+    "Escribe una función de z (puedes usar 't' como parámetro opcional)",
+    value=st.session_state.input_manual,
+    key="input_manual",
+    on_change=actualizar_manual,
+    placeholder="ejemplo z**2 + t*z"
+)
+
+# SELECTOR DE FUNCIONES
+# =================================================================
+st.sidebar.markdown("<br><b>Elegir función </b>", unsafe_allow_html=True)
+
+funciones_libro = {
+    "Selecciona una función": "",
+    # ---- FUNCIONES ORIGINALES ----
+    "z": "z",
+    "z²": "z**2",
+    "z³ - 1": "z**3 - 1",
+    "(z+1)(z-2)": "(z+1)*(z-2)",
+    "1/z": "1/z",
+    "(z³-1)/(z²+1)": "(z**3 - 1)/(z**2 + 1)",
+    "exp(z)": "exp(z)",
+    "exp(-2π/z)": "exp(-2*pi/z)",
+    "sin(z)": "sin(z)",
+    "cos(z)": "cos(z)",
+    "tan(z)": "tan(z)",
+    "log(z)": "log(z)",
+    "√z": "sqrt(z)",
+    "z^(1/3)": "z**(1/3)",
+    "(z - 1)/(z + 1)": "(z - 1)/(z + 1)",
+    "(z⁵ - 1)/(z² - 1)": "(z**5 - 1)/(z**2 - 1)",
+    "1/(z² + 1)": "1/(z**2 + 1)",
+    "(z² + z + 1)/(z² - z + 1)": "(z**2 + z + 1)/(z**2 - z + 1)"  
+}
 
 
-# ===============================================================
-# 4. Opciones de color
-# ===============================================================
-color_map = st.sidebar.selectbox(
-    "Mapa de color:",
-    ["viridis", "plasma", "inferno", "magma", "cividis", "turbo", "twilight"]
+def actualizar_lista():
+    st.session_state.modo = "lista"
+    seleccion = funciones_libro[st.session_state.select_libro]
+    if seleccion != "":
+        st.session_state.ultima_funcion = seleccion
+        st.session_state.input_manual = ""
+
+st.sidebar.selectbox(
+    "Seleccionar función del libro",
+    list(funciones_libro.keys()),
+    index=0,
+    key="select_libro",
+    label_visibility="collapsed",
+    on_change=actualizar_lista
 )
 
 
-# ===============================================================
-# 5. Área de trabajo (x,y)
-# ===============================================================
-x_min, x_max = st.sidebar.slider("Rango X:", -5.0, 5.0, (-2.0, 2.0))
-y_min, y_max = st.sidebar.slider("Rango Y:", -5.0, 5.0, (-2.0, 2.0))
-RES = st.sidebar.slider("Resolución:", 100, 800, 400)
-
-x = np.linspace(x_min, x_max, RES)
-y = np.linspace(y_min, y_max, RES)
-X, Y = np.meshgrid(x, y)
-Z = X + 1j*Y
+#  convertir todo a minúsculas
+# =================================================================
+entrada = st.session_state.ultima_funcion.lower()
 
 
-# ===============================================================
-# 6. Cálculo de f(z)
-# ===============================================================
-W = f(Z, entrada)
-W = np.where(np.isfinite(W), W, np.nan + 1j*np.nan)
+# OPCIONES
+# =================================================================
+color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "twilight", "rainbow", "turbo"])
+resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
+
+activar_3d = st.sidebar.checkbox("Mostrar Gráfica 3D")
+
+# --- Nuevo: slider para parametro t ---
+t = st.sidebar.slider("Parámetro t", -5.0, 5.0, 0.0, 0.1)
 
 
-# ===============================================================
-# 7. Magnitud |f(z)|
-# ===============================================================
-st.subheader("📌 Módulo |f(z)|")
+# FUNCIÓN PRINCIPAL f(z, t)
+# =================================================================
+def f(z, expr, t_val=0.0):
+    """
+    Evalúa la expresión sympy/lambdify en (z, t_val).
+    Si la expresión no contiene t, lambdify seguirá funcionando (t será argumento extra ignorado).
+    En caso de error se devuelve un arreglo de NaNs complejos del tamaño de z.
+    """
+    try:
+        # Definir símbolos
+        z_sym, t_sym = sp.symbols('z t')
+        # Parsear la expresión
+        f_sym = sp.sympify(expr)
+        # Crear función lambdified que acepte (z, t)
+        f_lamb = sp.lambdify((z_sym, t_sym), f_sym, modules=['numpy'])
+        # Ejecutar
+        return f_lamb(z, t_val)
+    except Exception:
+        # Intento de fallback: intentar solo con z (si la expresión no admite t)
+        try:
+            z_sym = sp.Symbol('z')
+            f_sym = sp.sympify(expr)
+            f_lamb = sp.lambdify(z_sym, f_sym, modules=['numpy'])
+            return f_lamb(z)
+        except Exception:
+            # Devolver NaNs complejos con la forma de z
+            try:
+                nan_arr = np.full_like(z, fill_value=np.nan, dtype=np.complex128)
+                return nan_arr
+            except Exception:
+                return np.nan
 
-fig1, ax1 = plt.subplots(figsize=(6, 6))
-modulo = np.abs(W)
-c = ax1.imshow(modulo, cmap=color_map, extent=[x_min,x_max,y_min,y_max])
-plt.colorbar(c, ax=ax1)
-ax1.set_title("|f(z)|")
-st.pyplot(fig1)
+
+# ANALIZAR
+# =================================================================
+def analizar_funcion(expr):
+    if expr.strip() == "":
+        return "sin función", [], []
+
+    z = sp.Symbol('z')
+    try:
+        f_expr = sp.sympify(expr)
+    except:
+        return "inválida", [], []
+
+    tipo = "desconocida"
+    if f_expr.is_polynomial():
+        tipo = f"polinómica de grado {sp.degree(f_expr)}"
+    elif sp.denom(f_expr) != 1:
+        tipo = "racional"
+    elif "exp" in str(f_expr):
+        tipo = "exponencial"
+    elif "sin" in str(f_expr) or "cos" in str(f_expr):
+        tipo = "trigonométrica"
+    elif "log" in str(f_expr):
+        tipo = "logarítmica"
+
+    try:
+        ceros = sp.solve(sp.Eq(f_expr, 0), z)
+    except:
+        ceros = []
+
+    try:
+        polos = sp.solve(sp.Eq(sp.denom(f_expr), 0), z)
+    except:
+        polos = []
+
+    return tipo, ceros, polos
+
+
+# MOSTRAR INICIO
+# =================================================================
+if entrada.strip() == "":
+    col1, col2 = st.columns([1, 1])
+    
+    st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
+    with col1:
+        st.image(
+            "https://www.software-shop.com/images/productos/maple/img2023-1.png",
+            width=430 , 
+        )
+
+    with col2:
+        st.markdown("<div class='welcome-text'>¡Bienvenidos!</div>", unsafe_allow_html=True)
+
+    st.stop()
+
+tipo, ceros, polos = analizar_funcion(entrada)
+
+st.markdown(f"""
+<div style='display:flex; gap:25px; font-size:17px; margin-top:10px;'>
+    <div><b>Tipo:</b> {tipo}</div>
+    <div><b>Ceros:</b> {ceros}</div>
+    <div><b>Polos:</b> {polos}</div>
+</div>
+""", unsafe_allow_html=True)
+
+# ---- AÑADIDO: espacio entre el bloque de texto y la imagen ----
+st.markdown("<div style='margin-top:25px;'></div>", unsafe_allow_html=True)
+
+# DIAGRAMA DE FASE — con título dentro y etiquetas de ceros/polos
+# =================================================================
+def plot_phase(expr, N, ceros, polos, t_val=0.0):
+
+    LIM = 6 if expr in ["sin(z)", "cos(z)", "tan(z)"] else 2
+
+    x = np.linspace(-LIM, LIM, N)
+    y = np.linspace(-LIM, LIM, N)
+    X, Y = np.meshgrid(x, y)
+    Z = X + 1j * Y
+
+    W = f(Z, expr, t_val)
+    W = np.asarray(W, dtype=np.complex128)
+    W = np.where(np.isfinite(W), W, np.nan + 1j*np.nan)
+    phase = np.angle(W)
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+
+    ax.imshow(phase, extent=(-LIM, LIM, -LIM, LIM), cmap=color_map, alpha=0.96)
+
+    # Título dentro
+    ax.set_title(f" f(z) = {expr}    (t = {t_val})", fontsize=14, pad=12)
+
+    ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
+    ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
+    ax.grid(which='minor', color='#ffffff', linewidth=0.03)
+
+    ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/2))
+    ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/2))
+    ax.grid(which='major', color='#f8f8f8', linewidth=0.08)
+
+    ax.axhline(0, color='#bfbfbf', linewidth=0.6)
+    ax.axvline(0, color='#bfbfbf', linewidth=0.6)
+
+    ax.set_xlabel("Re(z)", fontsize=12)
+    ax.set_ylabel("Im(z)", fontsize=12)
+
+    # Ceros con etiqueta
+    for c in ceros:
+        try:
+            xr = float(sp.re(c))
+            yr = float(sp.im(c))
+            ax.scatter(xr, yr, color="blue", s=40)
+            ax.text(xr + 0.12, yr + 0.08, "Cero", color="blue", fontsize=10)
+        except Exception:
+            pass
+
+    # Polos con etiqueta
+    for p in polos:
+        try:
+            xr = float(sp.re(p))
+            yr = float(sp.im(p))
+            ax.scatter(xr, yr, color="red", s=40)
+            ax.text(xr + 0.12, yr + 0.08, "Polo", color="red", fontsize=10)
+        except Exception:
+            pass
+
+    return fig
+
+fig_phase = plot_phase(entrada, resolucion, ceros, polos, t_val=t)
+st.pyplot(fig_phase)
 
 buf1 = io.BytesIO()
-fig1.savefig(buf1, format="png", dpi=300)
-st.download_button("Descargar módulo", buf1.getvalue(), "modulo.png", "image/png")
+fig_phase.savefig(buf1, format="png", dpi=300)
+st.download_button("Descargar Diagrama de Fase", buf1.getvalue(), "diagrama_fase.png", "image/png")
+
+st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
 
 
 # ===============================================================
-# 8. Gráfica 3D
+# OPCIÓN EXTRA: CAMPO DE DEFORMACIÓN (MALLA DEFORMADA POR f(z, t))
 # ===============================================================
-st.subheader("📌 Gráfica 3D de |f(z)|")
+st.markdown("<hr>", unsafe_allow_html=True)
 
-fig3d = plt.figure(figsize=(8, 6))
-ax3d = fig3d.add_subplot(111, projection='3d')
-ax3d.plot_surface(X, Y, modulo, cmap=color_map)
-ax3d.set_title("Superficie 3D")
-st.pyplot(fig3d)
+activar_malla = st.sidebar.checkbox("Mostrar Deformación de la Malla (f(z, t))")
 
-buf3d = io.BytesIO()
-fig3d.savefig(buf3d, format="png", dpi=300)
-st.download_button("Descargar 3D", buf3d.getvalue(), "superficie3d.png", "image/png")
+if activar_malla:
+
+    st.markdown(
+        "<h4 style='text-align:center; margin-top:20px;'>"
+        "Deformación de la Malla bajo f(z, t)"
+        "</h4>",
+        unsafe_allow_html=True
+    )
+
+    LIM = 2
+    pasos = 12  # número de líneas de la malla (puedes ajustar con cuidado)
+
+    x_m = np.linspace(-LIM, LIM, pasos)
+    y_m = np.linspace(-LIM, LIM, pasos)
+
+    # Figura
+    fig_m = plt.figure(figsize=(7, 7))
+    axm = fig_m.add_subplot(111)
+
+    # Dibujar la malla transformada por f(z,t)
+    for xx in x_m:
+        Z_line = xx + 1j * np.linspace(-LIM, LIM, 400)
+        W_line = f(Z_line, entrada, t)
+        # si falla la evaluación, W_line puede ser escalar o NaN: proteger
+        try:
+            axm.plot(np.real(W_line), np.imag(W_line), color="#777777", linewidth=0.8, alpha=0.9)
+        except Exception:
+            pass
+
+    for yy in y_m:
+        Z_line = np.linspace(-LIM, LIM, 400) + 1j * yy
+        W_line = f(Z_line, entrada, t)
+        try:
+            axm.plot(np.real(W_line), np.imag(W_line), color="#777777", linewidth=0.8, alpha=0.9)
+        except Exception:
+            pass
+
+    axm.set_title(f"Imagen de la malla del plano complejo bajo f(z, t) (t = {t})")
+    axm.set_xlabel("Re(f(z))")
+    axm.set_ylabel("Im(f(z))")
+    axm.set_aspect("equal", "box")
+
+    st.pyplot(fig_m)
+
+    buf_m = io.BytesIO()
+    fig_m.savefig(buf_m, format="png", dpi=300)
+    st.download_button("Descargar Deformación", buf_m.getvalue(), "malla_deformada.png", "image/png")
 
 
-# ===============================================================
-# 9. OPCIÓN DE ARTE / FRACTALES
-# ===============================================================
-activar_arte = st.sidebar.checkbox("🎨 Generar Arte / Fractal")
+# GRÁFICA 3D
+# =================================================================
+if activar_3d:
 
-if activar_arte:
-    st.subheader("🎨 Arte desde f(z)")
-    tipo_arte = st.sidebar.selectbox("Tipo de Arte:", [
-        "Fractal de Julia",
-        "Fractal de Mandelbrot",
-        "Estilo Van Gogh (fase)"
-    ])
+    st.markdown("<div style='margin-top:30px'></div>", unsafe_allow_html=True)
 
-    # Malla usada para arte
-    RESA = 600
-    xA = np.linspace(-2, 2, RESA)
-    yA = np.linspace(-2, 2, RESA)
-    XA, YA = np.meshgrid(xA, yA)
-    ZA = XA + 1j*YA
+    LIM = 6 if entrada in ["sin(z)", "cos(z)", "tan(z)"] else 2
 
-    # ===========================================================
-    # FRACTAL DE JULIA
-    # ===========================================================
-    if tipo_arte == "Fractal de Julia":
-        c = np.nanmean(f(ZA, entrada))
-        Zj = ZA.copy()
-        escape = np.zeros_like(Zj, dtype=int)
-        max_iter = 180
+    x3 = np.linspace(-LIM, LIM, 150)
+    y3 = np.linspace(-LIM, LIM, 150)
+    X3, Y3 = np.meshgrid(x3, y3)
+    Z3 = X3 + 1j * Y3
 
-        for i in range(max_iter):
-            Zj = Zj*Zj + c
-            mask = (escape == 0) & (np.abs(Zj) > 2.5)
-            escape[mask] = i
+    W3 = f(Z3, entrada, t)
+    W3 = np.asarray(W3, dtype=np.complex128)
+    W3 = np.where(np.isfinite(W3), W3, np.nan + 1j*np.nan)
 
-        figA, axA = plt.subplots(figsize=(8, 8))
-        axA.imshow(escape, cmap=color_map, extent=(-2,2,-2,2))
-        axA.set_title("Fractal de Julia")
-        axA.axis("off")
-        st.pyplot(figA)
+    A3 = np.abs(W3)
 
-        bufA = io.BytesIO()
-        figA.savefig(bufA, format="png", dpi=300)
-        st.download_button("Descargar Julia", bufA.getvalue(), "julia.png", "image/png")
+    fig3 = plt.figure(figsize=(8, 7))
+    ax3 = fig3.add_subplot(111, projection="3d")
 
-    # ===========================================================
-    # MANDELBROT
-    # ===========================================================
-    elif tipo_arte == "Fractal de Mandelbrot":
-        C = ZA
-        Zm = np.zeros_like(C)
-        escape = np.zeros_like(C, dtype=int)
-        max_iter = 200
+    ax3.plot_surface(
+        X3, Y3, A3,
+        cmap=color_map,
+        rstride=1,
+        cstride=1,
+        antialiased=True,
+        alpha=0.95
+    )
 
-        for i in range(max_iter):
-            Zm = Zm*Zm + C
-            mask = (escape == 0) & (np.abs(Zm) > 2)
-            escape[mask] = i
+    for c in ceros:
+        try:
+            ax3.scatter(float(sp.re(c)), float(sp.im(c)), 0, color="blue", s=50)
+        except:
+            pass
 
-        figA, axA = plt.subplots(figsize=(8, 8))
-        axA.imshow(escape, cmap=color_map, extent=(-2,2,-2,2))
-        axA.set_title("Conjunto de Mandelbrot")
-        axA.axis("off")
-        st.pyplot(figA)
+    for p in polos:
+        try:
+            ax3.scatter(float(sp.re(p)), float(sp.im(p)), np.nanmax(A3), color="red", s=60)
+        except:
+            pass
 
-        bufA = io.BytesIO()
-        figA.savefig(bufA, format="png", dpi=300)
-        st.download_button("Descargar Mandelbrot", bufA.getvalue(), "mandelbrot.png", "image/png")
+    ax3.set_xlabel("Re(z)")
+    ax3.set_ylabel("Im(z)")
+    ax3.set_zlabel("|f(z)|")
 
-    # ===========================================================
-    # ARTE VAN GOGH (SIN SCIPY)
-    # ===========================================================
-    elif tipo_arte == "Estilo Van Gogh (fase)":
+    # TÍTULO nuevo dentro
+    ax3.set_title(f"Gráfica 3D de |f(z)|    (t = {t})", fontsize=10, pad=8)
 
-        # Fase de f(z)
-        W2 = f(ZA, entrada)
-        W2 = np.where(np.isfinite(W2), W2, np.nan + 1j*np.nan)
-        fase = np.angle(W2)
+    st.pyplot(fig3)
 
-        # ---------------------------
-        # Filtro Gaussiano CASERO
-        # ---------------------------
-        def gaussian_kernel(size=15, sigma=3):
-            ax = np.linspace(-(size-1)/2., (size-1)/2., size)
-            xx, yy = np.meshgrid(ax, ax)
-            kernel = np.exp(-(xx**2 + yy**2) / (2.*sigma**2))
-            return kernel / np.sum(kernel)
-
-        kernel = gaussian_kernel(15, 3)
-
-        def convolve(img, kernel):
-            kh, kw = kernel.shape
-            ih, iw = img.shape
-            pad_h, pad_w = kh//2, kw//2
-            img_pad = np.pad(img, ((pad_h, pad_h),(pad_w,pad_w)), mode='reflect')
-            out = np.zeros_like(img)
-
-            for i in range(ih):
-                for j in range(iw):
-                    region = img_pad[i:i+kh, j:j+kw]
-                    out[i, j] = np.sum(region * kernel)
-            return out
-
-        suavizado = convolve(fase, kernel)
-
-        # Turbulencia artística
-        arte = suavizado + 0.4*np.sin(10*XA) + 0.4*np.cos(10*YA)
-
-        figA, axA = plt.subplots(figsize=(8, 8))
-        axA.imshow(arte, cmap="twilight", extent=(-2,2,-2,2))
-        axA.set_title("Arte Estilo Van Gogh")
-        axA.axis("off")
-        st.pyplot(figA)
-
-        bufA = io.BytesIO()
-        figA.savefig(bufA, format="png", dpi=300)
-        st.download_button("Descargar Van Gogh", bufA.getvalue(), "vangogh.png", "image/png")
+    buf2 = io.BytesIO()
+    fig3.savefig(buf2, format="png", dpi=300)
+    st.download_button("Descargar Gráfica 3D", buf2.getvalue(), "grafica_3d.png", "image/png")
