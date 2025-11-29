@@ -190,6 +190,7 @@ resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
 
 activar_3d = st.sidebar.checkbox("Mostrar Gráfica 3D")
 
+
 # FUNCIÓN PRINCIPAL f(z)
 # =================================================================
 def f(z, expr):
@@ -404,7 +405,8 @@ if activar_3d:
             y=YI,
             z=ZI,
             colorscale=color_map,
-            opacity=0.96
+            opacity=0.96,
+            showscale=False   # 🔥 QUITA LA BARRA LATERAL DE COLOR
         )]
     )
 
