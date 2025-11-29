@@ -10,85 +10,335 @@ import plotly.graph_objects as go
 
 
 # CONFIGURACIÓN DE PÁGINA
-# =================================================================
+# ++++++++++++++++++++++++++++++++++++++
 st.set_page_config(
     page_title="Diagrama de fase",
-    layout="wide",
+    layout="wide"
 )
 
-st.title("Diagrama de fase de funciones complejas")
 
-# ENTRADA DE FUNCIÓN
-# =================================================================
-entrada = st.text_input("Ingrese la función f(z):", "z**2 + 1")
+# FONDO TIPO GEOGEBRA + SIDEBAR ANCHO + ICONO HOME
+# +++++++++++++++++++++++++++++++++++++++++++++++++
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: white;
+        background-image:
+            linear-gradient(#e5e5e5 1px, transparent 1px),
+            linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+        background-size: 25px 25px;
+    }
 
-# PARÁMETROS
-# =================================================================
-resolucion = st.slider("Resolución", 100, 600, 300)
-color_map = st.selectbox("Mapa de color", ["plasma", "viridis", "inferno", "magma", "cividis"])
-activar_3d = st.checkbox("Activar gráfica 3D interactiva", True)
+    section[data-testid="stSidebar"] {
+        width: 307px !important;
+    }
 
-# VARIABLES COMPLEJAS
-# =================================================================
-x = np.linspace(-3, 3, resolucion)
-y = np.linspace(-3, 3, resolucion)
-X, Y = np.meshgrid(x, y)
-Z = X + 1j * Y
+    .home-icon {
+        width: 22px;
+        cursor: pointer;
+        margin-bottom: 8px;
+    }
+    .home-icon:hover {
+        transform: scale(1.15);
+    }
 
-z = sp.symbols('z')
-try:
-    f_expr = sp.sympify(entrada)
-except:
-    st.error("Error al interpretar la función.")
+   .welcome-text {
+    font-size: 52px;
+    color: #003366;
+    font-weight: 900;
+    font-family: 'Segoe UI', sans-serif;
+    text-align: center;
+    margin-top: 51px;
+    text-shadow: 2px 2px 4px #bcd2ff;
+}
+    </style>
+""", unsafe_allow_html=True)
+
+
+# TÍTULO PRINCIPAL SUPERIOR
+# ++++++++++++++++++++++++++++++++++++++++++++++++++
+st.markdown("""
+    <style>
+        .title-container {
+            text-align: center;
+            margin-top: -60px;
+            margin-bottom: 8px;
+        }
+        .main-title {
+            font-size: 39px;
+            font-weight: 800;
+            color: #1a1a1a;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .subtitle {
+            font-size: 17px;
+            font-weight: 300;
+            color: #444444;
+            margin-top: 7px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .logo-title {
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:6px;
+            margin-bottom:10px;
+        }
+        .logo-title img {
+            width:45px;
+            height:45px;
+        }
+        .logo-title span {
+            font-size:18px;
+            font-weight:700;
+            color:#003366;
+            font-family:'Segoe UI', sans-serif;
+        }
+    </style>
+
+    <div class="title-container">
+        <div class="main-title">Diagrama De Fase</div>
+        <div class="subtitle">Inspirado en <i>Visual Complex Functions</i> — Wegert (2012)</div>
+    </div>
+""", unsafe_allow_html=True)
+
+
+# SIDEBAR — ICONO + VARIABLE COMPLEJA
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+st.sidebar.markdown("""
+<a href="/" target="_self">
+    <img class="home-icon" src="https://cdn-icons-png.flaticon.com/128/54/54759.png">
+</a>
+
+<div class="logo-title">
+    <img src="https://content.gnoss.ws/imagenes/Usuarios/ImagenesCKEditor/c513da9b-6419-42be-82ef-3c448a0b5a79/a65dee0c-c70f-4ce1-b363-cfc36a980918.png">
+    <span>VARIABLE COMPLEJA</span>
+</div>
+""", unsafe_allow_html=True)
+
+st.sidebar.markdown("<h4 style='font-size:16px;'>Configuración</h4>", unsafe_allow_html=True)
+
+if "modo" not in st.session_state:
+    st.session_state.modo = "manual"
+if "ultima_funcion" not in st.session_state:
+    st.session_state.ultima_funcion = ""
+if "input_manual" not in st.session_state:
+    st.session_state.input_manual = ""
+
+def actualizar_manual():
+    st.session_state.modo = "manual"
+    st.session_state.ultima_funcion = st.session_state.input_manual
+
+entrada_manual = st.sidebar.text_input(
+    "Escribe una función de z",
+    value=st.session_state.input_manual,
+    key="input_manual",
+    on_change=actualizar_manual,
+    placeholder="ejemplo z**z"
+)
+
+
+# SELECTOR DE FUNCIONES
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++
+st.sidebar.markdown("<br><b>Elegir función </b>", unsafe_allow_html=True)
+
+funciones_libro = {
+    "Selecciona una función": "",
+    "z": "z",
+    "z²": "z**2",
+    "z³ - 1": "z**3 - 1",
+    "(z+1)(z-2)": "(z+1)*(z-2)",
+    "1/z": "1/z",
+    "(z³-1)/(z²+1)": "(z**3 - 1)/(z**2 + 1)",
+    "exp(z)": "exp(z)",
+    "exp(-2π/z)": "exp(-2*pi/z)",
+    "sin(z)": "sin(z)",
+    "cos(z)": "cos(z)",
+    "tan(z)": "tan(z)",
+    "log(z)": "log(z)",
+    "√z": "sqrt(z)",
+    "z^(1/3)": "z**(1/3)",
+    "(z - 1)/(z + 1)": "(z - 1)/(z + 1)",
+    "(z⁵ - 1)/(z² - 1)": "(z**5 - 1)/(z**2 - 1)",
+    "1/(z² + 1)": "1/(z**2 + 1)",
+    "(z² + z + 1)/(z² - z + 1)": "(z**2 + z + 1)/(z**2 - z + 1)"
+}
+
+def actualizar_lista():
+    st.session_state.modo = "lista"
+    seleccion = funciones_libro[st.session_state.select_libro]
+    if seleccion != "":
+        st.session_state.ultima_funcion = seleccion
+        st.session_state.input_manual = ""
+
+st.sidebar.selectbox(
+    "Seleccionar función del libro",
+    list(funciones_libro.keys()),
+    index=0,
+    key="select_libro",
+    label_visibility="collapsed",
+    on_change=actualizar_lista
+)
+
+entrada = st.session_state.ultima_funcion.lower()
+
+
+# OPCIONES
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+color_map = st.sidebar.selectbox("Paleta de color", ["hsv", "twilight", "rainbow", "turbo"])
+resolucion = st.sidebar.slider("Resolución del gráfico", 300, 800, 500)
+
+activar_3d = st.sidebar.checkbox("Mostrar Gráfica 3D")
+
+
+# FUNCIÓN PRINCIPAL f(z)
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+def f(z, expr):
+    try:
+        z_sym = sp.Symbol('z')
+        f_sym = sp.sympify(expr)
+        f_lamb = sp.lambdify(z_sym, f_sym, modules=['numpy'])
+        return f_lamb(z)
+    except Exception as e:
+        raise ValueError(f"Error al interpretar la función: {e}")
+
+
+# ANALIZAR
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++
+def analizar_funcion(expr):
+    if expr.strip() == "":
+        return "sin función", [], []
+
+    z = sp.Symbol('z')
+    try:
+        f_expr = sp.sympify(expr)
+    except:
+        return "inválida", [], []
+
+    tipo = "desconocida"
+    if f_expr.is_polynomial():
+        tipo = f"polinómica de grado {sp.degree(f_expr)}"
+    elif sp.denom(f_expr) != 1:
+        tipo = "racional"
+    elif "exp" in str(f_expr):
+        tipo = "exponencial"
+    elif "sin" in str(f_expr) or "cos" in str(f_expr):
+        tipo = "trigonométrica"
+    elif "log" in str(f_expr):
+        tipo = "logarítmica"
+
+    try:
+        ceros = sp.solve(sp.Eq(f_expr, 0), z)
+    except:
+        ceros = []
+
+    try:
+        polos = sp.solve(sp.Eq(sp.denom(f_expr), 0), z)
+    except:
+        polos = []
+
+    return tipo, ceros, polos
+
+
+# MOSTRAR INICIO
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+if entrada.strip() == "":
+    col1, col2 = st.columns([1, 1])
+    
+    st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
+    with col1:
+        st.image("https://www.software-shop.com/images/productos/maple/img2023-1.png", width=430)
+
+    with col2:
+        st.markdown("<div class='welcome-text'>¡Bienvenidos!</div>", unsafe_allow_html=True)
+
     st.stop()
 
 
-def f(z_values, expression):
-    f_lambd = sp.lambdify(z, expression, 'numpy')
-    return f_lambd(z_values)
+tipo, ceros, polos = analizar_funcion(entrada)
+
+st.markdown(f"""
+<div style='display:flex; gap:25px; font-size:17px; margin-top:10px;'>
+    <div><b>Tipo:</b> {tipo}</div>
+    <div><b>Ceros:</b> {ceros}</div>
+    <div><b>Polos:</b> {polos}</div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<div style='margin-top:25px;'></div>", unsafe_allow_html=True)
 
 
-# CÁLCULO DEL DIAGRAMA DE FASE
-# =================================================================
-W = f(Z, f_expr)
-phase = np.angle(W)
+# DIAGRAMA DE FASE
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++
+def plot_phase(expr, N, ceros, polos):
 
-plt.figure(figsize=(7, 6))
-plt.imshow(phase, extent=[-3, 3, -3, 3], cmap=color_map)
-plt.title("Diagrama de fase", fontsize=20, color="#4A4A4A")
-plt.xlabel("Re(z)")
-plt.ylabel("Im(z)")
-plt.colorbar(label="Fase")
+    LIM = 6 if expr in ["sin(z)", "cos(z)", "tan(z)"] else 2
 
-buf = io.BytesIO()
-plt.savefig(buf, format="png")
-buf.seek(0)
+    x = np.linspace(-LIM, LIM, N)
+    y = np.linspace(-LIM, LIM, N)
+    X, Y = np.meshgrid(x, y)
+    Z = X + 1j * Y
 
-st.image(buf, caption="Diagrama de fase", use_container_width=True)
-plt.close()
+    W = f(Z, expr)
+    W = np.asarray(W, dtype=np.complex128)
+    W = np.where(np.isfinite(W), W, np.nan + 1j*np.nan)
+    phase = np.angle(W)
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+
+    ax.imshow(phase, extent=(-LIM, LIM, -LIM, LIM), cmap=color_map, alpha=0.96)
+    ax.set_title(f" f(z) = {expr}", fontsize=14, pad=12)
+
+    ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
+    ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
+    ax.grid(which='minor', color='#ffffff', linewidth=0.03)
+    ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/2))
+    ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/2))
+    ax.grid(which='major', color='#f8f8f8', linewidth=0.08)
+
+    ax.axhline(0, color='#bfbfbf', linewidth=0.6)
+    ax.axvline(0, color='#bfbfbf', linewidth=0.6)
+
+    ax.set_xlabel("Re(z)", fontsize=12)
+    ax.set_ylabel("Im(z)", fontsize=12)
+
+    for c in ceros:
+        try:
+            xr = float(sp.re(c))
+            yr = float(sp.im(c))
+            ax.scatter(xr, yr, color="blue", s=40)
+            ax.text(xr + 0.12, yr + 0.08, "Cero", color="blue", fontsize=10)
+        except:
+            pass
+
+    for p in polos:
+        try:
+            xr = float(sp.re(p))
+            yr = float(sp.im(p))
+            ax.scatter(xr, yr, color="red", s=40)
+            ax.text(xr + 0.12, yr + 0.08, "Polo", color="red", fontsize=10)
+        except:
+            pass
+
+    return fig
 
 
-# CÁLCULO DE CEROS Y POLOS
-# =================================================================
-try:
-    ceros = sp.nroots(f_expr)
-except:
-    ceros = []
+fig_phase = plot_phase(entrada, resolucion, ceros, polos)
+st.pyplot(fig_phase)
 
-try:
-    numerador, denominador = sp.fraction(f_expr)
-    polos = sp.nroots(denominador) if denominador != 1 else []
-except:
-    polos = []
+buf1 = io.BytesIO()
+fig_phase.savefig(buf1, format="png", dpi=300)
+st.download_button("Descargar Diagrama de Fase", buf1.getvalue(), "diagrama_fase.png", "image/png")
+
+st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
 
 
-# =================================================================
-# 🔥 GRÁFICA 3D INTERACTIVA (ÚNICA 3D, SIN MATPLOTLIB)
-# =================================================================
 
+
+#  GRÁFICA 3D INTERACTIVA 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 if activar_3d:
-
-    st.markdown("<div style='margin-top:30px'></div>", unsafe_allow_html=True)
 
     LIM = 6 if entrada in ["sin(z)", "cos(z)", "tan(z)"] else 2
 
@@ -97,73 +347,73 @@ if activar_3d:
     X3, Y3 = np.meshgrid(x3, y3)
     Z3 = X3 + 1j * Y3
 
-    W3 = f(Z3, f_expr)
-    W3 = np.asarray(W3, dtype=np.complex128)
+    W3 = f(Z3, entrada)
     W3 = np.where(np.isfinite(W3), W3, np.nan + 1j*np.nan)
-
     A3 = np.abs(W3)
 
-    fig_int = go.Figure()
+    fig_int = go.Figure(
+        data=[go.Surface(
+            x=X3,
+            y=Y3,
+            z=A3,
+            colorscale=color_map,
+            opacity=0.96,
+            showscale=False
+        )]
+    )
 
-    # SUPERFICIE
-    fig_int.add_trace(go.Surface(
-        x=X3,
-        y=Y3,
-        z=A3,
-        colorscale=color_map,
-        opacity=0.96,
-        showscale=False
-    ))
-
-    # CEROS AZULES
+    # ==== CEROS (azules) ====
     for c in ceros:
         try:
-            fig_int.add_trace(go.Scatter3d(
-                x=[float(sp.re(c))],
-                y=[float(sp.im(c))],
-                z=[0],
-                mode='markers',
-                marker=dict(size=6, color='blue'),
-                name="Cero"
-            ))
+            xr = float(sp.re(c))
+            yr = float(sp.im(c))
+            fig_int.add_trace(
+                go.Scatter3d(
+                    x=[xr], y=[yr], z=[0],
+                    mode='markers',
+                    marker=dict(size=6, color='blue'),
+                    showlegend=False   # 🔥 QUITA LOS ICONOS
+                )
+            )
         except:
             pass
 
-    # POLOS ROJOS
+    # ==== POLOS (rojos) ====
+    zmax = np.nanmax(A3)
+
     for p in polos:
         try:
-            fig_int.add_trace(go.Scatter3d(
-                x=[float(sp.re(p))],
-                y=[float(sp.im(p))],
-                z=[np.nanmax(A3)],
-                mode='markers',
-                marker=dict(size=7, color='red'),
-                name="Polo"
-            ))
+            xr = float(sp.re(p))
+            yr = float(sp.im(p))
+            fig_int.add_trace(
+                go.Scatter3d(
+                    x=[xr], y=[yr], z=[zmax],
+                    mode='markers',
+                    marker=dict(size=7, color='red'),
+                    showlegend=False   # 🔥 QUITA LOS ICONOS
+                )
+            )
         except:
             pass
 
-    # -------------------------------------------------------------
-    #TÍTULO ESTILO IDÉNTICO AL PRIMERO
-    # -------------------------------------------------------------
+    # TÍTULO CENTRADO Y GRANDE 
+    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     fig_int.update_layout(
         title=dict(
             text="Gráfica 3D Interactiva |f(z)|",
-            font=dict(
-                size=20,         # Igual al título del diagrama de fase
-                color="#4A4A4A"  # Mismo color gris
-            ),
-            x=0.5
+            x=0.5,                      # CENTRADO
+            xanchor="center",
+            font=dict(size=20)          # MISMO TAMAÑO QUE ARRIBA
         ),
         autosize=True,
-        height=800,
+        height=650,
         scene=dict(
             xaxis_title="Re(z)",
             yaxis_title="Im(z)",
             zaxis_title="|f(z)|",
-            camera=dict(eye=dict(x=2, y=2, z=1.5))
+            camera=dict(eye=dict(x=1.8, y=1.8, z=1.2))
         ),
-        margin=dict(l=0, r=0, t=40, b=0)
+        margin=dict(l=0, r=0, t=70, b=0)
     )
 
     st.plotly_chart(fig_int, use_container_width=True)
