@@ -334,11 +334,11 @@ st.download_button("Descargar Diagrama de Fase", buf1.getvalue(), "diagrama_fase
 st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
 
 
-# GRÁFICA 3D MATPLOTLIB
-# =================================================================
-if activar_3d:
 
-    st.markdown("<div style='margin-top:30px'></div>", unsafe_allow_html=True)
+# =======================================================================
+# 🔥 GRÁFICA 3D INTERACTIVA (ÚNICA 3D)
+# =======================================================================
+if activar_3d:
 
     LIM = 6 if entrada in ["sin(z)", "cos(z)", "tan(z)"] else 2
 
@@ -348,80 +348,66 @@ if activar_3d:
     Z3 = X3 + 1j * Y3
 
     W3 = f(Z3, entrada)
-    W3 = np.asarray(W3, dtype=np.complex128)
     W3 = np.where(np.isfinite(W3), W3, np.nan + 1j*np.nan)
-
     A3 = np.abs(W3)
 
-    fig3 = plt.figure(figsize=(8, 7))
-    ax3 = fig3.add_subplot(111, projection="3d")
-
-    ax3.plot_surface(
-        X3, Y3, A3,
-        cmap=color_map,
-        rstride=1,
-        cstride=1,
-        antialiased=True,
-        alpha=0.95
+    # Superficie
+    fig_int = go.Figure(
+        data=[go.Surface(
+            x=X3,
+            y=Y3,
+            z=A3,
+            colorscale=color_map,
+            opacity=0.96,
+            showscale=False
+        )]
     )
 
+    # ==== CEROS (azules) ====
     for c in ceros:
         try:
-            ax3.scatter(float(sp.re(c)), float(sp.im(c)), 0, color="blue", s=50)
+            xr = float(sp.re(c))
+            yr = float(sp.im(c))
+            fig_int.add_trace(
+                go.Scatter3d(
+                    x=[xr], y=[yr], z=[0],
+                    mode='markers',
+                    marker=dict(size=6, color='blue'),
+                    name="Cero"
+                )
+            )
         except:
             pass
+
+    # ==== POLOS (rojos) ====
+    zmax = np.nanmax(A3)
 
     for p in polos:
         try:
-            ax3.scatter(float(sp.re(p)), float(sp.im(p)), np.nanmax(A3), color="red", s=60)
+            xr = float(sp.re(p))
+            yr = float(sp.im(p))
+            fig_int.add_trace(
+                go.Scatter3d(
+                    x=[xr], y=[yr], z=[zmax],
+                    mode='markers',
+                    marker=dict(size=7, color='red'),
+                    name="Polo"
+                )
+            )
         except:
             pass
-
-    ax3.set_xlabel("Re(z)")
-    ax3.set_ylabel("Im(z)")
-    ax3.set_zlabel("|f(z)|")
-
-    ax3.set_title(f"Gráfica 3D de |f(z)|", fontsize=10, pad=8)
-
-    st.pyplot(fig3)
-
-    buf2 = io.BytesIO()
-    fig3.savefig(buf2, format="png", dpi=300)
-    st.download_button("Descargar Gráfica 3D", buf2.getvalue(), "grafica_3d.png", "image/png")
-
-
-
-# ============================================================================
-# 🔥 NUEVA GRÁFICA 3D INTERACTIVA (PLOTLY) — TOTALMENTE MOVIBLE
-# ============================================================================
-    xI = x3
-    yI = y3
-    XI, YI = np.meshgrid(xI, yI)
-    ZI = np.abs(W3)
-
-    fig_int = go.Figure(
-        data=[go.Surface(
-            x=XI,
-            y=YI,
-            z=ZI,
-            colorscale=color_map,
-            opacity=0.96,
-            showscale=False   # 🔥 QUITA LA BARRA LATERAL DE COLOR
-        )]
-    )
 
     fig_int.update_layout(
         title="Gráfica 3D Interactiva |f(z)|",
         autosize=True,
+        height=650,                # ★ MÁS GRANDE ★
         scene=dict(
             xaxis_title="Re(z)",
             yaxis_title="Im(z)",
             zaxis_title="|f(z)|",
-            camera=dict(
-                eye=dict(x=1.8, y=1.8, z=1.2)
-            )
+            camera=dict(eye=dict(x=1.8, y=1.8, z=1.2))
         ),
-        margin=dict(l=0, r=0, t=30, b=0)
+        margin=dict(l=0, r=0, t=40, b=0)
     )
 
     st.plotly_chart(fig_int, use_container_width=True)
