@@ -392,36 +392,111 @@ if activar_3d:
 
 
 # ============================================================================
-# 🔥 NUEVA GRÁFICA 3D INTERACTIVA (PLOTLY) — TOTALMENTE MOVIBLE
+# 🔥 NUEVA GRÁFICA 3D INTERACTIVA (PLOTLY) — TOTALMENTE MOVIBLE (AGRANDADA + POLOS/CEROS)
 # ============================================================================
     xI = x3
     yI = y3
     XI, YI = np.meshgrid(xI, yI)
     ZI = np.abs(W3)
 
-    fig_int = go.Figure(
-        data=[go.Surface(
-            x=XI,
-            y=YI,
-            z=ZI,
-            colorscale=color_map,
-            opacity=0.96,
-            showscale=False   # 🔥 QUITA LA BARRA LATERAL DE COLOR
-        )]
-    )
+    # calculamos el máximo visible de la superficie para ubicar polos por encima
+    try:
+        max_surface = float(np.nanmax(ZI))
+        if not np.isfinite(max_surface):
+            max_surface = 1.0
+    except:
+        max_surface = 1.0
 
+    # construir listas de ceros y polos para Plotly (x,y,z)
+    zeros_x, zeros_y, zeros_z, zeros_text = [], [], [], []
+    poles_x, poles_y, poles_z, poles_text = [], [], [], []
+
+    # agregar ceros (si los hay) con su |f(z)| real si es posible
+    for c in ceros:
+        try:
+            xr = float(sp.re(c))
+            yr = float(sp.im(c))
+            zval = f(complex(xr, yr), entrada)  # valor de f en ese punto
+            zabs = np.abs(zval) if np.isfinite(zval) else 0.0
+            zeros_x.append(xr)
+            zeros_y.append(yr)
+            zeros_z.append(zabs)
+            zeros_text.append(f"Cero: ({xr:.3f}, {yr:.3f}), |f|={zabs:.3g}")
+        except Exception:
+            # si falla, los colocamos en z=0
+            zeros_x.append(float(sp.re(c)) if hasattr(c, 'evalf') else 0.0)
+            zeros_y.append(float(sp.im(c)) if hasattr(c, 'evalf') else 0.0)
+            zeros_z.append(0.0)
+            zeros_text.append("Cero")
+
+    # agregar polos (si los hay) y colocarlos por encima del máximo de la superficie
+    for p in polos:
+        try:
+            xr = float(sp.re(p))
+            yr = float(sp.im(p))
+            # Intencionalmente ubicamos el polo por encima del max_surface para destacarlo
+            poles_x.append(xr)
+            poles_y.append(yr)
+            poles_z.append(max_surface * 1.05 + 0.0)  # pequeño offset
+            poles_text.append(f"Polo: ({xr:.3f}, {yr:.3f})")
+        except Exception:
+            poles_x.append(0.0)
+            poles_y.append(0.0)
+            poles_z.append(max_surface * 1.05)
+            poles_text.append("Polo")
+
+    # Crear la figura Plotly con superficie
+    fig_int = go.Figure()
+
+    fig_int.add_trace(go.Surface(
+        x=XI,
+        y=YI,
+        z=ZI,
+        colorscale=color_map,
+        opacity=0.96,
+        showscale=False   # QUITA LA BARRA LATERAL DE COLOR
+    ))
+
+    # Añadir ceros como puntos 3D
+    if len(zero s_x := zeros_x) > 0:  # expresión compacta para comprobar
+        fig_int.add_trace(go.Scatter3d(
+            x=zeros_x,
+            y=zeros_y,
+            z=zeros_z,
+            mode='markers',
+            marker=dict(size=6, color='blue', symbol='circle'),
+            hovertext=zeros_text,
+            hoverinfo='text',
+            name='Ceros'
+        ))
+
+    # Añadir polos como puntos 3D (más grandes y rojos)
+    if len(poles_x) > 0:
+        fig_int.add_trace(go.Scatter3d(
+            x=poles_x,
+            y=poles_y,
+            z=poles_z,
+            mode='markers',
+            marker=dict(size=8, color='red', symbol='x'),
+            hovertext=poles_text,
+            hoverinfo='text',
+            name='Polos'
+        ))
+
+    # Ajustes de layout para que la gráfica sea más grande y ocupe más espacio
     fig_int.update_layout(
         title="Gráfica 3D Interactiva |f(z)|",
         autosize=True,
+        height=800,  # elevar altura para que sea más grande
         scene=dict(
             xaxis_title="Re(z)",
             yaxis_title="Im(z)",
             zaxis_title="|f(z)|",
-            camera=dict(
-                eye=dict(x=1.8, y=1.8, z=1.2)
-            )
+            camera=dict(eye=dict(x=1.8, y=1.8, z=1.2)),
+            aspectmode='auto'
         ),
-        margin=dict(l=0, r=0, t=30, b=0)
+        margin=dict(l=10, r=10, t=50, b=10)
     )
 
+    # Mostrar en Streamlit usando todo el ancho del contenedor
     st.plotly_chart(fig_int, use_container_width=True)
