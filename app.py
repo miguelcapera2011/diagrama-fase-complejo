@@ -137,6 +137,7 @@ entrada_manual = st.sidebar.text_input(
     placeholder="ejemplo z**z"
 )
 
+
 # SELECTOR DE FUNCIONES
 # =================================================================
 st.sidebar.markdown("<br><b>Elegir función </b>", unsafe_allow_html=True)
@@ -179,7 +180,6 @@ st.sidebar.selectbox(
     on_change=actualizar_lista
 )
 
-# convertir a minúsculas
 entrada = st.session_state.ultima_funcion.lower()
 
 
@@ -336,7 +336,7 @@ st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
 
 
 # =======================================================================
-# 🔥 GRÁFICA 3D INTERACTIVA (ÚNICA 3D)
+# 🔥 GRÁFICA 3D INTERACTIVA (ÚNICA 3D) — MODIFICADA SEGÚN TUS DOS PETICIONES
 # =======================================================================
 if activar_3d:
 
@@ -351,7 +351,6 @@ if activar_3d:
     W3 = np.where(np.isfinite(W3), W3, np.nan + 1j*np.nan)
     A3 = np.abs(W3)
 
-    # Superficie
     fig_int = go.Figure(
         data=[go.Surface(
             x=X3,
@@ -373,7 +372,7 @@ if activar_3d:
                     x=[xr], y=[yr], z=[0],
                     mode='markers',
                     marker=dict(size=6, color='blue'),
-                    name="Cero"
+                    showlegend=False   # 🔥 QUITA LOS ICONOS
                 )
             )
         except:
@@ -391,23 +390,29 @@ if activar_3d:
                     x=[xr], y=[yr], z=[zmax],
                     mode='markers',
                     marker=dict(size=7, color='red'),
-                    name="Polo"
+                    showlegend=False   # 🔥 QUITA LOS ICONOS
                 )
             )
         except:
             pass
 
+    # ======= 🔥 TÍTULO CENTRADO Y GRANDE COMO EL DE LA IMAGEN 1 ========
     fig_int.update_layout(
-        title="Gráfica 3D Interactiva |f(z)|",
+        title=dict(
+            text="Gráfica 3D Interactiva |f(z)|",
+            x=0.5,                      # CENTRADO
+            xanchor="center",
+            font=dict(size=30)          # MISMO TAMAÑO QUE ARRIBA
+        ),
         autosize=True,
-        height=650,                # ★ MÁS GRANDE ★
+        height=650,
         scene=dict(
             xaxis_title="Re(z)",
             yaxis_title="Im(z)",
             zaxis_title="|f(z)|",
             camera=dict(eye=dict(x=1.8, y=1.8, z=1.2))
         ),
-        margin=dict(l=0, r=0, t=40, b=0)
+        margin=dict(l=0, r=0, t=70, b=0)
     )
 
     st.plotly_chart(fig_int, use_container_width=True)
