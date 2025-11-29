@@ -1,4 +1,3 @@
-
 # LIBRERÍAS
 # =================================================================
 import streamlit as st
@@ -7,6 +6,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import sympy as sp
 import io
+import plotly.graph_objects as go
 
 
 # CONFIGURACIÓN DE PÁGINA
@@ -118,7 +118,6 @@ st.sidebar.markdown("""
 
 st.sidebar.markdown("<h4 style='font-size:16px;'>Configuración</h4>", unsafe_allow_html=True)
 
-# Estado inicial sin conflicto en Session State
 if "modo" not in st.session_state:
     st.session_state.modo = "manual"
 if "ultima_funcion" not in st.session_state:
@@ -144,7 +143,6 @@ st.sidebar.markdown("<br><b>Elegir función </b>", unsafe_allow_html=True)
 
 funciones_libro = {
     "Selecciona una función": "",
-    # ---- FUNCIONES ORIGINALES ----
     "z": "z",
     "z²": "z**2",
     "z³ - 1": "z**3 - 1",
@@ -162,9 +160,8 @@ funciones_libro = {
     "(z - 1)/(z + 1)": "(z - 1)/(z + 1)",
     "(z⁵ - 1)/(z² - 1)": "(z**5 - 1)/(z**2 - 1)",
     "1/(z² + 1)": "1/(z**2 + 1)",
-    "(z² + z + 1)/(z² - z + 1)": "(z**2 + z + 1)/(z**2 - z + 1)"  
+    "(z² + z + 1)/(z² - z + 1)": "(z**2 + z + 1)/(z**2 - z + 1)"
 }
-
 
 def actualizar_lista():
     st.session_state.modo = "lista"
@@ -182,9 +179,7 @@ st.sidebar.selectbox(
     on_change=actualizar_lista
 )
 
-
-#  convertir todo a minúsculas
-# =================================================================
+# convertir a minúsculas
 entrada = st.session_state.ultima_funcion.lower()
 
 
@@ -251,15 +246,13 @@ if entrada.strip() == "":
     
     st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
     with col1:
-        st.image(
-            "https://www.software-shop.com/images/productos/maple/img2023-1.png",
-            width=430 , 
-        )
+        st.image("https://www.software-shop.com/images/productos/maple/img2023-1.png", width=430)
 
     with col2:
         st.markdown("<div class='welcome-text'>¡Bienvenidos!</div>", unsafe_allow_html=True)
 
     st.stop()
+
 
 tipo, ceros, polos = analizar_funcion(entrada)
 
@@ -271,10 +264,10 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ---- AÑADIDO: espacio entre el bloque de texto y la imagen ----
 st.markdown("<div style='margin-top:25px;'></div>", unsafe_allow_html=True)
 
-# DIAGRAMA DE FASE — con título dentro y etiquetas de ceros/polos
+
+# DIAGRAMA DE FASE
 # =================================================================
 def plot_phase(expr, N, ceros, polos):
 
@@ -294,14 +287,11 @@ def plot_phase(expr, N, ceros, polos):
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
 
     ax.imshow(phase, extent=(-LIM, LIM, -LIM, LIM), cmap=color_map, alpha=0.96)
-
-    # Título dentro
     ax.set_title(f" f(z) = {expr}", fontsize=14, pad=12)
 
     ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
     ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/5), minor=True)
     ax.grid(which='minor', color='#ffffff', linewidth=0.03)
-
     ax.set_xticks(np.arange(-LIM, LIM+0.01, LIM/2))
     ax.set_yticks(np.arange(-LIM, LIM+0.01, LIM/2))
     ax.grid(which='major', color='#f8f8f8', linewidth=0.08)
@@ -312,27 +302,26 @@ def plot_phase(expr, N, ceros, polos):
     ax.set_xlabel("Re(z)", fontsize=12)
     ax.set_ylabel("Im(z)", fontsize=12)
 
-    # Ceros con etiqueta
     for c in ceros:
         try:
             xr = float(sp.re(c))
             yr = float(sp.im(c))
             ax.scatter(xr, yr, color="blue", s=40)
             ax.text(xr + 0.12, yr + 0.08, "Cero", color="blue", fontsize=10)
-        except Exception:
+        except:
             pass
 
-    # Polos con etiqueta
     for p in polos:
         try:
             xr = float(sp.re(p))
             yr = float(sp.im(p))
             ax.scatter(xr, yr, color="red", s=40)
             ax.text(xr + 0.12, yr + 0.08, "Polo", color="red", fontsize=10)
-        except Exception:
+        except:
             pass
 
     return fig
+
 
 fig_phase = plot_phase(entrada, resolucion, ceros, polos)
 st.pyplot(fig_phase)
@@ -344,7 +333,7 @@ st.download_button("Descargar Diagrama de Fase", buf1.getvalue(), "diagrama_fase
 st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
 
 
-# GRÁFICA 3D
+# GRÁFICA 3D MATPLOTLIB
 # =================================================================
 if activar_3d:
 
@@ -391,7 +380,6 @@ if activar_3d:
     ax3.set_ylabel("Im(z)")
     ax3.set_zlabel("|f(z)|")
 
-    # TÍTULO nuevo dentro
     ax3.set_title(f"Gráfica 3D de |f(z)|", fontsize=10, pad=8)
 
     st.pyplot(fig3)
@@ -399,3 +387,39 @@ if activar_3d:
     buf2 = io.BytesIO()
     fig3.savefig(buf2, format="png", dpi=300)
     st.download_button("Descargar Gráfica 3D", buf2.getvalue(), "grafica_3d.png", "image/png")
+
+
+
+# ============================================================================
+# 🔥 NUEVA GRÁFICA 3D INTERACTIVA (PLOTLY) — TOTALMENTE MOVIBLE
+# ============================================================================
+    xI = x3
+    yI = y3
+    XI, YI = np.meshgrid(xI, yI)
+    ZI = np.abs(W3)
+
+    fig_int = go.Figure(
+        data=[go.Surface(
+            x=XI,
+            y=YI,
+            z=ZI,
+            colorscale=color_map,
+            opacity=0.96
+        )]
+    )
+
+    fig_int.update_layout(
+        title="Gráfica 3D Interactiva |f(z)|",
+        autosize=True,
+        scene=dict(
+            xaxis_title="Re(z)",
+            yaxis_title="Im(z)",
+            zaxis_title="|f(z)|",
+            camera=dict(
+                eye=dict(x=1.8, y=1.8, z=1.2)
+            )
+        ),
+        margin=dict(l=0, r=0, t=30, b=0)
+    )
+
+    st.plotly_chart(fig_int, use_container_width=True)
