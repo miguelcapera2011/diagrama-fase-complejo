@@ -6,20 +6,18 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ---------------------------------------
+
 # CONFIGURACIÓN GENERAL
-# ---------------------------------------
+
 st.set_page_config(
     page_title="Tamaño muestral: Proporciones extremas",
     layout="wide"
 )
 
-st.title("📊 Punto 6 – Tamaño muestral para proporciones extremas")
-st.caption("Aplicación profesional para exposición: teoría + interacción + ejemplos reales.")
+st.title("Tamaño muestral para proporciones extremas")
 
-# ----------------------------------------------------------
 # BARRA LATERAL – Navegación
-# ----------------------------------------------------------
+
 menu = st.sidebar.radio(
     "Secciones del Punto 6",
     [
@@ -30,9 +28,8 @@ menu = st.sidebar.radio(
     ]
 )
 
-# ----------------------------------------------------------
 # SECCIÓN 6.1 – VARIANZA MÁXIMA
-# ----------------------------------------------------------
+
 if menu == "6.1 Varianza máxima (p=0.5)":
     st.header("6.1 ¿Por qué la máxima varianza ocurre en p = 0.5?")
     
@@ -52,7 +49,6 @@ if menu == "6.1 Varianza máxima (p=0.5)":
     Esta expresión es una **parábola invertida**, y su valor máximo ocurre cuando la curva cambia de crecimiento a decrecimiento:  
     es decir, en **p = 0.5**.
     
-    ### 🎯 Interpretación para la exposición
     - Cuando **p = 0.5**, existe máxima incertidumbre (mitad éxitos / mitad fracasos).  
     - Por eso, la **fórmula clásica del tamaño muestral usa p = 0.5** cuando no se conoce p.
     - Si p es muy extrema (muy pequeña o muy grande), la varianza disminuye drásticamente.
@@ -79,9 +75,9 @@ if menu == "6.1 Varianza máxima (p=0.5)":
 
     st.info(f"Con p = {p_point}, la varianza es: {round(p_point*(1-p_point),4)}")
 
-# ----------------------------------------------------------
+
 # SECCIÓN 6.2 – AJUSTES PARA p EXTREMA
-# ----------------------------------------------------------
+
 elif menu == "6.2 Ajustes cuando p es extrema":
     st.header("6.2 Ajustes cuando p < 0.10 o p > 0.90")
     
@@ -145,7 +141,6 @@ elif menu == "6.3 Alternativa (Poisson)":
     - \\( \\lambda ≈ p \\) cuando los eventos son muy raros  
     - La varianza es igual a la media → más estable para muestras pequeñas
     
-    ### 🎯 Ventaja para la exposición:
     - Este método evita tamaños muestrales exagerados cuando p es muy baja.
     """)
 
@@ -188,8 +183,8 @@ elif menu == "6.4 Aplicaciones (eventos raros)":
         La anafilaxia post-vacuna ocurre en **1 a 5 casos por millón**.  
         Esto corresponde a **p ≈ 0.000001 – 0.000005** → evento rarísimo.
         
-        ⭐ **Modelo recomendado:** Poisson (inciso 6.3).  
-        ⭐ **Problema:** la fórmula clásica daría tamaños monstruosamente grandes.
+        **Modelo recomendado:** Poisson (inciso 6.3).  
+        **Problema:** la fórmula clásica daría tamaños monstruosamente grandes.
         """)
 
         st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Vaccine_types_diagram.svg/640px-Vaccine_types_diagram.svg.png")
@@ -212,7 +207,7 @@ elif menu == "6.4 Aplicaciones (eventos raros)":
         p = 0.0000001
         \\]
         
-        ⭐ Su varianza es tan extrema que se utiliza **Poisson** para estimaciones de riesgo.  
+        Su varianza es tan extrema que se utiliza **Poisson** para estimaciones de riesgo.  
         """)
         
         st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Jet_engine_diagram.svg/640px-Jet_engine_diagram.svg.png")
@@ -225,4 +220,4 @@ elif menu == "6.4 Aplicaciones (eventos raros)":
 
 st.divider()
 
-st.caption("App profesional — diseñada para exposición académica sobre muestreo.")
+st.caption("")
