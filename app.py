@@ -1,4 +1,4 @@
-# Guardar como app.py y ejecutar: streamlit run app.py
+#LIBRERIAS
 
 import streamlit as st
 import numpy as np
@@ -7,17 +7,17 @@ import math
 
 st.set_page_config(page_title="Tamaño Muestral en Eventos Raros", layout="wide")
 
-st.title("📊 Tamaño Muestral para Proporciones en Eventos Raros")
+st.title("Tamaño Muestral para Proporciones en Eventos Raros")
 
 st.markdown("""
-Esta app permite entender **cómo calcular el tamaño muestral** para proporciones muy pequeñas o muy grandes.  
+Se permite entender **cómo calcular el tamaño muestral** para proporciones muy pequeñas o muy grandes.  
 Se enfoca en **eventos raros**, donde usar la varianza máxima sobreestima la muestra.  
 Puedes interactuar con los ejemplos reales para ver **cómo se calcula paso a paso**.
 """)
 
-# ------------------------------
+
 # Parámetros globales
-# ------------------------------
+
 st.sidebar.header("Parámetros generales")
 confianza = st.sidebar.selectbox("Nivel de confianza (%)", [90, 95, 99])
 Z_dict = {90:1.645, 95:1.96, 99:2.576}
@@ -30,10 +30,10 @@ def n_conservador(Z, E):
 def n_ajustada(Z, p, E):
     return Z**2 * p * (1-p) / E**2
 
-# ------------------------------
+
 # Ejemplo 1: Defectos graves en autos
-# ------------------------------
-st.header("1️⃣ Ejemplo: Defectos graves en autos")
+
+st.header("Aplicaion#1: Defectos graves en autos")
 st.markdown("""
 **Introducción:** Se estima que un pequeño porcentaje de autos nuevos presenta defectos graves que requieren reparación inmediata.  
 Se desea determinar cuántos autos se deben inspeccionar para estimar la proporción con un margen de error aceptable.
@@ -54,10 +54,10 @@ st.markdown(f"""
 
 st.markdown(f"- Tamaño muestral conservador (p=0.5): {math.ceil(n_auto_cons)} autos")
 
-# ------------------------------
+
 # Ejemplo 2: Reacciones graves a vacunas
-# ------------------------------
-st.header("2️⃣ Ejemplo: Reacciones graves a vacunas")
+
+st.header("Aplicacion#2: Reacciones graves a vacunas")
 st.markdown("""
 **Introducción:** En estudios de seguridad de vacunas, se quiere estimar la proporción de personas que podrían presentar reacciones graves, aunque sean muy raras.
 """)
@@ -77,10 +77,10 @@ st.markdown(f"""
 
 st.markdown(f"- Tamaño muestral conservador (p=0.5): {math.ceil(n_vacuna_cons)} personas")
 
-# ------------------------------
+
 # Gráfica comparativa general
-# ------------------------------
-st.header("📈 Gráfica comparativa de tamaño muestral")
+
+st.header("Gráfica comparativa de tamaño muestral")
 
 p_vals = np.linspace(0.001,0.999,500)
 n_vals_ajustada = n_ajustada(Z, p_vals, 0.002)  # ejemplo con E=0.002
@@ -99,7 +99,7 @@ ax.grid(True)
 st.pyplot(fig)
 
 st.markdown("""
-✅ **Interpretación:**  
+**Interpretación:**  
 - La línea azul muestra el tamaño muestral usando la proporción real \(p\).  
 - La línea roja discontinua muestra el tamaño muestral conservador usando p=0.5.  
 - Los puntos verdes y naranjas representan los dos eventos raros interactivos, mostrando cómo cambian los tamaños muestrales según las proporciones y errores que el usuario selecciona.
