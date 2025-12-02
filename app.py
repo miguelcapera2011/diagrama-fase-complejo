@@ -4,27 +4,32 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-from scipy.stats import norm
 
-st.title("Tamaño Muestral para Proporciones Raras con Gráfica")
+st.title("Tamaño Muestral para Proporciones en Eventos Raros")
 
 # ------------------------------
 # Parámetros del estudio
 # ------------------------------
-st.header("Parámetros del estudio")
 E = st.number_input("Error absoluto deseado (E)", min_value=0.0001, max_value=1.0, value=0.005, step=0.001)
 confianza = st.selectbox("Nivel de confianza (%)", [90, 95, 99])
-Z = norm.ppf(1 - (1-confianza/100)/2)
+
+# Valores Z aproximados sin usar scipy
+if confianza == 90:
+    Z = 1.645
+elif confianza == 95:
+    Z = 1.96
+else:
+    Z = 2.576
 
 # ------------------------------
 # Rango de proporciones
 # ------------------------------
-p_vals = np.linspace(0.001, 0.999, 500)  # evita 0 y 1 exactos para no dividir entre cero
+p_vals = np.linspace(0.001, 0.999, 500)  # evita 0 y 1 exactos
 
-# Tamaño muestral conservador (varianza máxima)
+# Tamaño muestral conservador
 n_max_var = (Z**2 * 0.25) / (E**2)
 
-# Tamaño muestral ajustado (varianza real)
+# Tamaño muestral ajustado
 n_ajustada = (Z**2 * p_vals * (1 - p_vals)) / (E**2)
 
 # ------------------------------
@@ -46,7 +51,7 @@ st.pyplot(fig)
 # ------------------------------
 st.header("Ejemplos de eventos raros")
 
-# 1️⃣ Defectos graves en autos
+# Defectos graves en autos
 st.subheader("1️⃣ Defectos graves en autos")
 p_auto = 0.005
 E_auto = 0.002
@@ -54,8 +59,8 @@ n_auto = (Z**2 * p_auto * (1-p_auto)) / (E_auto**2)
 st.write(f"Proporción esperada: {p_auto*100}%")
 st.write(f"Tamaño muestral ajustado: {math.ceil(n_auto)} autos")
 
-# 2️⃣ Reacciones graves a vacuna
-st.subheader("2️⃣ Reacciones graves a vacuna")
+# Reacciones graves a vacuna
+st.subheader("2️⃣ Reacciones graves a vacunas")
 p_vacuna = 0.001
 E_vacuna = 0.0005
 n_vacuna = (Z**2 * p_vacuna * (1-p_vacuna)) / (E_vacuna**2)
