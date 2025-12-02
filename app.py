@@ -1,106 +1,252 @@
-#LIBRERIAS
-
 import streamlit as st
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import math
+from math import ceil, log
 
-st.set_page_config(page_title="Tamaño Muestral en Eventos Raros", layout="wide")
+# ----------------------
+# Exposición (texto en primera persona)
+# ----------------------
+EXPOSICION = r'''
+# Exposición: Cálculo de tamaño muestral para proporciones
 
-st.title("Tamaño Muestral para Proporciones en Eventos Raros")
+En esta presentación explico, con mis propias palabras, cómo se comporta la varianza de una proporción y qué ajustes conviene hacer cuando la proporción esperada es muy pequeña (p < 0.1) o muy grande (p > 0.9). También presento alternativas que evitan la sobreestimación del tamaño muestral y muestro aplicaciones en estudios de eventos raros.
 
-st.markdown("""
-Se permite entender **cómo calcular el tamaño muestral** para proporciones muy pequeñas o muy grandes.  
-Se enfoca en **eventos raros**, donde usar la varianza máxima sobreestima la muestra.  
-Puedes interactuar con los ejemplos reales para ver **cómo se calcula paso a paso**.
-""")
+**1. ¿Por qué la máxima varianza ocurre en p = 0.5?**
+La varianza de una proporción muestral se aproxima por \(\text{Var}(\hat p) = p(1-p)/n\). Para una n fija, la cantidad p(1-p) alcanza su máximo cuando p = 0.5 porque la función f(p)=p(1-p) = p - p^2 es un paraboloide con vértice en p=0.5 y valor máximo 0.25. Eso significa que, si no conocemos p, la elección conservadora p=0.5 produce el mayor tamaño muestral necesario para una precisión dada.
 
+**2. Fórmula clásica (aproximación normal):**
+Para un margen de error (medio ancho del intervalo) \(E\) y un nivel de confianza con cuantía \(z_{1-\alpha/2}\):
 
-# Parámetros globales
+\[ n = \frac{z^2 \; p(1-p)}{E^2} .\]
 
-st.sidebar.header("Parámetros generales")
-confianza = st.sidebar.selectbox("Nivel de confianza (%)", [90, 95, 99])
-Z_dict = {90:1.645, 95:1.96, 99:2.576}
-Z = Z_dict[confianza]
+Si p no se conoce y queremos ser conservadores usamos p = 0.5.
 
-# Funciones para tamaño muestral
-def n_conservador(Z, E):
-    return Z**2 * 0.25 / E**2
+**3. Ajustes cuando p < 0.1 o p > 0.9**
+Cuando p está muy cerca de 0 o de 1, la aproximación normal de la varianza puede ser pobre para tamaños moderados. Estrategias comunes:
 
-def n_ajustada(Z, p, E):
-    return Z**2 * p * (1-p) / E**2
+- **Usar transformaciones** (por ejemplo la transformada arcsin o logit) para estabilizar la varianza antes de diseñar la muestra.
+- **Usar intervalos tipo Wilson**: para proporciones pequeñas Wilson tiende a dar intervalos más precisos y menos extremos que el intervalo simétrico normal. Podemos hallar n resolviendo la condición del ancho del intervalo Wilson numéricamente.
+- **Poisson/contaje para eventos raros**: si p es muy pequeño y n grande, el número de éxitos sigue aproximadamente una Poisson(\(\lambda = np\)). Para diseñar experimentos de detección (ej.: "queremos tener al menos una observación con probabilidad 1 - \beta"), se usa:
 
+\[ 1 - (1-p)^n \ge 1 - \beta \quad\Rightarrow\quad n \ge \frac{\ln(\beta)}{\ln(1-p)} \approx \frac{-\ln(\beta)}{p} \quad (\text{si } p \ll 1).\]
 
-# Ejemplo 1: Defectos graves en autos
+Esto es muy útil en estudios de eventos raros: por ejemplo, para tener 95% de probabilidad de observar al menos un evento con p=0.001 necesitamos aproximadamente \(n \approx -\ln(0.05)/0.001 \approx 2995\).
 
-st.header("Aplicaion#1: Defectos graves en autos")
-st.markdown("""
-**Introducción:** Se estima que un pequeño porcentaje de autos nuevos presenta defectos graves que requieren reparación inmediata.  
-Se desea determinar cuántos autos se deben inspeccionar para estimar la proporción con un margen de error aceptable.
-""")
+**4. Ecuaciones alternativas para evitar sobreestimación**
+- **Conservador**: usar p=0.5 en la fórmula clásica (genera la cota superior del n requerido).
+- **Wilson (numérico)**: resolver numéricamente el mínimo n tal que el intervalo Wilson tiene medio ancho ≤ E.
+- **Poisson para eventos raros**: usar la aproximación mostrada arriba cuando p muy pequeño y el objetivo es detectar al menos un suceso.
 
-p_auto = st.slider("Proporción esperada de defectos en autos (p)", 0.001, 0.05, 0.005, 0.001, key="auto")
-E_auto = st.number_input("Error absoluto deseado (E)", min_value=0.0005, max_value=0.01, value=0.002, step=0.0005, key="auto_e")
+**5. Aplicaciones: estudios de eventos raros**
+Ejemplos: detección de defectos muy inusuales en manufactura, prevalencia de una enfermedad muy rara, detección de ruido o fallos críticos. En estos casos la aproximación de Poisson y la planificación basada en la probabilidad de observar al menos un evento son muy útiles.
 
-n_auto = n_ajustada(Z, p_auto, E_auto)
-n_auto_cons = n_conservador(Z, E_auto)
+---
 
-st.markdown(f"""
-**Cálculo paso a paso:**  
-- Fórmula ajustada: n = Z² * p * (1-p) / E²  
-- Sustituyendo valores: n = {Z}² * {p_auto} * (1-{p_auto}) / {E_auto}²  
-- Resultado: n ≈ **{math.ceil(n_auto)} autos**
-""")
+A continuación presento una app interactiva donde se pueden experimentar las fórmulas, comparar enfoques (clásico, conservador, Wilson y Poisson) y ver gráficas ilustrativas. He dejado campos para incluir imágenes o capturas vía URL.
+'''
 
-st.markdown(f"- Tamaño muestral conservador (p=0.5): {math.ceil(n_auto_cons)} autos")
+# ----------------------
+# Funciones estadísticas
+# ----------------------
 
-
-# Ejemplo 2: Reacciones graves a vacunas
-
-st.header("Aplicacion#2: Reacciones graves a vacunas")
-st.markdown("""
-**Introducción:** En estudios de seguridad de vacunas, se quiere estimar la proporción de personas que podrían presentar reacciones graves, aunque sean muy raras.
-""")
-
-p_vacuna = st.slider("Proporción esperada de reacciones graves (p)", 0.0001, 0.01, 0.001, 0.0001, key="vacuna")
-E_vacuna = st.number_input("Error absoluto deseado (E)", min_value=0.0001, max_value=0.005, value=0.0005, step=0.0001, key="vac_e")
-
-n_vacuna = n_ajustada(Z, p_vacuna, E_vacuna)
-n_vacuna_cons = n_conservador(Z, E_vacuna)
-
-st.markdown(f"""
-**Cálculo paso a paso:**  
-- Fórmula ajustada: n = Z² * p * (1-p) / E²  
-- Sustituyendo valores: n = {Z}² * {p_vacuna} * (1-{p_vacuna}) / {E_vacuna}²  
-- Resultado: n ≈ **{math.ceil(n_vacuna)} personas**
-""")
-
-st.markdown(f"- Tamaño muestral conservador (p=0.5): {math.ceil(n_vacuna_cons)} personas")
+def z_from_confidence(conf_level):
+    # approximate z for common levels
+    import mpmath as mp
+    alpha = 1 - conf_level
+    return abs(mp.sqrt(2) * mp.erfinv(1 - alpha))
 
 
-# Gráfica comparativa general
+def z_approx(conf_level):
+    # fallback using scipy-less approximation via inverse of normal CDF (useer mpmath)
+    import mpmath as mp
+    alpha = 1 - conf_level
+    return float(mp.sqrt(2) * mp.erfinv(1 - alpha))
 
-st.header("Gráfica comparativa de tamaño muestral")
 
-p_vals = np.linspace(0.001,0.999,500)
-n_vals_ajustada = n_ajustada(Z, p_vals, 0.002)  # ejemplo con E=0.002
-n_vals_conservadora = np.full_like(p_vals, n_conservador(Z, 0.002))
+def n_standard(p, E, z):
+    # n = z^2 * p(1-p) / E^2
+    return math.ceil((z**2) * p * (1 - p) / (E**2))
 
-fig, ax = plt.subplots(figsize=(10,5))
-ax.plot(p_vals, n_vals_ajustada, label="Ajustado p", color='blue')
-ax.axhline(y=n_conservador(Z, 0.002), color='red', linestyle='--', label="Conservador p=0.5")
-ax.scatter([p_auto, p_vacuna], [n_auto, n_vacuna], color=['green','orange'], s=100, zorder=5,
-           label="Eventos raros")
-ax.set_xlabel("Proporción esperada p")
-ax.set_ylabel("Tamaño muestral n")
-ax.set_title("Comparación: Tamaño muestral ajustado vs conservador")
-ax.legend()
-ax.grid(True)
-st.pyplot(fig)
 
-st.markdown("""
-**Interpretación:**  
-- La línea azul muestra el tamaño muestral usando la proporción real \(p\).  
-- La línea roja discontinua muestra el tamaño muestral conservador usando p=0.5.  
-- Los puntos verdes y naranjas representan los dos eventos raros interactivos, mostrando cómo cambian los tamaños muestrales según las proporciones y errores que el usuario selecciona.
-""")
+def n_conservative(E, z):
+    # p = 0.5
+    return n_standard(0.5, E, z)
+
+
+def n_poisson_detect(p, beta):
+    # n >= ln(beta) / ln(1-p). If p<<1, approx -ln(beta)/p
+    if p <= 0:
+        return math.inf
+    try:
+        n = math.log(beta) / math.log(1 - p)
+        return math.ceil(n)
+    except Exception:
+        return math.ceil(-math.log(beta) / p)
+
+# Wilson interval half-width computation and numeric search for n
+
+def wilson_half_width(p, n, z):
+    # Wilson interval half-width formula (exact) for a given n and p
+    if n <= 0:
+        return float('inf')
+    z2 = z**2
+    denom = 1 + z2 / n
+    center = (p + z2/(2*n)) / denom
+    term = (p*(1-p)/n + z2/(4*n*n))
+    hw = (z * math.sqrt(term)) / denom
+    return hw
+
+
+def n_wilson_by_search(p, E, z, n_max=10_000_000):
+    # Busca el n mínimo tal que wilson_half_width(p,n,z) <= E
+    # Empieza en el estándar y sube exponencialmente
+    if p == 0 or p == 1:
+        # Wilson reduces to one-sided correction; treat specially
+        return None
+    n = max(10, n_standard(p, E, z))
+    # if already ok, decrease
+    if wilson_half_width(p, n, z) <= E:
+        # intentar bajar n por búsqueda binaria hacia la izquierda
+        lo, hi = 2, n
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if wilson_half_width(p, mid, z) <= E:
+                hi = mid
+            else:
+                lo = mid + 1
+        return lo
+    # else aumentar exponencialmente
+    while wilson_half_width(p, n, z) > E and n < n_max:
+        n *= 2
+    # binsearch between n/2 and n
+    lo, hi = n//2, n
+    while lo < hi:
+        mid = (lo + hi)//2
+        if wilson_half_width(p, mid, z) <= E:
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo if lo < n_max else None
+
+# ----------------------
+# Interfaz Streamlit
+# ----------------------
+
+st.set_page_config(page_title='Tamaño muestral: proporciones (poco/mucho)', layout='wide')
+
+st.title('Cálculo de tamaño muestral para proporciones — Exposición interactiva')
+
+with st.expander('Ver exposición (texto)'):
+    st.markdown(EXPOSICION)
+
+# Sidebar inputs
+st.sidebar.header('Parámetros de diseño')
+conf = st.sidebar.selectbox('Nivel de confianza', [0.90, 0.95, 0.99], index=1)
+E = st.sidebar.number_input('Margen de error (E) — medio ancho del IC', min_value=0.001, max_value=0.5, value=0.03, step=0.001, format="%.3f")
+p = st.sidebar.slider('Proporción esperada p', min_value=0.0, max_value=1.0, value=0.05, step=0.001)
+
+# For poisson detection
+beta = st.sidebar.number_input('Beta (prob. de NO detectar al menos 1 evento)', min_value=1e-6, max_value=0.5, value=0.05, format='%.5f')
+
+z = z_approx(conf)
+st.sidebar.markdown(f'Cuantil z (aprox) = **{z:.3f}**')
+
+st.markdown('---')
+
+# Image placeholders via URL
+st.subheader('Imágenes / capturas (opcional)')
+img1 = st.text_input('URL imagen 1 (ej.: esquema explicación)', '')
+img2 = st.text_input('URL imagen 2 (ej.: captura tabla o diagrama)', '')
+
+col1, col2 = st.columns(2)
+with col1:
+    if img1:
+        try:
+            st.image(img1, use_column_width=True)
+        except Exception as e:
+            st.error('No se pudo cargar la imagen 1. Verifique la URL.')
+with col2:
+    if img2:
+        try:
+            st.image(img2, use_column_width=True)
+        except Exception as e:
+            st.error('No se pudo cargar la imagen 2. Verifique la URL.')
+
+# Compute sizes
+n_std = n_standard(p, E, z)
+n_cons = n_conservative(E, z)
+n_wilson = n_wilson_by_search(p, E, z)
+n_poisson = n_poisson_detect(p, beta)
+
+st.subheader('Cálculos principales')
+st.markdown(f'- Fórmula clásica (normal): **n = z^2 p(1-p) / E^2**')
+st.markdown(f'- Resultado (usando p = {p:.3f}): **n = {n_std:,d}**')
+st.markdown(f'- Conservador (p = 0.5): **n = {n_cons:,d}**')
+if n_wilson is not None:
+    st.markdown(f'- Wilson (n mínimo numérico): **n = {n_wilson:,d}**')
+else:
+    st.markdown(f'- Wilson: no aplicable (p=0 o 1) o fuera de rango.')
+st.markdown(f'- Método Poisson (diseño para detectar al menos 1 evento con prob. 1 - beta, beta={beta}): **n ≈ {n_poisson:,d}**')
+
+# Table summary
+summary = pd.DataFrame({
+    'Método': ['Clásico (p elegido)', 'Conservador (p=0.5)', 'Wilson (numérico)', 'Poisson (detección)'],
+    'n_estimado': [n_std, n_cons, n_wilson if n_wilson else np.nan, n_poisson]
+})
+
+st.dataframe(summary.style.format({'n_estimado':'{:,}'}))
+
+# Plots
+st.subheader('Gráficas ilustrativas')
+
+# 1) Varianza p(1-p) vs p
+ps = np.linspace(0,1,501)
+vars_ = ps * (1-ps)
+fig1, ax1 = plt.subplots(figsize=(6,3))
+ax1.plot(ps, vars_)
+ax1.axvline(0.5, color='k', linestyle='--')
+ax1.set_xlabel('p')
+ax1.set_ylabel('p(1-p) (varianza relativa)')
+ax1.set_title('Varianza relativa p(1-p) — máximo en p = 0.5')
+st.pyplot(fig1)
+
+# 2) n required as function of p (for fixed E and z)
+ps2 = np.linspace(0.001,0.999,199)
+ns_std = [n_standard(pi, E, z) for pi in ps2]
+ns_wilson = [n_wilson_by_search(pi, E, z) for pi in ps2]
+
+fig2, ax2 = plt.subplots(figsize=(6,3))
+ax2.plot(ps2, ns_std, label='Clásico')
+ax2.plot(ps2, ns_wilson, label='Wilson (numérico)', linestyle='--')
+ax2.set_ylim(0, max(filter(lambda v: np.isfinite(v), ns_std)) * 1.2)
+ax2.set_xlabel('p')
+ax2.set_ylabel('Tamaño muestral n')
+ax2.set_title('n requerido en función de p (E y nivel de confianza fijos)')
+ax2.legend()
+st.pyplot(fig2)
+
+# 3) For rare p show poisson approx
+st.subheader('Ejemplo: diseño para eventos raros (Poisson)')
+if p < 0.05:
+    st.markdown(f'Con p = {p:.4f} y beta = {beta}, se requiere aproximadamente n = {n_poisson:,d} para tener probabilidad {1-beta:.3f} de observar al menos un evento.')
+else:
+    st.markdown('La aproximación Poisson es recomendable cuando p es pequeño (por ejemplo p < 0.01 ó p < 0.05).')
+
+# Downloadable report (CSV)
+report = summary.copy()
+report['p_usado'] = p
+report['E'] = E
+report['confianza'] = conf
+
+csv = report.to_csv(index=False).encode('utf-8')
+st.download_button('Descargar resumen (CSV)', csv, file_name='resumen_tamanomuestra.csv', mime='text/csv')
+
+st.markdown('---')
+st.markdown('**Notas finales / Recomendaciones (como si yo lo presentara):**')
+st.markdown('- Si no conocemos p, usar p=0.5 para garantizar una estimación conservadora del tamaño muestral.')
+st.markdown('- Para p muy pequeñas usar la aproximación Poisson o diseñar con la probabilidad de detectar al menos un evento.')
+st.markdown('- Para niveles de confianza altos y p extremos, prefiera intervalos tipo Wilson o procedimientos exactos en lugar de la aproximación normal simples.')
+
+st.caption('App creada como entrega tipo 'exposición'; edítela libremente para incorporar imágenes reales y adaptarla a su informe.')
