@@ -3,184 +3,168 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# ================================================================
-# CONFIGURACIÓN GENERAL
-# ================================================================
-st.set_page_config(
-    page_title="Tamaño Muestral para Proporciones Extremas",
-    layout="wide"
-)
-
-st.title("📊 Cálculo de Tamaño Muestral para Proporciones Muy Pequeñas o Muy Grandes")
+# CONFIGURACIÓN
+st.set_page_config(page_title="Tamaño Muestral - Proporciones Extremas", layout="wide")
+st.title("📊 Tamaño Muestral para Proporciones Muy Pequeñas o Muy Grandes")
 st.write("""
-Esta aplicación explica de forma clara el **punto 6** solicitado:
+Esta aplicación explica y demuestra de forma interactiva el **punto 6**:
 
-- Por qué la **varianza es máxima en p = 0.5**.  
-- Cómo ajustar el cálculo cuando **p < 0.10** o **p > 0.90**.  
-- Ecuaciones alternativas para evitar **sobreestimación del tamaño muestral**.  
-- Aplicaciones reales a **eventos raros**.
+- Por qué la **varianza p(1−p)** es máxima en **p = 0.5**
+- Qué ocurre cuando **p < 0.10** (eventos raros) o **p > 0.90**
+- Cómo aplicar **ajustes** para evitar sobreestimar tamaño de muestra
+- Aplicado en **2 ejemplos reales** que reaccionan a tus parámetros
 """)
 
 st.divider()
 
-# ================================================================
-# SECCIÓN 1 — VARIANZA Y POR QUÉ ES MÁXIMA EN P = 0.5
-# ================================================================
-st.header("1️⃣ ¿Por qué la varianza es máxima en p = 0.5?")
+# =======================================================
+# 1. VARIANZA INTERACTIVA
+# =======================================================
 
-st.write("""
-La varianza de una proporción es:
+st.header("1️⃣ Varianza de la proporción y su máximo en p = 0.5")
+
+p_slider = st.slider("Selecciona un valor de p", 0.0, 1.0, 0.5, 0.01)
+
+st.write(f"""
+Para p = **{p_slider}**, la varianza es:
 
 \\[
-Var(p) = p(1-p)
+Var(p) = p(1-p) = {round(p_slider*(1-p_slider), 4)}
 \\]
-
-Esta expresión forma una parábola simétrica que alcanza su máximo en **p = 0.5**, porque es cuando existe la mayor incertidumbre:  
-ni es muy probable (p ≈ 1) ni muy improbable (p ≈ 0).  
 """)
 
 # Gráfica de varianza
-p_vals = np.linspace(0, 1, 200)
+p_vals = np.linspace(0, 1, 300)
 var_vals = p_vals * (1 - p_vals)
 
-fig, ax = plt.subplots(figsize=(6,4))
-ax.plot(p_vals, var_vals)
-ax.axvline(0.5, color="red")
-ax.set_xlabel("p")
-ax.set_ylabel("Var(p)")
-ax.set_title("Varianza de una proporción")
-st.pyplot(fig)
+fig1, ax1 = plt.subplots(figsize=(6,4))
+ax1.plot(p_vals, var_vals)
+ax1.scatter([p_slider], [p_slider*(1-p_slider)], color="red")
+ax1.axvline(0.5, color="orange", linestyle="--")
+ax1.set_title("Varianza de p según p(1-p)")
+ax1.set_xlabel("p")
+ax1.set_ylabel("Varianza")
+st.pyplot(fig1)
 
-st.info("👉 Observa que la curva alcanza su punto más alto en **p = 0.5**.")
+st.info("""
+✔ La incertidumbre máxima ocurre en p = 0.5  
+✔ Cuando p es muy pequeño o muy grande, la varianza baja → la fórmula estándar deja de funcionar bien.
+""")
 
 st.divider()
 
-# ================================================================
-# SECCIÓN 2 — CÁLCULO GENERAL DE TAMAÑO MUESTRAL
-# ================================================================
-st.header("2️⃣ Cálculo de tamaño muestral para proporciones")
 
-st.write("""
-La fórmula clásica es:
 
-\\[
-n = \\, \\frac{Z^2 \\, p(1-p)}{E^2}
-\\]
+# =======================================================
+# 2. CÁLCULO INTERACTIVO DEL TAMAÑO MUESTRAL
+# =======================================================
 
-Esta fórmula funciona bien cuando **p está entre 0.1 y 0.9**.  
-Pero cuando **p < 0.10** o **p > 0.90**, la varianza es tan pequeña que la fórmula produce tamaños de muestra exagerados.
-""")
+st.header("2️⃣ Cálculo interactivo del tamaño muestral")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    p = st.slider("Proporción esperada (p)", 0.0, 1.0, 0.05)
-    E = st.slider("Margen de error permitido (E)", 0.005, 0.2, 0.02)
+    p = st.slider("Proporción esperada p", 0.0, 1.0, 0.05)
+    E = st.slider("Margen de error E", 0.005, 0.2, 0.02)
+
 with col2:
-    Z = st.selectbox("Nivel de confianza (Z)", [1.64, 1.96, 2.58], index=1)
+    Z = st.selectbox("Nivel de confianza", [1.64, 1.96, 2.58], index=1)
     metodo = st.radio(
-        "Método de cálculo",
-        ["Fórmula estándar", "Ajuste para proporciones extremas", "Wilson"],
+        "Método",
+        ["Estándar", "Ajustado para extremos", "Wilson (recomendado)"]
     )
 
-# ----------------------------------------------------
-# FUNCIONES
-# ----------------------------------------------------
+# funciones
 def n_estandar(p, E, Z):
-    return (Z**2 * p * (1-p)) / (E**2)
+    return (Z**2 * p*(1-p)) / E**2
 
-def n_ajustada(p, E, Z):
-    # Ajuste recomendado para proporciones muy pequeñas
-    p_adj = max(p, 0.05) if p < 0.10 else (min(p, 0.95) if p > 0.90 else p)
-    return (Z**2 * p_adj * (1-p_adj)) / (E**2)
+def n_ajuste(p, E, Z):
+    p_adj = max(min(p, 0.95), 0.05)
+    return (Z**2 * p_adj*(1-p_adj)) / E**2
 
 def n_wilson(p, E, Z):
-    # Intervalo de Wilson → más estable
-    return (Z**2 * p*(1-p) + Z**2 * E**2 / 4) / (E**2)
+    return (Z**2 * p*(1-p) + Z**2 * (E**2)/4 ) / (E**2)
 
-# ----------------------------------------------------
-# Cálculo
-# ----------------------------------------------------
-if metodo == "Fórmula estándar":
+# cálculo
+if metodo == "Estándar":
     n = n_estandar(p, E, Z)
-elif metodo == "Ajuste para proporciones extremas":
-    n = n_ajustada(p, E, Z)
-elif metodo == "Wilson":
+elif metodo == "Ajustado para extremos":
+    n = n_ajuste(p, E, Z)
+else:
     n = n_wilson(p, E, Z)
 
-st.success(f"📌 Tamaño muestral requerido: **{int(np.ceil(n))} personas**")
+st.success(f"📌 Tamaño muestral: **{int(np.ceil(n))} personas**")
+
+# gráfica dinámica
+fig4, ax4 = plt.subplots(figsize=(6,4))
+ax4.plot(p_vals, n_estandar(p_vals, E, Z), label="Estándar")
+ax4.plot(p_vals, n_ajuste(p_vals, E, Z), label="Ajustado extremo")
+ax4.plot(p_vals, n_wilson(p_vals, E, Z), label="Wilson")
+ax4.scatter([p], [n], color="red")
+ax4.set_title("Tamaño muestral según p y método")
+ax4.set_xlabel("p")
+ax4.set_ylabel("n")
+ax4.legend()
+st.pyplot(fig4)
 
 st.info("""
-✔ El método **ajustado** o **Wilson** es más estable cuando p es muy pequeña (<0.10).  
-✔ Evita que la fórmula estándar produzca valores absurdos (como miles o millones).
+La diferencia entre métodos aumenta muchísimo cuando p es muy pequeña o muy grande.
 """)
 
 st.divider()
 
-# ================================================================
-# SECCIÓN 3 — EJEMPLO REAL 1: EVENTO RARO EN SALUD
-# ================================================================
-st.header("3️⃣ Ejemplo real: enfermedad rara (p = 0.008)")
 
-st.write("""
-Una enfermedad afecta a menos del 1% de la población.  
-Tenemos datos históricos y queremos diseñar un nuevo estudio.
-""")
+# =======================================================
+# 3. EJEMPLOS REALES — INTERACTIVOS
+# =======================================================
 
-df = pd.DataFrame({
-    "Año": [2021, 2022, 2023, 2024],
-    "Casos_totales": [10000, 11000, 10500, 12000],
-    "Casos_enfermedad": [80, 85, 75, 96]
-})
-df["Proporción"] = df["Casos_enfermedad"] / df["Casos_totales"]
+st.header("3️⃣ Ejemplos reales (interactivos con tus parámetros)")
 
-st.dataframe(df)
+tab1, tab2 = st.tabs(["🧪 Enfermedad rara", "⚙️ Fallas de productos"])
 
-st.write("### Tendencia de la proporción")
+# --- EJEMPLO 1 ---
+with tab1:
+    st.subheader("Enfermedad con prevalencia cercana a 1%")
 
-fig2, ax2 = plt.subplots(figsize=(6,4))
-ax2.plot(df["Año"], df["Proporción"], marker="o")
-ax2.set_title("Proporción histórica de enfermedad rara")
-ax2.set_ylabel("Proporción")
-st.pyplot(fig2)
+    datos = pd.DataFrame({
+        "Año": [2021, 2022, 2023, 2024],
+        "Población": [5000, 5200, 5100, 5300],
+        "Casos": [52, 45, 60, 55]
+    })
+    datos["Proporción"] = datos["Casos"] / datos["Población"]
 
-p_real = df["Proporción"].mean()
-n_real = n_ajustada(p_real, 0.01, 1.96)
+    st.write(datos)
 
-st.success(f"📌 Tamaño muestral recomendado para nuevo estudio: **{int(n_real)} personas**")
+    p_real = datos["Proporción"].mean()
+    n_enf = n_wilson(p_real, E, Z)
 
-st.divider()
+    st.success(f"📌 Tamaño muestral según tus parámetros: **{int(n_enf)} personas**")
 
-# ================================================================
-# SECCIÓN 4 — EJEMPLO REAL 2: FALLAS RARAS EN DISPOSITIVOS
-# ================================================================
-st.header("4️⃣ Ejemplo real: tasa de fallas de un dispositivo electrónico")
+    fig5, ax5 = plt.subplots(figsize=(6,4))
+    ax5.plot(datos["Año"], datos["Proporción"], marker="o")
+    ax5.set_title("Prevalencia histórica")
+    st.pyplot(fig5)
 
-st.write("""
-Una empresa quiere estimar la tasa de fallas. Las fallas son muy raras (<0.5%).
-""")
+# --- EJEMPLO 2 ---
+with tab2:
+    st.subheader("Fallas raras en dispositivos electrónicos")
 
-df2 = pd.DataFrame({
-    "Mes": ["Ene", "Feb", "Mar", "Abr", "May", "Jun"],
-    "Producción": [6000, 6100, 5800, 5900, 6200, 6150],
-    "Fallas": [18, 21, 17, 19, 23, 22]
-})
+    df2 = pd.DataFrame({
+        "Mes": ["Ene", "Feb", "Mar", "Abr", "May", "Jun"],
+        "Producidos": [6000, 5900, 6100, 6200, 5800, 6050],
+        "Fallas": [20, 18, 22, 21, 19, 23]
+    })
 
-df2["Proporción"] = df2["Fallas"] / df2["Producción"]
+    df2["Proporción"] = df2["Fallas"] / df2["Producidos"]
 
-st.dataframe(df2)
+    st.write(df2)
 
-fig3, ax3 = plt.subplots(figsize=(6,4))
-ax3.bar(df2["Mes"], df2["Proporción"])
-ax3.set_title("Tasa mensual de fallas")
-ax3.set_ylabel("Proporción")
-st.pyplot(fig3)
+    p_falla = df2["Proporción"].mean()
+    n_falla = n_wilson(p_falla, E, Z)
 
-p_falla = df2["Proporción"].mean()
-n_falla = n_ajustada(p_falla, 0.01, 1.96)
+    st.success(f"📌 Tamaño muestral según tus parámetros: **{int(n_falla)} productos**")
 
-st.success(f"📌 Tamaño muestral sugerido para monitoreo: **{int(n_falla)} productos**")
-
-st.info("""
-Este ejemplo muestra cómo los eventos raros requieren muestras grandes para estimarse con precisión.
-""")
+    fig6, ax6 = plt.subplots(figsize=(6,4))
+    ax6.bar(df2["Mes"], df2["Proporción"])
+    ax6.set_title("Tasa mensual de fallas")
+    st.pyplot(fig6)
