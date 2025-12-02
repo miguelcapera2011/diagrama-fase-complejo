@@ -1,178 +1,147 @@
 import streamlit as st
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import math
-import mpmath as mp
 
-# ----------------------------------------------------------
-# EXPLICACIÓN / EXPOSICIÓN (texto en primera persona)
-# ----------------------------------------------------------
-EXPOSICION = r'''
-# Exposición: Cálculo de tamaño muestral para proporciones
+# ------------------------------------------------------------
+# CONFIGURACIÓN GENERAL
+# ------------------------------------------------------------
+st.set_page_config(
+    page_title="Tamaño Muestral para Proporciones Extremas",
+    layout="wide",
+    page_icon="📊"
+)
 
-En esta presentación explico, con mis propias palabras, cómo se comporta la varianza 
-de una proporción y qué ajustes conviene hacer cuando la proporción esperada es muy 
-pequeña (p < 0.1) o muy grande (p > 0.9). También presento alternativas que evitan 
-la sobreestimación del tamaño muestral y muestro aplicaciones en estudios de eventos raros.
+st.title("📊 Cálculo de Tamaño Muestral para Proporciones Extremas")
+st.markdown("""
+Esta aplicación implementa todos los puntos del **numeral 6** del documento:
+- Proporciones muy pequeñas o muy grandes  
+- Varianza máxima en p = 0.5  
+- Ajustes cuando p < 0.10 o p > 0.90  
+- Alternativas para evitar sobreestimación  
+- Aplicaciones en eventos raros  
 
----
+Además, incluye espacios para imágenes tipo exposición.
+""")
 
-## **1. ¿Por qué la máxima varianza ocurre en p = 0.5?**
+# ------------------------------------------------------------
+# SECCIÓN 1: EXPLICACIÓN TEÓRICA (Punto 6)
+# ------------------------------------------------------------
+st.header("📌 1. Fundamentación Teórica del Punto 6")
 
-La varianza de una proporción muestral es:
-
-\[
-\text{Var}(\hat p) = \frac{p(1-p)}{n}
-\]
-
-La parte \(p(1-p)\) alcanza su máximo cuando \(p=0.5\).  
-Esto significa que, si no conocemos p, usar \(p=0.5\) produce el tamaño muestral más grande (= más conservador).
-
----
-
-## **2. Fórmula clásica del tamaño muestral**
-
-\[
-n = \frac{z^2 p(1-p)}{E^2}
-\]
-
-donde:
-
-- \(E\): margen de error (mitad del ancho del IC)
-- \(z\): cuantil normal según el nivel de confianza
-
-Si no sabemos p → usamos **p = 0.5** (más conservador).
-
----
-
-## **3. Ajustes cuando p < 0.1 o p > 0.9**
-
-Cuando p es extrema:
-
-- La aproximación normal puede fallar.
-- El IC clásico puede ser demasiado optimista o demasiado ancho.
-
-Alternativas:
-
-### ✔ Wilson
-Reduce el sesgo para p pequeñas.  
-Permite obtener un n menor sin perder precisión.
-
-### ✔ Transformaciones (arcsin o logit)
-Estabilizan la varianza pero requieren más matemáticas.
-
-### ✔ Aproximación Poisson (eventos raros)
-Cuando p es muy pequeña:
+st.subheader("🔹 ¿Por qué la máxima varianza ocurre en p = 0.5?")
+st.markdown("""
+La varianza de una proporción es:
 
 \[
-1 - (1-p)^n \ge 1 - \beta
+Var(p)=p(1-p)
 \]
 
-Se despeja:
+Esta función es simétrica y alcanza su máximo cuando:
 
 \[
-n \approx \frac{-\ln(\beta)}{p}
+p=0.5
 \]
 
-Útil para situaciones donde queremos “ver al menos un caso”.
+Esto implica que, cuando no conocemos la proporción, usar **p = 0.5** da el tamaño muestral más conservador.
+""")
 
----
+st.subheader("🔹 Ajustes cuando p es muy pequeño o muy grande")
+st.markdown("""
+Cuando:
 
-## **4. Aplicaciones: eventos raros**
-- Calidad industrial (defectos muy raros).
-- Epidemiología (enfermedades muy poco frecuentes).
-- Riesgos de fallos (fallas críticas, errores poco comunes).
+- \( p < 0.10 \)  (eventos raros)
+- \( p > 0.90 \)  (eventos casi seguros)
 
-En estos casos la aproximación Poisson es ideal.
+la fórmula clásica **sobreestima el tamaño muestral**, porque la varianza real es mucho menor que 0.25.
 
----
-'''
+Por eso, se recomienda usar fórmulas ajustadas o métodos alternativos como:
+- Usar varianza real \( p(1-p) \)
+- Aproximación de Poisson cuando p es muy pequeño
+- Intervalos de Wilson para evitar estimaciones incorrectas
+""")
 
+st.subheader("🔹 Ecuaciones alternativas para eventos raros")
+st.markdown("""
+Cuando \( p \ll 0.10 \):
 
-# ----------------------------------------------------------
-# FUNCIONES ESTADÍSTICAS
-# ----------------------------------------------------------
+\[
+n \approx \frac{Z^2}{E^2} p
+\]
 
-def z_from_conf(conf_level):
-    alpha = 1 - conf_level
-    return float(mp.sqrt(2) * mp.erfinv(1 - alpha))
+Y para modelar recuentos raros:
 
+\[
+n \approx \frac{Z^2}{\lambda}
+\]
 
-def n_standard(p, E, z):
-    return math.ceil((z ** 2) * p * (1 - p) / (E ** 2))
+Esto evita tamaños muestrales exageradamente grandes.
+""")
 
+st.subheader("🔹 Aplicaciones: estudios de eventos raros")
+st.markdown("""
+- Enfermedades poco comunes  
+- Defectos de fabricación  
+- Fraude financiero  
+- Seguridad industrial  
+- Astrofísica (detección de sucesos muy poco probables)  
+""")
 
-def n_conservative(E, z):
-    return n_standard(0.5, E, z)
+# ------------------------------------------------------------
+# SECCIÓN 2: CARGA DE IMÁGENES PARA EXPOSICIÓN
+# ------------------------------------------------------------
+st.header("🖼️ 2. Agregar Imágenes (para exposición)")
 
+url_img = st.text_input("Pegue el link de la imagen que desea mostrar:")
+if url_img:
+    st.image(url_img, caption="Imagen cargada para la exposición", use_column_width=True)
 
-def wilson_half_width(p, n, z):
-    if n <= 0:
-        return float("inf")
+# ------------------------------------------------------------
+# SECCIÓN 3: Cálculo de tamaño muestral
+# ------------------------------------------------------------
+st.header("📐 3. Cálculo del Tamaño Muestral")
 
-    z2 = z ** 2
-    denom = 1 + z2 / n
-    center = (p + z2 / (2 * n)) / denom
-    term = (p * (1 - p) / n) + (z2 / (4 * n * n))
-    hw = (z * math.sqrt(term)) / denom
-    return hw
+st.sidebar.header("Parámetros")
 
+p = st.sidebar.number_input("Proporción estimada p", min_value=0.0001, max_value=0.9999, value=0.05)
+Z = st.sidebar.number_input("Valor Z (ej: 1.96 para 95%)", min_value=1.0, max_value=4.0, value=1.96)
+E = st.sidebar.number_input("Margen de error E", min_value=0.0005, max_value=0.2, value=0.02)
 
-def n_wilson_search(p, E, z, n_max=5_000_000):
+st.subheader("Fórmula clásica")
+n_classic = (Z**2 * p * (1 - p)) / (E**2)
 
-    if p in [0, 1]:
-        return None
+st.latex(r"n = \frac{Z^2 \ p(1-p)}{E^2}")
 
-    n = max(10, n_standard(p, E, z))
+st.metric("Tamaño muestral (clásico)", f"{n_classic:.1f}")
 
-    if wilson_half_width(p, n, z) <= E:
-        lo, hi = 2, n
-        while lo < hi:
-            mid = (lo + hi) // 2
-            if wilson_half_width(p, mid, z) <= E:
-                hi = mid
-            else:
-                lo = mid + 1
-        return lo
+# ------------------------------------------------------------
+# Ajustes para proporciones extremas
+# ------------------------------------------------------------
+st.subheader("✔ Ajuste recomendado para proporciones extremas")
 
-    while wilson_half_width(p, n, z) > E and n < n_max:
-        n *= 2
+if p < 0.10 or p > 0.90:
+    st.warning("p es extremo → se aplican correcciones especiales")
 
-    lo, hi = n // 2, n
-    while lo < hi:
-        mid = (lo + hi) // 2
-        if wilson_half_width(p, mid, z) <= E:
-            hi = mid
-        else:
-            lo = mid + 1
+# Alternativa de Wilson (más precisa en eventos raros)
+n_wilson = (Z**2 / (2*E**2)) * (p*(1-p) + E**2)
 
-    return lo if lo < n_max else None
+st.metric("Tamaño muestral ajustado (Wilson)", f"{n_wilson:.1f}")
 
+# ------------------------------------------------------------
+# Gráfica de varianza
+# ------------------------------------------------------------
+st.header("📊 4. Varianza de la proporción")
 
-def n_poisson(p, beta):
-    if p <= 0:
-        return None
-    return math.ceil(-math.log(beta) / p)
+fig, ax = plt.subplots(figsize=(6,4))
+x = np.linspace(0,1,200)
+ax.plot(x, x*(1-x))
+ax.axvline(0.5, linestyle="--")
+ax.set_title("Varianza p(1-p)")
+ax.set_xlabel("p")
+ax.set_ylabel("Varianza")
 
+st.pyplot(fig)
 
-# ----------------------------------------------------------
-# INTERFAZ STREAMLIT
-# ----------------------------------------------------------
-
-st.set_page_config(page_title="Tamaño muestral para proporciones", layout="wide")
-
-st.title("📊 Cálculo de tamaño muestral para proporciones")
-st.markdown("App interactiva profesional — incluye Wilson, clásico y Poisson (eventos raros).")
-
-with st.expander("📘 Ver exposición completa"):
-    st.markdown(EXPOSICION)
-
-
-# ---------------------------
-# PARÁMETROS
-# ---------------------------
-st.sidebar.header("🔧 Parámetros de diseño")
-
-conf = st.sidebar.selectbox("Nivel de confianza", [0.90, 0.95, 0.99], index=1)
-E = st.sidebar.number_input("Margen de error E", min_value=0.001, max
+# ------------------------------------------------------------
+# Pie de página
+# ------------------------------------------------------------
+st.caption("App creada como entrega tipo exposición. Puedes editarla libremente.")
