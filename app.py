@@ -19,7 +19,7 @@ st.title("Tamaño muestral para proporciones extremas")
 # BARRA LATERAL – Navegación
 
 menu = st.sidebar.radio(
-    "Secciones del Punto 6",
+    "INDICE",
     [
         "6.1 Varianza máxima (p=0.5)",
         "6.2 Ajustes cuando p es extrema",
@@ -31,7 +31,7 @@ menu = st.sidebar.radio(
 # SECCIÓN 6.1 – VARIANZA MÁXIMA
 
 if menu == "6.1 Varianza máxima (p=0.5)":
-    st.header("6.1 ¿Por qué la máxima varianza ocurre en p = 0.5?")
+    st.header("¿Por qué la máxima varianza ocurre en p = 0.5?")
     
     st.markdown("""
     La varianza de una proporción está dada por:
@@ -55,7 +55,7 @@ if menu == "6.1 Varianza máxima (p=0.5)":
     """)
 
     # Interacción con la gráfica
-    st.subheader("Gráfica interactiva de la varianza p(1-p)")
+    st.subheader("Gráfica de la varianza p(1-p)")
 
     p_point = st.slider("Seleccione un valor de p:", 0.0, 1.0, 0.5, 0.01)
 
@@ -78,7 +78,7 @@ if menu == "6.1 Varianza máxima (p=0.5)":
 
 # SECCIÓN 6.2 – AJUSTES PARA p EXTREMA
 
-elif menu == "6.2 Ajustes cuando p es extrema":
+elif menu == "Ajustes cuando p es extrema":
     st.header("6.2 Ajustes cuando p < 0.10 o p > 0.90")
     
     st.markdown("""
@@ -94,7 +94,7 @@ elif menu == "6.2 Ajustes cuando p es extrema":
     - si p < 0.05 → usar p = 0.05  
     - si p > 0.95 → usar p = 0.95  
     
-    🎯 Este ajuste estabiliza la varianza y evita muestras innecesariamente grandes.
+    Este ajuste estabiliza la varianza y evita muestras innecesariamente grandes.
     """)
 
     st.subheader("Cálculo interactivo")
@@ -128,7 +128,7 @@ elif menu == "6.2 Ajustes cuando p es extrema":
 # SECCIÓN 6.3 – MODELO POISSON
 # ----------------------------------------------------------
 elif menu == "6.3 Alternativa (Poisson)":
-    st.header("6.3 Alternativa para evitar sobreestimación: Poisson")
+    st.header("Alternativa para evitar sobreestimación: Poisson")
 
     st.markdown("""
     Para eventos muy raros (p < 0.05), la distribución binomial se aproxima a una **Poisson**, lo cual permite un cálculo más estable:
@@ -163,7 +163,7 @@ elif menu == "6.3 Alternativa (Poisson)":
 # SECCIÓN 6.4 – APLICACIONES REALES (EVENTOS RAROS)
 # ----------------------------------------------------------
 elif menu == "6.4 Aplicaciones (eventos raros)":
-    st.header("6.4 Aplicaciones reales de eventos raros")
+    st.header("Aplicaciones reales de eventos raros")
     st.write("""
     A continuación se presentan **dos estudios reales** donde los eventos son extremadamente raros  
     y por eso se utilizan los métodos de los incisos 6.1, 6.2 y 6.3.
