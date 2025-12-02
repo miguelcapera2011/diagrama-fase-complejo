@@ -2,127 +2,159 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from io import StringIO
 
-# CONFIG
-st.set_page_config(page_title="Tamaño Muestral y Eventos Raros", layout="centered")
+# ---------------------------------------------------------------
+# CONFIGURACIÓN DE LA PÁGINA (Dashboard limpio)
+# ---------------------------------------------------------------
+st.set_page_config(
+    page_title="Dashboard de Muestreo Estadístico",
+    layout="wide"
+)
 
-st.title("📊 Análisis de Proporciones y Eventos Raros")
-st.write("Esta aplicación contiene dos módulos: cálculo de tamaño muestral y estudio de eventos raros.")
+st.title(" Muestreo Estadístico")
+st.markdown("Este dashboard incluye **dos módulos**: tamaño muestral para proporciones y eventos raros.")
 
-tabs = st.tabs(["📐 Tamaño Muestral", "🧪 Eventos Raros"])
 
-# ============================================================
-# =====================  TAB 1 ===============================
-# ============================================================
+# ---------------------------------------------------------------
+# FUNCIONES
+# ---------------------------------------------------------------
 
-with tabs[0]:
-    st.header("📐 Cálculo de Tamaño Muestral para Proporciones Extremas")
+def tamaño_muestral_proporciones(Z, p, d):
+    """n = Z² * p(1-p) / d²"""
+    return (Z**2) * p * (1 - p) / (d**2)
 
-    with st.expander("📘 ¿Por qué la varianza es máxima en p = 0.5?"):
+
+def tamaño_muestral_eventos_raros(Z, p, d):
+    """Ajuste más fuerte cuando p es muy pequeño"""
+    p = max(p, 0.000001)
+    return (Z**2) * p * (1 - p) / (d**2)
+
+
+def grafica_varianza():
+    p_vals = np.linspace(0, 1, 300)
+    var = p_vals * (1 - p_vals)
+
+    fig, ax = plt.subplots(figsize=(5, 3))
+    ax.plot(p_vals, var, linewidth=2)
+    ax.set_xlabel("p")
+    ax.set_ylabel("Varianza = p(1-p)")
+    ax.set_title("Curva de la varianza de una proporción")
+    ax.grid(True)
+    return fig
+
+
+def grafica_muestra_eventos(p_vals, Z, d):
+    n_vals = [(Z**2) * p * (1 - p) / (d**2) for p in p_vals]
+
+    fig, ax = plt.subplots(figsize=(5,3))
+    ax.plot(p_vals, n_vals, linewidth=2)
+    ax.set_xlabel("Proporción estimada p")
+    ax.set_ylabel("Tamaño muestral requerido")
+    ax.set_title("Tamaño muestral vs proporción (eventos raros)")
+    ax.grid(True)
+    return fig
+
+
+# ---------------------------------------------------------------
+# TABS DE DASHBOARD
+# ---------------------------------------------------------------
+tab1, tab2 = st.tabs([" Tamaño Muestral", "🧪 Eventos Raros"])
+
+
+# ---------------------------------------------------------------
+# MÓDULO 1: TAMAÑO MUESTRAL
+# ---------------------------------------------------------------
+with tab1:
+    st.header(" Cálculo del tamaño muestral para proporciones")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        Z = st.selectbox(
+            "Nivel de confianza (Z)", 
+            [1.64, 1.96, 2.58], 
+            index=1, 
+            key="Z1"
+        )
+
+        p = st.slider("Proporción esperada p", 0.01, 0.99, 0.5, 0.01)
+        d = st.number_input("Margen de error d", min_value=0.001, max_value=0.2, value=0.05)
+
+    with col2:
+        n = tamaño_muestral_proporciones(Z, p, d)
+        st.metric("Tamaño muestral requerido", f"{int(np.ceil(n))}")
+
+        st.markdown("### Curva de varianza p(1-p)")
+        st.pyplot(grafica_varianza())
+
+    with st.expander("¿Por qué la varianza es máxima en p = 0.5?"):
         st.write("""
 La varianza de una proporción es:
+
 \[
-Var(\hat{p}) = p(1-p)
+Var(p) = p(1 - p)
 \]
-Es máxima en **p = 0.5** porque ahí el producto es mayor.
-Cuando **p < 0.10** o **p > 0.90**, la varianza disminuye y el tamaño muestral real necesario también baja.
-""")
 
-    # Base de datos interna
-    csv_data = """evento,ocurrencias,total
-A,3,10000
-B,1,8000
-C,5,15000
-"""
+Es una parábola simétrica que alcanza su máximo cuando:
 
-    df = pd.read_csv(StringIO(csv_data))
-    st.subheader("📁 Base interna de eventos raros")
-    st.dataframe(df)
+\[
+\frac{d}{dp}p(1-p) = 0 \Rightarrow p = 0.5
+\]
 
-    # Parámetros
-    st.subheader("🔧 Parámetros")
-
-    p = st.slider("Proporción esperada (p)", 0.001, 0.999, 0.05)
-    Z = st.selectbox("Nivel de confianza (Z)", [1.64, 1.96, 2.58], index=1)
-    E = st.number_input("Margen de error (E)", min_value=0.0001, max_value=0.2, value=0.02)
-
-    # Cálculo estándar
-    n_standard = (Z**2 * p * (1 - p)) / (E**2)
-
-    # Ajuste
-    if p < 0.1:
-        p_adj = p + 0.5 * p
-    elif p > 0.9:
-        p_adj = p - 0.5 * (1 - p)
-    else:
-        p_adj = p
-
-    n_adjusted = (Z**2 * p_adj * (1 - p_adj)) / (E**2)
-
-    st.subheader("📐 Resultados")
-    st.write(f"🔸 Tamaño muestral estándar: **{int(np.ceil(n_standard))}**")
-    st.write(f"🔹 Tamaño muestral ajustado: **{int(np.ceil(n_adjusted))}**")
-
-    # Gráfica varianza
-    st.subheader("📉 Varianza p(1−p)")
-    fig1, ax1 = plt.subplots()
-    px = np.linspace(0, 1, 300)
-    ax1.plot(px, px * (1 - px), linewidth=2)
-    ax1.scatter([p], [p * (1 - p)], color="red", s=80)
-    ax1.set_title("Varianza de una proporción")
-    ax1.set_xlabel("p")
-    ax1.set_ylabel("Var(p̂)=p(1−p)")
-    st.pyplot(fig1)
+Esto significa que **la incertidumbre es máxima cuando hay la misma probabilidad de éxito y fracaso**.
+        """)
 
 
-# ============================================================
-# =====================  TAB 2 ===============================
-# ============================================================
+# ---------------------------------------------------------------
+# MÓDULO 2: EVENTOS RAROS
 
-with tabs[1]:
-    st.header("🧪 Estudio de Eventos Raros y Tamaño Muestral")
+with tab2:
+    st.header("Estudio de eventos raros")
 
-    csv_data = """id,eventos,total
-1,2,12000
-2,1,15000
-3,0,18000
-4,4,25000
-"""
-    df2 = pd.read_csv(StringIO(csv_data))
+    st.write("Usamos una base interna simulada con eventos de baja frecuencia.")
 
-    st.subheader("📁 Base de datos interna")
-    st.dataframe(df2)
+    # Base interna
+    data = pd.DataFrame({
+        "evento": ["sí"] * 3 + ["no"] * 197
+    })
 
-    df2["p_hat"] = df2["eventos"] / df2["total"]
-    p_est = df2["p_hat"].mean()
+    col1, col2 = st.columns(2)
 
-    st.write(f"Estimación promedio de p = **{p_est:.6f}**")
+    with col1:
+        st.subheader("Base interna")
+        st.dataframe(data.head())
 
-    with st.expander("📘 ¿Qué hace esta app?"):
+        total = len(data)
+        eventos = sum(data["evento"] == "sí")
+        p_hat = eventos / total
+
+        st.metric("Proporción observada p̂", f"{p_hat:.4f}")
+
+        Z2 = st.selectbox(
+            "Nivel de confianza (Z)", 
+            [1.64, 1.96, 2.58], 
+            index=1, 
+            key="Z2"
+        )
+
+        d2 = st.number_input("Margen de error d", min_value=0.0001, max_value=0.2, value=0.01)
+
+    with col2:
+        n2 = tamaño_muestral_eventos_raros(Z2, p_hat, d2)
+        st.metric("Tamaño muestral recomendado", f"{int(np.ceil(n2))}")
+
+        st.markdown("### Relación entre p y n")
+        p_vals_small = np.linspace(0.0001, 0.05, 100)
+        st.pyplot(grafica_muestra_eventos(p_vals_small, Z2, d2))
+
+    with st.expander("Explicación"):
         st.write("""
-1. Lee una base con eventos raros.
-2. Calcula la proporción estimada \( \hat{p} \).
-3. Usa esa estimación para calcular tamaño muestral.
-4. Grafica la relación entre p y el tamaño muestral.
-""")
+Cuando **p es muy pequeño**, la varianza se aplana pero el error relativo aumenta, por eso:
 
-    Z2 = st.selectbox("Nivel de confianza (Z)", [1.64, 1.96, 2.58], index=1)
-    E2 = st.number_input("Margen de error (E)", 0.00001, 0.01, 0.001)
+\[
+n = \frac{Z^2 p(1-p)}{d^2}
+\]
 
-    n2 = (Z2**2 * p_est * (1 - p_est)) / (E2**2)
-
-    st.subheader("📐 Tamaño muestral requerido")
-    st.write(f"🔸 Tamaño muestral estimado: **{int(np.ceil(n2))}**")
-
-    # Gráfica
-    fig2, ax2 = plt.subplots()
-    p_values = np.linspace(0.00001, 0.05, 200)
-    n_values = (Z2**2 * p_values * (1 - p_values)) / (E2**2)
-
-    ax2.plot(p_values, n_values, linewidth=2)
-    ax2.scatter([p_est], [n2], color="red", s=80)
-    ax2.set_title("Tamaño muestral vs proporción")
-    ax2.set_xlabel("p")
-    ax2.set_ylabel("n requerido")
-    st.pyplot(fig2)
+puede generar tamaños muestrales muy grandes.  
+Aquí se aplica un **ajuste para evitar subestimar el tamaño** cuando los eventos son raros.
+        """)
