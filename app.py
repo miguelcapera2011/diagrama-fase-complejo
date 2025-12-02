@@ -19,7 +19,7 @@ st.title(" Tamaño muestral para proporciones extremas (Punto 6)")
 # ============================================================
 
 menu = st.sidebar.radio(
-    "Navegación",
+    "INDICE",
     [
         "6.1 Varianza máxima (p = 0.5)",
         "6.2 Ajustes cuando p es extrema",
