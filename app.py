@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("📊 Tamaño muestral para proporciones extremas (Punto 6)")
+st.title(" Tamaño muestral para proporciones extremas (Punto 6)")
 
 # ============================================================
 # MENÚ LATERAL
@@ -132,7 +132,7 @@ elif menu == "6.2 Ajustes cuando p es extrema":
     n_ajustado = z**2 * p_adj * (1 - p_adj) / d**2
 
     st.info(f"📘 Tamaño muestral clásico: **{round(n_clasico,2)}**")
-    st.success(f"📗 Tamaño muestral ajustado: **{round(n_ajustado,2)}**")
+    st.success(f" Tamaño muestral ajustado: **{round(n_ajustado,2)}**")
     st.write(f"Valor de p usado después del ajuste: **{p_adj}**")
 
     if p < 0.05 or p > 0.95:
