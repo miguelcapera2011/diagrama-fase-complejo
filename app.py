@@ -11,6 +11,9 @@ st.set_page_config(
     layout="wide"
 )
 
+# ⬇️ Nuevo: tamaño global para todas las gráficas
+plt.rcParams["figure.figsize"] = (4, 3)
+
 st.title("📊 Tamaño Muestral para Proporciones Muy Pequeñas o Muy Grandes")
 st.write("""
 Esta aplicación está diseñada para **presentación y exposición**, con explicaciones completas,
@@ -324,4 +327,3 @@ Esta aplicación muestra que:
 
 Gracias por utilizar esta herramienta educativa optimizada para exposición.
 """)
-
