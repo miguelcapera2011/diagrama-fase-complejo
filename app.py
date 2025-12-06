@@ -1,365 +1,225 @@
-# app.py
-"""
-Sample Size Dashboard (Punto 6)
-Streamlit app to explore sample size calculations for extreme proportions (p small or large).
-Features:
- - Classical formula
- - Finite population correction
- - Wilson interval-based n (numerical search)
- - Agresti-Coull (numerical search)
- - Poisson approx (n = lambda / p)
- - Exact binomial (numerical search using binomial CDF criterion)
- - Simulated and uploadable datasets (2 examples included)
- - Interactive charts and Excel export
-"""
+# app_tamanio_muestra_proporciones_streamlit.py
+# Streamlit app para exponer "Punto 6: tamaño muestral para proporciones"
+# Incluye explicación, fórmulas, gráficos interactivos y comparaciones.
 
-from math import ceil, sqrt
 import streamlit as st
-import pandas as pd
 import numpy as np
-from scipy.stats import norm, binom, poisson
-import plotly.express as px
-import io
+import matplotlib.pyplot as plt
+from math import log
+from scipy.stats import norm
 
-st.set_page_config(page_title="Tamaño Muestra — Punto 6", layout="wide")
+# Intento importar funciones para intervalos exactos (Clopper-Pearson) si están
+# disponibles. Si no, mostraremos una nota y la funcionalidad opcional seguirá.
+try:
+    from statsmodels.stats.proportion import proportion_confint
+    STATS_MODELS_AVAILABLE = True
+except Exception:
+    STATS_MODELS_AVAILABLE = False
 
-# -------------------------
-# Helper functions
-# -------------------------
-Z_lookup = {90: 1.645, 95: 1.96, 99: 2.576}
+st.set_page_config(
+    page_title="Tamaño muestral para proporciones (Punto 6)",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
-def z_from_conf(conf):
-    return Z_lookup.get(int(conf), norm.ppf(1 - (1 - conf/100)/2))
+# ----------------- UTILS -----------------
 
-def classical_n(p, E, z):
-    """Classical closed-form sample size for proportion."""
-    return (z**2 * p * (1 - p)) / (E**2)
+def z_from_alpha(alpha):
+    return norm.ppf(1 - alpha / 2)
 
-def finite_population_correction(n0, N):
-    """Finite population corrected sample size."""
-    if N is None or N <= 0:
-        return n0
-    return n0 / (1 + n0 / N)
 
-def poisson_n(p, lam):
-    """Poisson approximation: n = lambda / p"""
+def n_classical(p, d, alpha):
+    z = z_from_alpha(alpha)
+    return (z ** 2) * p * (1 - p) / (d ** 2)
+
+
+def n_conservative(d, alpha):
+    # fórmula independiente de p (conservadora, basada en p=0.5): Z^2 * 0.25 / d^2
+    z = z_from_alpha(alpha)
+    return (z ** 2) * 0.25 / (d ** 2)
+
+
+def n_wilson_approx(d, alpha):
+    # Aproximación simple derivada de la cota máxima: Z^2/(4 d^2)
+    z = z_from_alpha(alpha)
+    return (z ** 2) / (4 * d ** 2)
+
+
+def n_at_least_one(p, confidence):
+    # n tal que P(al menos un caso) >= confidence
+    # 1 - (1-p)^n >= confidence  -> (1-p)^n <= 1-confidence -> n >= log(1-confidence)/log(1-p)
     if p <= 0:
-        return np.nan
-    return lam / p
+        return np.inf
+    if p >= 1:
+        return 1
+    return np.log(1 - confidence) / np.log(1 - p)
 
-def wilson_interval_halfwidth(p_hat, n, z):
-    """Compute half-width of Wilson interval for observed x = round(p_hat*n)."""
-    x = int(round(p_hat * n))
-    if n == 0:
-        return np.nan
-    phat = x / n
-    denom = 1 + (z**2) / n
-    center = (phat + (z**2) / (2 * n)) / denom
-    term = z * np.sqrt((phat * (1 - phat) / n) + (z**2) / (4 * n**2)) / denom
-    halfw = term
-    return halfw
 
-def agresti_coull_halfwidth(p_hat, n, z):
-    """Compute Agresti-Coull half-width using adjusted counts (x+z^2/2)."""
-    # Agresti–Coull uses +z^2/2 pseudo-counts; we'll compute adjusted p_tilde and halfwidth (approx normal)
-    x = int(round(p_hat * n))
-    n_tilde = n + z**2
-    p_tilde = (x + (z**2) / 2) / n_tilde
-    halfw = z * np.sqrt(p_tilde * (1 - p_tilde) / n_tilde)
-    return halfw
+# ----------------- APP LAYOUT -----------------
 
-def find_min_n_by_halfwidth(p, E, z, method='wilson', max_n=200000):
-    """Find minimal integer n such that half-width <= E using chosen method."""
-    # Start from classical estimate as lower bound
-    n0 = max(2, int(ceil(classical_n(max(p, 1e-12), E, z))))
-    for n in range(n0, max_n+1):
-        if method == 'wilson':
-            hw = wilson_interval_halfwidth(p, n, z)
-        elif method == 'agresti-coull':
-            hw = agresti_coull_halfwidth(p, n, z)
-        elif method == 'exact':
-            # exact: find x = round(p*n) and compute two-sided Clopper-Pearson half-width conservatively
-            x = int(round(p * n))
-            # compute two-sided Clopper-Pearson interval (use binom.ppf) via inversion
-            alpha = 2*(1 - norm.cdf(z))  # approx alpha from z
-            # lower bound
-            if x == 0:
-                lower = 0.0
-            else:
-                lower = binom.ppf(alpha/2, n, p)  # not ideal; we'll approximate using beta inversion would be better
-                # fallback: simple approximation using Wilson
-                lower = max(0.0, (x / n) - z * sqrt((x / n) * (1 - x / n) / n))
-            upper = min(1.0, (x / n) + z * sqrt((x / n) * (1 - x / n) / n))
-            hw = max((x / n) - lower, upper - (x / n))
-        else:
-            hw = wilson_interval_halfwidth(p, n, z)
-        # handle unrealistic nan
-        if np.isnan(hw):
-            continue
-        if hw <= E:
-            return n
-    return None
+st.title("📊 Punto 6 — Tamaño muestral para proporciones (p muy pequeña / muy grande)")
+st.markdown(
+    """
+    Esta app acompaña la exposición sobre **por qué la varianza de una proporción es máxima en p=0.5**,
+    cómo evitar la **sobreestimación** del tamaño muestral cuando p es muy pequeña o muy grande,
+    y qué ajustes prácticos se recomiendan (usar la proporción esperada, usar correcciones como Wilson/Agresti–Coull, o fórmulas especiales para eventos raros).
+    """
+)
 
-def classical_with_correction(p, E, z, N=None):
-    n0 = classical_n(p, E, z)
-    n_corr = finite_population_correction(n0, N) if N else n0
-    return n0, n_corr
+st.sidebar.header("Parámetros globales")
+alpha = st.sidebar.slider("Nivel de significación \(\alpha\)", min_value=0.005, max_value=0.10, value=0.05, step=0.005)
+confidence_at_least_one = st.sidebar.slider("Confianza para 'al menos un caso'", min_value=0.80, max_value=0.999, value=0.95, step=0.01)
 
-# -------------------------
-# UI Layout
-# -------------------------
-st.title("📊 Dashboard — Tamaño de muestra para proporciones extremas (Punto 6)")
-st.markdown("""
-Esta app interactiva cubre **teoría**, **fórmulas**, **cálculos en tiempo real**, **gráficos** y **ejemplos** para proporciones muy pequeñas o muy grandes (p < 0.10 o p > 0.90).
-Usa la barra lateral para configurar parámetros, prueba con los ejemplos incluidos o sube tus propios datos CSV.
-""")
+# -------------------------------------------
+# Panel izquierdo: exposición + texto provisto
+# -------------------------------------------
 
-# Sidebar
-with st.sidebar:
-    st.header("Configuración de cálculo")
-    conf = st.selectbox("Nivel de confianza (%)", [90, 95, 99], index=1)
-    z = z_from_conf(conf)
-    p_input = st.number_input("Proporción esperada p (0 < p < 1)", min_value=0.0, max_value=1.0, value=0.002, format="%.6f")
-    E = st.number_input("Margen de error E (valor absoluto)", min_value=0.0001, max_value=0.5, value=0.001, step=0.0001, format="%.6f")
-    N = st.number_input("Población finita N (0 = desconocida)", min_value=0, value=0, step=1)
-    use_population = N > 0
-    method = st.selectbox("Método para búsqueda de n (cuando aplique)", ["clásica", "wilson", "agresti-coull", "poisson", "exact"])
-    lam_for_poisson = st.number_input("λ para Poisson (usado si método Poisson)", min_value=1.0, value=3.0, step=0.5)
-    st.markdown("---")
-    st.header("Datos / Ejemplos")
-    st.write("La app incluye 2 ejemplos simulados: enfermedad rara y encuesta con p alto. Puedes subir tus propios CSV.")
-    upload1 = st.file_uploader("Subir CSV para ejemplo 1 (opcional)", type=["csv"], key="up1")
-    upload2 = st.file_uploader("Subir CSV para ejemplo 2 (opcional)", type=["csv"], key="up2")
-    st.markdown("---")
-    if st.button("Generar informe y Excel con resultados"):
-        st.session_state.generate_report = True
+col1, col2 = st.columns([1.1, 1])
 
-# -------------------------
-# Example datasets (simulados) OR cargar los tuyos
-# -------------------------
-@st.cache_data
-def generate_simulated_datasets():
-    rng = np.random.default_rng(seed=12345)
-    # Example 1: rare event, p=0.002, n=10000
-    n1 = 10000
-    p1 = 0.002
-    data1 = rng.binomial(1, p1, n1)
-    df1 = pd.DataFrame({"event": data1})
-    df1["id"] = np.arange(1, n1+1)
-    # Example 2: high prop p=0.92, n=1000
-    n2 = 1000
-    p2 = 0.92
-    data2 = rng.binomial(1, p2, n2)
-    df2 = pd.DataFrame({"event": data2})
-    df2["id"] = np.arange(1, n2+1)
-    return df1, df2
-
-df1_sim, df2_sim = generate_simulated_datasets()
-
-# Replace if uploaded
-if upload1:
-    try:
-        df1 = pd.read_csv(upload1)
-        st.sidebar.success("Ejemplo 1: CSV cargado correctamente.")
-    except Exception as e:
-        st.sidebar.error(f"Error leyendo CSV 1: {e}")
-        df1 = df1_sim.copy()
-else:
-    df1 = df1_sim.copy()
-
-if upload2:
-    try:
-        df2 = pd.read_csv(upload2)
-        st.sidebar.success("Ejemplo 2: CSV cargado correctamente.")
-    except Exception as e:
-        st.sidebar.error(f"Error leyendo CSV 2: {e}")
-        df2 = df2_sim.copy()
-else:
-    df2 = df2_sim.copy()
-
-# Assume columns: either 'event' (0/1) or a single column
-def ensure_event_col(df):
-    if "event" in df.columns:
-        return df[["id","event"]] if "id" in df.columns else df[["event"]]
-    # try first numeric column
-    for c in df.columns:
-        if pd.api.types.is_numeric_dtype(df[c]):
-            return pd.DataFrame({"event": df[c].astype(int)})
-    # fallback: create zeros
-    return pd.DataFrame({"event": np.zeros(len(df), dtype=int)})
-
-df1_clean = ensure_event_col(df1)
-df2_clean = ensure_event_col(df2)
-
-# -------------------------
-# Show datasets and quick stats
-# -------------------------
-st.header("💾 Bases de datos (Ejemplos)")
-
-col1, col2 = st.columns(2)
 with col1:
-    st.subheader("Ejemplo 1 — Evento raro (simulado o cargado)")
-    st.dataframe(df1_clean.head(100))
-    c1_count = df1_clean["event"].sum()
-    st.markdown(f"- Observaciones: **{len(df1_clean)}**  \n- Eventos (sum): **{c1_count}**  \n- Proporción empírica: **{c1_count/len(df1_clean):.6f}**")
+    st.header("📚 Exposición (texto listo para leer)")
+
+    exposicion_text = """
+**En esta presentación veremos cómo calcular el tamaño muestral cuando se trabajan proporciones muy pequeñas o muy grandes.**
+
+La varianza es máxima cuando **p = 0.5**. ¿Por qué? Porque **p(1−p)** forma una curva simétrica cuya cima está exactamente en **0.5**.
+
+Si p es 0.5, entonces hay máxima incertidumbre: la mitad de la población tiene la característica y la otra mitad no. Esto hace que la variabilidad sea mayor.
+
+En proporciones extremas, la varianza **p(1−p)** se hace muy pequeña. Si usamos p = 0.5 para ser ‘conservadores’, sobre estimamos mucho el tamaño de muestra, especialmente en estudios de eventos raros. Explicaremos por qué la varianza es máxima en p = 0.5 y qué ajustes deben hacerse cuando **p < 0.10** o **p > 0.90**.
+
+Estos conceptos son esenciales para evitar sobreestimar el tamaño de muestra y para diseñar estudios de eventos raros o de alta prevalencia.
+
+**Recomendaciones prácticas:**
+- Usar la proporción real esperada en vez de usar 0.5.
+- Aplicar correcciones que evitan sobredimensionar el tamaño muestral, por ejemplo: intervalos exactos tipo *Clopper–Pearson*, aproximaciones de *Wilson* o *Agresti–Coull*, o fórmulas específicas para eventos raros.
+
+(El app permite comparar las fórmulas y visualizar cómo cambian los tamaños muestrales al modificar p, d y \alpha.)
+"""
+
+    st.markdown(exposicion_text)
+
+    st.markdown("---")
+
+    st.header("🔧 Controles del ejercicio (introduzca los valores)")
+    p = st.number_input("Proporción esperada p (entre 0 y 1)", min_value=0.0, max_value=1.0, value=0.01, step=0.001, format="%.4f")
+    d = st.number_input("Error absoluto tolerado d (ej: 0.01 = ±1%)", min_value=0.0005, max_value=0.5, value=0.01, step=0.001, format="%.4f")
+
+    st.write("- Si no conoce p, puede probar con p = 0.5 para obtener un tamaño conservador, pero la app mostrará la sobreestimación.")
+
+    st.markdown("---")
+
+    st.subheader("Métodos calculados")
+    st.write("La app calcula:\n• Fórmula clásica con p\n• Fórmula conservadora (p=0.5)\n• Aproximación tipo Wilson (independiente de p)\n• Tamaño para ver al menos un caso con cierta confianza")
+
 with col2:
-    st.subheader("Ejemplo 2 — Proporción muy alta (simulado o cargado)")
-    st.dataframe(df2_clean.head(100))
-    c2_count = df2_clean["event"].sum()
-    st.markdown(f"- Observaciones: **{len(df2_clean)}**  \n- Eventos (sum): **{c2_count}**  \n- Proporción empírica: **{c2_count/len(df2_clean):.6f}**")
+    st.header("📈 Visualizaciones interactivas")
+    
+    # Plot 1: variance p(1-p) with highlight
+    ps = np.linspace(0, 1, 501)
+    variances = ps * (1 - ps)
 
-# -------------------------
-# Interactive charts
-# -------------------------
-st.header("📈 Visualizaciones")
+    fig1, ax1 = plt.subplots(figsize=(6, 3.5))
+    ax1.plot(ps, variances, lw=2)
+    ax1.fill_between(ps, variances, alpha=0.08)
+    ax1.axvline(0.5, color='k', lw=0.8, linestyle='--')
+    ax1.scatter([p], [p * (1 - p)], color='red')
+    ax1.annotate(f'p={p:.4f}\nvar={p*(1-p):.4f}', xy=(p, p*(1-p)), xytext=(p+0.05, p*(1-p)+0.02), arrowprops=dict(arrowstyle='->'))
+    ax1.set_title('Varianza de la proporción: p(1-p)')
+    ax1.set_xlabel('p')
+    ax1.set_ylabel('Varianza')
+    ax1.set_xlim(0, 1)
+    ax1.set_ylim(0, 0.26)
+    st.pyplot(fig1)
 
-colA, colB = st.columns(2)
-with colA:
-    st.subheader("Histograma — Ejemplo 1")
-    fig1 = px.histogram(df1_clean, x="event", title="Distribución de eventos (Ejemplo 1)", labels={"event":"Evento (0/1)"})
-    st.plotly_chart(fig1, use_container_width=True)
-with colB:
-    st.subheader("Histograma — Ejemplo 2")
-    fig2 = px.histogram(df2_clean, x="event", title="Distribución de eventos (Ejemplo 2)", labels={"event":"Evento (0/1)"})
-    st.plotly_chart(fig2, use_container_width=True)
+    # Plot 2: sample size vs p for classical and conservative
+    p_values = np.linspace(0.0001, 0.9999, 200)
+    n_classic_values = [n_classical(pp, d, alpha) for pp in p_values]
+    n_conserv = n_conservative(d, alpha)
+    n_wilson_val = n_wilson_approx(d, alpha)
 
-# Varianza vs p plot
-st.subheader("Varianza teórica p(1-p) vs p")
-p_values = np.linspace(0,1,201)
-var_values = p_values*(1-p_values)
-fig_var = px.line(x=p_values, y=var_values, title="Varianza teórica de una proporción", labels={"x":"p","y":"p(1-p)"})
-st.plotly_chart(fig_var, use_container_width=True)
+    fig2, ax2 = plt.subplots(figsize=(6, 3.5))
+    ax2.plot(p_values, n_classic_values, label='Clásica (p varía)')
+    ax2.hlines(n_conserv, 0, 1, colors='orange', linestyles='--', label='Conservadora (p=0.5)')
+    ax2.hlines(n_wilson_val, 0, 1, colors='green', linestyles=':', label='Aproximación Wilson')
+    ax2.axvline(p, color='red', linestyle='--')
+    ax2.set_yscale('log')
+    ax2.set_xlabel('p')
+    ax2.set_ylabel('Tamaño muestral estimado (escala log)')
+    ax2.set_title(f'Tamaño muestral vs p (d={d}, \alpha={alpha})')
+    ax2.legend()
+    st.pyplot(fig2)
 
-# -------------------------
-# Calculations
-# -------------------------
-st.header("🧮 Cálculos de tamaño de muestra (en tiempo real)")
+# ----------------- Results and comparisons -----------------
 
-colL, colR = st.columns([1,1])
-with colL:
-    st.subheader("Parámetros")
-    st.write(f"- Nivel de confianza: **{conf}%** (Z = {z:.4f})")
-    st.write(f"- Proporción esperada p: **{p_input:.6f}**")
-    st.write(f"- Margen de error E: **{E:.6f}**")
-    st.write(f"- Población total N: **{int(N) if use_population else 'Desconocida'}**")
-    st.write(f"- Método seleccionado: **{method}**")
-
-with colR:
-    st.subheader("Resultados rápidos")
-    # Classical
-    n0 = classical_n(p_input, E, z)
-    n0_ceil = ceil(n0)
-    n_corr = finite_population_correction(n0, N) if use_population else n0
-    n_corr_ceil = ceil(n_corr)
-    st.write(f"Fórmula clásica (n0): **{n0:.2f}** → redondeo **{n0_ceil}**")
-    if use_population:
-        st.write(f"Con corrección por población finita: **{n_corr:.2f}** → redondeo **{n_corr_ceil}**")
-    # Other methods
-    if method == 'poisson':
-        n_poisson = poisson_n(p_input, lam_for_poisson)
-        st.write(f"Poisson (n = λ / p) con λ={lam_for_poisson}: **{n_poisson:.2f}** → redondeo **{ceil(n_poisson)}**")
-    elif method in ['wilson','agresti-coull','exact']:
-        st.write("Buscando n mínimo (proceso iterativo). Esto puede tardar unos segundos...")
-        n_found = find_min_n_by_halfwidth(p_input, E, z, method=method, max_n=200000)
-        if n_found:
-            st.write(f"n mínimo encontrado ({method}): **{n_found}**")
-        else:
-            st.write("No se encontró n hasta el límite (200000). Ajusta parámetros.")
-
-# Show formulas and step-by-step
-st.header("📐 Fórmulas y explicación paso a paso")
-st.markdown("**Fórmula clásica** (usada como referencia):")
-st.latex(r"n_0 = \frac{Z^2 \, p (1-p)}{E^2}")
-if use_population:
-    st.markdown("**Corrección por población finita**:")
-    st.latex(r"n = \frac{n_0}{1 + \frac{n_0}{N}}")
-
-st.markdown("**Wilson interval half-width (se usa para buscar n con método 'wilson'):**")
-st.latex(r"\text{halfwidth} \approx z \frac{\sqrt{\hat p(1-\hat p)/n + z^2/(4n^2)}}{1 + z^2/n}")
-
-st.markdown("**Agresti–Coull (ajuste):**")
-st.latex(r"\tilde p = \frac{x + z^2/2}{n + z^2} \quad ; \quad \text{halfwidth} \approx z\sqrt{\frac{\tilde p(1-\tilde p)}{n + z^2}}")
-
-st.markdown("**Poisson (eventos raros):**")
-st.latex(r"n \approx \frac{\lambda}{p} \quad (\lambda \text{ elegido, e.g. } 3 \text{ para confianza alta})")
-
-# -------------------------
-# Excel export (create in-memory)
-# -------------------------
-def create_excel_bytes(df1, df2, results_summary, figs=None):
-    import pandas as pd
-    from io import BytesIO
-    import xlsxwriter
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df1.to_excel(writer, sheet_name="Example1_Data", index=False)
-        df2.to_excel(writer, sheet_name="Example2_Data", index=False)
-        pd.DataFrame(results_summary).to_excel(writer, sheet_name="Results_Summary", index=False)
-        workbook = writer.book
-        # Insert images if provided
-        if figs:
-            for name, fig_bytes in figs.items():
-                worksheet = workbook.add_worksheet(name[:30])
-                workbook.add_worksheet  # no-op to keep writer happy
-                # Write image from bytes
-                worksheet.insert_image('B2', name + ".png", {'image_data': fig_bytes})
-    return output.getvalue()
-
-if st.session_state.get("generate_report", False):
-    # Prepare summary
-    results_summary = {
-        "method": [method],
-        "p": [p_input],
-        "E": [E],
-        "confidence": [conf],
-        "classical_n0": [n0_ceil],
-        "corrected_n": [n_corr_ceil if use_population else None],
-    }
-    # create simple plots bytes
-    figs = {}
-    # example plots as bytes
-    import matplotlib.pyplot as plt
-    from io import BytesIO
-    buf = BytesIO()
-    fig, ax = plt.subplots()
-    ax.hist(df1_clean["event"], bins=2)
-    ax.set_title("Ejemplo1_hist")
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    figs["example1_hist"] = buf
-    buf2 = BytesIO()
-    fig2, ax2 = plt.subplots()
-    ax2.hist(df2_clean["event"], bins=2)
-    ax2.set_title("Ejemplo2_hist")
-    fig2.savefig(buf2, format='png')
-    buf2.seek(0)
-    figs["example2_hist"] = buf2
-
-    excel_bytes = create_excel_bytes(df1_clean, df2_clean, results_summary, figs)
-    st.success("Informe preparado. Descarga el Excel con datos y resumen.")
-    st.download_button("Descargar Excel (dashboard)", excel_bytes, file_name="sample_size_dashboard.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-
-# -------------------------
-# Presentation notes and script
-# -------------------------
-st.header("📝 Guion para tu exposición (lista para leer)")
-st.markdown("""
-**Introducción breve (30s):** explicar qué es una proporción poblacional y por qué p muy pequeña/ grande es un caso especial.
-
-**Problema central:** la fórmula clásica se basa en aproximación normal; cuando p<0.10 o p>0.90 se rompen las condiciones np>=5 y n(1-p)>=5.
-
-**Métodos revisados:**
-- Fórmula clásica (mostrar)
-- Corrección población finita (mostrar)
-- Wilson y Agresti-Coull (explicar idea)
-- Poisson para eventos raros
-- Método exacto binomial (cuando hay pocos éxitos observados)
-
-**Ejemplos reales:** describir los ejemplos (se muestran en el panel).
-**Interpretación de resultados:** mostrar que la clásica subestima en casos extremos y que Wilson/Agresti corrigen.
-**Conclusión:** resumir recomendaciones prácticas.
-
-Puedes copiar y pegar esto en tus diapositivas.
-""")
 st.markdown("---")
-st.caption("App creada para fines educativos. Revisa parámetros y usa datos reales para decisiones de muestreo en investigación.")
+st.header("🔢 Cálculos y comparaciones")
+
+n_cl = n_classical(p, d, alpha)
+n_cons = n_conservative(d, alpha)
+n_wil = n_wilson_approx(d, alpha)
+n_one = n_at_least_one(p, confidence_at_least_one)
+
+colA, colB, colC, colD = st.columns(4)
+colA.metric("Clásica (usando p)", f"{n_cl:.0f}")
+colB.metric("Conservadora (p=0.5)", f"{n_cons:.0f}")
+colC.metric("Wilson (aprox.)", f"{n_wil:.0f}")
+colD.metric("Para ver ≥1 caso (conf={:.0f}%)".format(confidence_at_least_one*100), f"{np.ceil(n_one):.0f}")
+
+st.markdown("**Interpretación:**")
+st.write(
+    f"• Si usas la proporción esperada p={p:.4f} la fórmula clásica da n≈{n_cl:.0f}.\n"
+    f"• Si usas p=0.5 (conservador) obtienes n≈{n_cons:.0f}, que es {'mayor' if n_cons>n_cl else 'menor'} que la clásica por un factor ≈{(n_cons/n_cl):.2f}.\n"
+    f"• La aproximación de Wilson produce n≈{n_wil:.0f} y es útil como cota independiente de p.\n"
+)
+
+# Show note about overestimation factor
+st.write("**Factor de sobreestimación** (conservador / clásica):")
+if n_cl > 0:
+    st.write(factor := n_cons / max(1, n_cl))
+else:
+    st.write("Indeterminado (n clásico = 0)")
+
+st.markdown("---")
+
+# Optional: Clopper-Pearson example (requires statsmodels)
+st.subheader("Intervalos exactos y Clopper–Pearson (opcional)")
+if STATS_MODELS_AVAILABLE:
+    st.write("Se detectó statsmodels. Puedes ver cómo cambia el intervalo exacto Clopper–Pearson para un número observado de éxitos x y tamaño n:")
+    obs_n = st.number_input("n observado (ej. en un estudio piloto)", min_value=1, value=100, step=1)
+    obs_x = st.number_input("x éxitos observados", min_value=0, max_value=obs_n, value=1, step=1)
+    alpha_interval = st.slider("alpha para el intervalo de confianza", min_value=0.001, max_value=0.2, value=0.05, step=0.001)
+    lower, upper = proportion_confint(count=obs_x, nobs=obs_n, alpha=alpha_interval, method='beta')
+    st.write(f"Clopper–Pearson (exacto) para x={obs_x}, n={obs_n}, alpha={alpha_interval}: [{lower:.4f}, {upper:.4f}]")
+else:
+    st.info("La librería statsmodels no está disponible en este entorno. Para activar la sección de Clopper–Pearson instale statsmodels: pip install statsmodels")
+
+st.markdown("---")
+
+# ----------------- Examples / Scenarios -----------------
+
+st.header("🧪 Ejemplos y escenarios recomendados para la exposición")
+
+st.subheader("Ejemplo 1 — Evento raro")
+st.write(
+    "Suponga p=0.01 (1%) y que queremos d=0.01 (±1%). La fórmula clásica da un n moderado, y usar p=0.5 daría un n ridículamente grande."
+)
+st.write(f"Cálculo directo: n clásica = {n_classical(0.01, d, alpha):.0f}, n con p=0.5 = {n_conservative(d, alpha):.0f}")
+
+st.subheader("Ejemplo 2 — Para observar al menos 1 caso")
+st.write(
+    "Si un evento tiene probabilidad p=0.005 (0.5%) y queremos 95% de probabilidad de detectar al menos un caso: "
+)
+st.write(f"n >= {np.ceil(n_at_least_one(0.005, 0.95)):.0f}")
+
+st.markdown("---")
+
+st.caption("App generada para apoyar una exposición en clase de Muestreo Estadístico — Punto 6 (proporciones extremas). Modifica los valores y muestra cómo cambia el tamaño muestral en las gráficas e indicadores.")
+
+st.sidebar.markdown("---")
+st.sidebar.header("Ayuda rápida")
+st.sidebar.write("1) Ajusta p y d en el panel principal. 2) Observa las gráficas y los indicadores. 3) Usa la sección de Clopper–Pearson si instalas statsmodels.")
+
+# Footer
+st.markdown("---")
+st.write("Si quieres, puedo exportar esta exposición a diapositivas PowerPoint o generar una versión PDF con las gráficas. Dime qué prefieres.")
