@@ -1,191 +1,194 @@
+# ============================================================
+# APP STREAMLIT – Punto 6: Cálculo de tamaño muestral en proporciones
+# ============================================================
+
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Configuración básica de la página
+
+# -----------------------------
+# CONFIGURACIÓN GENERAL
+# -----------------------------
 st.set_page_config(
-    page_title="Tamaño Muestral para Proporciones Extremas - Sección 6",
-    layout="wide"
+    page_title="Tamaño Muestral para Proporciones",
+    layout="wide",
+    page_icon="📊"
 )
 
-# -----------------------------
-# SECCIÓN 6: Tamaño muestral para proporciones muy pequeñas o muy grandes
-# -----------------------------
+st.title("📊 Punto 6: Cálculo de tamaño muestral para proporciones")
+st.markdown("---")
 
-st.header("6️⃣ Cálculo de Tamaño Muestral para Proporciones Muy Pequeñas o Muy Grandes")
 
-st.write("""
-El cálculo del tamaño de muestra para proporciones se vuelve **especialmente delicado** 
-cuando la proporción real del fenómeno es muy **pequeña (p < 0.10)** o muy **grande (p > 0.90)**.
-Esto ocurre, por ejemplo, en estudios epidemiológicos de enfermedades raras o en procesos industriales
-con tasas de error extremadamente bajas.
-""")
+# ============================================================
+# SECCIÓN 1 — Varianza máxima en p = 0.5
+# ============================================================
+with st.container():
+    st.header("1️⃣ ¿Por qué la máxima varianza ocurre en \( p = 0.5 \)?")
 
-# ----------- BOTÓN TEORÍA COMPLETA  ---------------------
-with st.expander("📘 Mostrar teoría completa del punto 6"):
     st.markdown("""
-    # 🧠 **Fundamentos Teóricos del Punto 6**
-
-    ## 🔹 1. ¿Por qué la máxima varianza ocurre en p = 0.5?
-
     La varianza de una proporción está dada por:
 
     \[
-    Var(\hat p) = p(1-p)
+    \text{Var}(p) = p(1-p)
     \]
 
-    Esta función es una parábola invertida cuyo máximo ocurre cuando:
+    Esta expresión es máxima cuando:
 
     \[
-    \frac{d}{dp}[\,p(1-p)\,] = 0 \quad \Rightarrow \quad p = 0.5
+    p = 0.5
     \]
 
-    En ese punto:
+    Esto sucede porque es el punto donde hay **mayor incertidumbre**:  
+    no sabemos si el evento ocurre o no con la misma probabilidad.
 
-    \[
-    Var_{\max} = 0.25
-    \]
+    Cuando \( p \) es cercano a 0 o 1, la varianza es menor porque el evento es:
+    - casi imposible, o
+    - casi seguro.
 
-    ✔ Esto significa que **la incertidumbre máxima ocurre cuando la proporción está en 50%**.  
-    ✔ Cuando p se acerca a 0 o 1, **la varianza cae drásticamente**, volviendo ineficiente el uso de aproximaciones normales.
-
-    ---
-
-    ## 🔹 2. Problema cuando p < 0.10 o p > 0.90
-
-    La fórmula clásica del tamaño muestral:
-
-    \[
-    n = \frac{Z^2\, p(1-p)}{E^2}
-    \]
-
-    **funciona solo cuando** la distribución muestral de \(\hat p\) es aproximadamente normal.
-
-    Pero cuando p es muy pequeña o grande:
-
-    - La distribución es **muy asimétrica**
-    - La normal **sobrestima** la variabilidad
-    - El tamaño muestral puede inflarse sin necesidad
-    - Los intervalos de confianza dejan de ser simétricos
-
-    ⚠️ Por eso se requieren *correcciones especiales*.
-
-    ---
-
-    ## 🔹 3. Ajustes a la fórmula clásica
-
-    ### ✔ Caso p pequeña:
-    \[
-    p < 0.10 \quad \Rightarrow \quad \text{usar aproximación Poisson}
-    \]
-
-    En eventos raros:
-
-    \[
-    n = \frac{\ln(1-C)}{\ln(1-p)}
-    \]
-
-    ### ✔ Caso p grande:
-    Como \( p \to 1 \), basta trabajar con:
-
-    \[
-    q = 1-p
-    \]
-
-    y tratar el modelo igual que eventos raros.
-
-    ---
-
-    ## 🔹 4. Ecuaciones alternativas para evitar sobreestimación
-
-    - Intervalo de Wilson
-    - Intervalo de Agresti–Coull
-    - Modelos basados en Poisson
-
-    Estos métodos producen estimaciones **realistas** y evitan tamaños muestrales inflados.
-
-    ---
-
-    ## 🔹 5. Aplicaciones reales (eventos raros)
-
-    - Enfermedades con prevalencia < 1%
-    - Defectos industriales menores al 0.5%
-    - Accidentes muy poco frecuentes
-    - Mutaciones genéticas raras
-
+    Por eso, cuando no se conoce la proporción, se usa por defecto \( p = 0.5 \).
     """)
 
-# ===============================================================
-# GRÁFICA: VARIANZA (TEXTO IZQ – GRÁFICA DER)
-# ===============================================================
+    # Gráfica de la varianza
+    p_vals = np.linspace(0, 1, 200)
+    var_vals = p_vals * (1 - p_vals)
 
-col6a, col6b = st.columns([1.3, 1])
-
-with col6a:
-    st.subheader("📈 Varianza de una proporción")
-    st.write("""
-    La varianza disminuye cuando p se acerca a 0 o 1.  
-    Una varianza pequeña implica que la distribución ya **no es simétrica**, lo cual invalida
-    la aproximación normal.
-    """)
-
-with col6b:
-    ps = np.linspace(0, 1, 200)
-    vars_ = ps * (1 - ps)
-    fig6_1, ax6_1 = plt.subplots(figsize=(2.2, 1.6))
-    ax6_1.plot(ps, vars_, linewidth=2)
-    ax6_1.set_title("Varianza p(1-p)")
-    ax6_1.grid(True)
-    st.pyplot(fig6_1)
-
-# ===============================================================
-# GRÁFICA: POISSON PARA EVENTOS RAROS
-# ===============================================================
-col6c, col6d = st.columns([1.3, 1])
-
-with col6c:
-    st.subheader("📉 Tamaño muestral para detectar ≥1 evento raro")
-    st.write("""
-    Para eventos raros (p < 0.05), la probabilidad de observar al menos un caso en n individuos es:
-
-    \[
-    P(X\ge1) = 1-(1-p)^n
-    \]
-
-    Despejando n tenemos:
-
-    \[
-    n = \frac{\ln(1-C)}{\ln(1-p)}
-    \]
-    """)
-
-with col6d:
-    p_small = st.number_input("Proporción rara p:", 0.00001, 0.05, 0.01, key="p_small_6")
-    C_small = st.slider("Confianza C:", 0.50, 0.999, 0.95, key="C_small_6")
-    n_required = np.log(1 - C_small) / np.log(1 - p_small)
-
-    ps2 = np.linspace(0.0001, 0.05, 200)
-    ns2 = np.log(1 - C_small) / np.log(1 - ps2)
-
-    fig6_2, ax6_2 = plt.subplots(figsize=(2.2, 1.6))
-    ax6_2.plot(ps2, ns2)
-    ax6_2.set_title("Modelo Poisson")
-    ax6_2.grid(True)
-    st.pyplot(fig6_2)
-
-st.success(f"📌 Tamaño muestral necesario: **n = {int(np.ceil(n_required))}**")
-
-# ===============================================================
-# IMAGEN TEMÁTICA (OPCIONAL)
-# ===============================================================
-
-st.markdown("### 🖼 Imagen ilustrativa")
-
-st.info("Puedes colocar una imagen aquí (por ejemplo: distribución Poisson, curva p(1-p), o un esquema conceptual).")
-
-try:
-    st.image("imagenes/eventos_raros.png", width=350)
-except:
-    st.warning("⚠️ No se encontró la imagen: coloca un archivo llamado **eventos_raros.png** en la carpeta /imagenes.")
+    fig, ax = plt.subplots(figsize=(7, 3))
+    ax.plot(p_vals, var_vals)
+    ax.set_xlabel("p")
+    ax.set_ylabel("Var(p)")
+    ax.set_title("Varianza de una proporción: p(1-p)")
+    st.pyplot(fig)
 
 st.markdown("---")
+
+
+# ============================================================
+# SECCIÓN 2 — Ajustes cuando p es muy pequeña o muy grande
+# ============================================================
+with st.container():
+    st.header("2️⃣ Ajustes cuando \( p < 0.10 \) o \( p > 0.90 \)")
+
+    st.markdown("""
+    Cuando la proporción es muy baja o muy alta, la fórmula clásica del tamaño muestral:
+
+    \[
+    n = \frac{Z^2\,p(1-p)}{E^2}
+    \]
+
+    puede dar resultados incorrectos porque la aproximación normal falla.
+
+    Para que la aproximación normal sea válida, debe cumplirse:
+
+    \[
+    np \ge 5 \quad\text{y}\quad n(1-p) \ge 5
+    \]
+
+    Cuando esto no se cumple, se aplican ajustes:
+
+    ### ✔ Ajuste 1: Proporciones pequeñas
+    Si \( p < 0.10 \):
+
+    \[
+    n = \frac{Z^2\,p}{E^2}
+    \]
+
+    porque \( 1 - p \approx 1 \).
+
+    ### ✔ Ajuste 2: Uso de fórmulas alternativas
+    Cuando el evento es muy raro (<5 %), la aproximación binomial no funciona bien.
+    Por eso se usa la aproximación de Poisson o de Wilson.
+    """)
+
+st.markdown("---")
+
+
+# ============================================================
+# SECCIÓN 3 — Ecuaciones alternativas
+# ============================================================
+with st.container():
+    st.header("3️⃣ Ecuaciones alternativas para evitar sobreestimación del tamaño muestral")
+
+    st.markdown("""
+    Cuando los eventos son extremadamente raros, usar \( p = 0.5 \) produce tamaños muestrales
+    ridículamente grandes. Para evitar eso se recomiendan estas alternativas:
+
+    ### ✔ Fórmula de Wilson
+    \[
+    n = \frac{Z^2}{4E^2}
+    \]
+
+    Esta fórmula es estable incluso cuando \( p \) es muy pequeña.
+
+    ### ✔ Proporciones muy raras (modelo binomial ajustado)
+    \[
+    n = \frac{Z^2(1 - p)}{E^2\,p}
+    \]
+
+    Funciona bien cuando el evento ocurre en menos del 5% de los casos.
+
+    ### ✔ Aproximación de Poisson (eventos muy raros)
+    \[
+    n = \frac{Z^2}{E^2\,\lambda}
+    \]
+
+    donde \( \lambda = p \) cuando el evento es muy raro.
+    """)
+
+st.markdown("---")
+
+
+# ============================================================
+# SECCIÓN 4 — Aplicaciones: eventos raros
+# ============================================================
+with st.container():
+    st.header("4️⃣ Aplicaciones: estudios de eventos raros")
+
+    st.subheader("🧪 Ejemplo 1: Reacciones adversas raras a un medicamento")
+    st.markdown("""
+    En estudios clínicos es importante detectar efectos secundarios graves,
+    incluso si ocurren con muy poca frecuencia (por ejemplo, 1 en 10.000 personas).
+
+    Aquí \( p \) es extremadamente pequeño:
+
+    \[
+    p \approx 0.0001
+    \]
+
+    Para estimar esta proporción con un error razonable, la fórmula clásica da:
+
+    \[
+    n \approx \frac{Z^2 p (1 - p)}{E^2} \approx \frac{Z^2 p}{E^2}
+    \]
+
+    Pero debido a que \( p \) es tan pequeño, se recomienda el **modelo de Poisson**:
+
+    \[
+    n = \frac{Z^2}{E^2 p}
+    \]
+
+    Esto evita subestimar o sobreestimar el tamaño muestral.
+    """)
+
+    st.subheader("🚑 Ejemplo 2: Accidentes graves en una población")
+    st.markdown("""
+    Supongamos que una ciudad quiere medir la tasa de accidentes graves
+    en motocicletas, que ocurre aproximadamente en:
+
+    \[
+    p = 0.002
+    \]
+
+    Como el evento es muy raro, usar la fórmula clásica da valores poco fiables.
+    Nuevamente, la aproximación de Poisson es más adecuada:
+
+    \[
+    n = \frac{Z^2}{E^2 p}
+    \]
+
+    Esto permite estimar correctamente la proporción de accidentes sin usar muestras imposibles de obtener.
+    """)
+
+st.markdown("---")
+
+st.success("📘 Dashboard completo. Puedes subirlo directamente a Streamlit Cloud o GitHub Pages.")
