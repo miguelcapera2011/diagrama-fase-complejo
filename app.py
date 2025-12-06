@@ -1,6 +1,16 @@
-# ===============================================================
-# 6. CÁLCULO DE TAMAÑO MUESTRAL PARA PROPORCIONES EXTREMAS
-# ===============================================================
+import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Configuración básica de la página
+st.set_page_config(
+    page_title="Tamaño Muestral para Proporciones Extremas - Sección 6",
+    layout="wide"
+)
+
+# -----------------------------
+# SECCIÓN 6: Tamaño muestral para proporciones muy pequeñas o muy grandes
+# -----------------------------
 
 st.header("6️⃣ Cálculo de Tamaño Muestral para Proporciones Muy Pequeñas o Muy Grandes")
 
