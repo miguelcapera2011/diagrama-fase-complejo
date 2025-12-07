@@ -5,6 +5,7 @@ st.header("🌟 Ejemplos completos — Eventos raros y tamaño muestral")
 
 tab1, tab2 = st.tabs(["🌟 Ejemplo 1: Enfermedad rara", "🌟 Ejemplo 2: Falla química rara"])
 
+
 # ============================================================
 # =================== EJEMPLO 1 ================================
 # ============================================================
@@ -18,7 +19,27 @@ Un hospital quiere estimar la proporción de pacientes que presentan **tuberculo
 Estudios previos indican una prevalencia:
 """)
 
-    st.latex(r"p = 0.008 \quad (0.8\%)")
+    # -----------------------------
+    # VALORES INTERACTIVOS (Z, E, p)
+    # -----------------------------
+
+    p = st.number_input("Valor de p (proporción esperada)", min_value=0.0001, max_value=1.0,
+                        value=0.008, step=0.0005, format="%.4f")
+    Z = st.number_input("Valor Z", min_value=1.0, max_value=3.0, value=1.96, step=0.01)
+    E = st.number_input("Error máximo E", min_value=0.001, max_value=0.2,
+                        value=0.01, step=0.001, format="%.3f")
+
+    st.latex(rf"p = {p} \quad ({p*100:.2f}\%)")
+
+    # -----------------------------
+    # ALERTA según p
+    # -----------------------------
+    if p < 0.10:
+        st.info("🔵 **p es muy pequeño:** es un evento raro, la varianza es muy baja y NO se debe usar p=0.5.")
+    elif p > 0.90:
+        st.warning("🟠 **p está por encima de 0.9:** evento casi seguro, también la varianza es muy pequeña.")
+    else:
+        st.error("🔴 **p no es extremo:** usar esta fórmula con p=0.5 puede ser correcto para máxima varianza.")
 
     st.write("""
 Este es un **evento raro**.
@@ -30,34 +51,36 @@ El investigador quiere:
 
     st.markdown("### 1️⃣ Varianza máxima en p = 0.5 (problema que causa)")
 
-    st.latex(r"n = \frac{1.96^2 (0.5)(0.5)}{0.01^2}")
-    n1 = (1.96**2 * 0.25) / (0.01**2)
-    st.latex(r"n = 9604")
+    st.latex(rf"n = \frac{{{Z}^2 (0.5)(0.5)}}{{{E}^2}}")
+    n1 = (Z**2 * 0.25) / (E**2)
+    st.latex(rf"n = {int(n1)}")
 
     st.write("Interpretación:")
-    st.latex(r"p(1-p) = 0.008(0.992) = 0.007936")
+    st.latex(rf"p(1-p) = {p}({1-p}) = {p*(1-p):.6f}")
 
-    st.info("La varianza real es **31 veces más pequeña**, así que 9604 es un enorme desperdicio de recursos.")
+    st.info(f"La varianza real es **{0.25/(p*(1-p)):.1f} veces más pequeña**, así que {int(n1)} sería un enorme desperdicio.")
 
     st.markdown("### 2️⃣ Ajuste usando la proporción real (p < 0.10)")
 
-    st.latex(r"n = \frac{1.96^2 (0.008)(0.992)}{0.01^2}")
+    st.latex(rf"n = \frac{{{Z}^2 ({p})({1-p})}}{{{E}^2}}")
 
-    n2 = (1.96**2 * 0.008 * (1 - 0.008)) / (0.01**2)
-    st.latex(r"n = 304")
+    n2 = (Z**2 * p * (1 - p)) / (E**2)
+    st.latex(rf"n = {int(n2)}")
 
-    st.success("✔ **Conclusión del ajuste:** el tamaño muestral correcto es **304**, no **9604**.")
+    st.success(f"✔ **Conclusión del ajuste:** el tamaño muestral correcto es **{int(n2)}**, no **{int(n1)}**.")
 
     st.markdown("### 3️⃣ Ecuación alternativa usando p(1−p) ≈ p")
     st.latex(r"p(1-p) \approx p")
-    st.latex(r"n \approx \frac{1.96^2 (0.008)}{0.01^2}")
-    st.latex(r"n \approx 307")
+    st.latex(rf"n \approx \frac{{{Z}^2 ({p})}}{{{E}^2}}")
+
+    naprox = (Z**2 * p) / (E**2)
+    st.latex(rf"n \approx {int(naprox)}")
 
     st.markdown("### ✔ Conclusión del ejemplo 1")
-    st.write("""
-- Usar p = 0.5 habría requerido una muestra absurda (**9604**).  
-- El ajuste correcto da **304**.  
-- La aproximación da **307**, muy cercana.  
+    st.write(f"""
+- Usar p = 0.5 habría requerido una muestra absurda (**{int(n1)}**).  
+- El ajuste correcto da **{int(n2)}**.  
+- La aproximación da **{int(naprox)}**, muy cercana.  
 
 La técnica es **crucial en epidemiología de enfermedades poco frecuentes**.
 """)
@@ -76,7 +99,25 @@ Una empresa química quiere estimar la proporción de reacciones con aumento pel
 Historial:
 """)
 
-    st.latex(r"p = 0.002 \quad (0.2\%)")
+    # -----------------------------
+    # VALORES INTERACTIVOS
+    # -----------------------------
+    p2 = st.number_input("Valor de p (proporción esperada) - Ejemplo 2", min_value=0.0001, max_value=1.0,
+                         value=0.002, step=0.0005, format="%.4f")
+    Z2 = st.number_input("Valor Z - Ejemplo 2", min_value=1.0, max_value=3.0,
+                         value=1.96, step=0.01)
+    E2 = st.number_input("Error máximo E - Ejemplo 2", min_value=0.001, max_value=0.2,
+                         value=0.005, step=0.001, format="%.3f")
+
+    st.latex(rf"p = {p2} \quad ({p2*100:.2f}\%)")
+
+    # Alertas inteligentes
+    if p2 < 0.10:
+        st.info("🔵 **Evento extremadamente raro:** p < 0.10 → varianza muy pequeña.")
+    elif p2 > 0.90:
+        st.warning("🟠 **Evento casi seguro:** p > 0.90 → varianza casi cero.")
+    else:
+        st.error("🔴 p no es extremo → p=0.5 podría ser apropiado para máxima varianza.")
 
     st.write("""
 Evento extremadamente raro.
@@ -87,31 +128,34 @@ Se desea:
 """)
 
     st.markdown("### 1️⃣ Varianza máxima (uso incorrecto p=0.5)")
-    st.latex(r"n = \frac{1.96^2 (0.25)}{0.005^2}")
+    st.latex(rf"n = \frac{{{Z2}^2 (0.25)}}{{{E2}^2}}")
 
-    n1 = (1.96**2 * 0.25) / (0.005**2)
-    st.latex(r"n = 38416")
+    n1_2 = (Z2**2 * 0.25) / (E2**2)
+    st.latex(rf"n = {int(n1_2)}")
 
     st.write("Varianza real del proceso:")
-    st.latex(r"p(1-p) = 0.002(0.998) = 0.001996")
+    st.latex(rf"p(1-p) = {p2}({1-p2}) = {p2*(1-p2):.6f}")
 
-    st.info("La varianza real es **125 veces menor** que 0.25.")
+    st.info(f"La varianza real es **{0.25/(p2*(1-p2)):.1f} veces menor** que 0.25.")
 
     st.markdown("### 2️⃣ Ajuste usando la proporción real")
-    st.latex(r"n = \frac{1.96^2 (0.002)(0.998)}{0.005^2}")
-    st.latex(r"n = 307")
+    st.latex(rf"n = \frac{{{Z2}^2 ({p2})({1-p2})}}{{{E2}^2}}")
+    n2_2 = (Z2**2 * p2 * (1 - p2)) / (E2**2)
+    st.latex(rf"n = {int(n2_2)}")
 
-    st.success("✔ **Conclusión:** la muestra correcta es **307 observaciones**, no **38.416**.")
+    st.success(f"✔ **Conclusión:** la muestra correcta es **{int(n2_2)}**, no **{int(n1_2)}**.")
 
     st.markdown("### 3️⃣ Ecuación alternativa (p ≈ p(1−p))")
-    st.latex(r"n \approx \frac{1.96^2 (0.002)}{0.005^2}")
-    st.latex(r"n \approx 302")
+    st.latex(rf"n \approx \frac{{{Z2}^2 ({p2})}}{{{E2}^2}}")
+
+    naprox2 = (Z2**2 * p2) / (E2**2)
+    st.latex(rf"n \approx {int(naprox2)}")
 
     st.markdown("### ✔ Conclusión del ejemplo 2")
-    st.write("""
-- Usar p = 0.5 produjo una sobreestimación absurda (**38416**).  
-- Usar p real da **307**.  
-- La aproximación da **302**.  
+    st.write(f"""
+- Usar p = 0.5 produjo una sobreestimación absurda (**{int(n1_2)}**).  
+- Usar p real da **{int(n2_2)}**.  
+- La aproximación da **{int(naprox2)}**.  
 
 Es esencial para **seguridad industrial y confiabilidad** en sistemas críticos.
 """)
