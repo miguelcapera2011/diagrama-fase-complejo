@@ -1,176 +1,132 @@
 import streamlit as st
 import numpy as np
 
-# ===========================================
-#     🎄 SUPER DECORACIÓN NAVIDEÑA PREMIUM
-# ===========================================
-
-navidad_css = """
+# ----- FONDO BONITO -----
+page_bg = """
 <style>
-
-/* ---------------------------------------------------- */
-/* 🎄 1. FONDO DEGRADADO NAVIDEÑO                       */
-/* ---------------------------------------------------- */
+/* Fondo general con gradiente suave */
 .stApp {
-    background: linear-gradient(135deg, #e8f7ff, #fff8f8, #e8fff3);
+    background: linear-gradient(135deg, #e3f2fd, #fce4ec, #e8f5e9);
     background-attachment: fixed;
 }
 
-/* Bloque central translúcido */
+/* Caja translúcida para que el contenido se vea más elegante */
 .block-container {
-    background: rgba(255, 255, 255, 0.80);
+    background: rgba(255, 255, 255, 0.82);
     padding: 2rem;
     border-radius: 18px;
-    box-shadow: 0 0 25px rgba(0,0,0,0.20);
+    box-shadow: 0 0 20px rgba(0,0,0,0.18);
 }
 
-/* ---------------------------------------------------- */
-/* 🎄 2. NIEVE ANIMADA                                   */
-/* ---------------------------------------------------- */
-@keyframes snow_fall {
+/* Títulos más elegantes */
+h1, h2, h3, h4 {
+    color: #1a237e;
+    font-weight: 700;
+}
+
+/* Tabs más bonitos */
+.stTabs [data-baseweb="tab"] {
+    background-color: rgba(255,255,255,0.6);
+    border-radius: 10px;
+    padding: 10px 20px;
+    margin-right: 10px;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: #3949ab !important;
+    color: white !important;
+}
+
+/* Inputs con estilo moderno */
+input, select, textarea {
+    border-radius: 10px !important;
+    border: 1px solid #3949ab !important;
+}
+</style>
+"""
+st.markdown(page_bg, unsafe_allow_html=True)
+
+
+page_bg = """
+<style>
+/* Fondo con degradado navideño */
+body {
+    background: linear-gradient(135deg, #eaf6ff, #fffdf5, #f1f9ff);
+    background-attachment: fixed;
+}
+
+/* Contenedor general */
+.main {
+    background-color: rgba(255, 255, 255, 0.60);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.15);
+}
+
+/* Encabezado navideño */
+h1, h2, h3 {
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.15);
+}
+
+/* Bordes suaves tipo tarjeta */
+.stTabs [data-baseweb="tab-list"] {
+    background-color: #ffffffcc;
+    border-radius: 12px;
+    padding: 8px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background-color: #f8faff;
+    border-radius: 10px;
+    margin-right: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Camas de nieve suave */
+@keyframes snow {
     0% {background-position: 0px 0px;}
     100% {background-position: 0px 1000px;}
 }
+
 body::before {
     content: "";
     position: fixed;
+    top: 0; left: 0;
     width: 100%; height: 100%;
+    pointer-events: none;
     background-image: url('https://i.imgur.com/7eM7ZpP.png');
     background-size: contain;
-    opacity: 0.22;
-    pointer-events: none;
-    animation: snow_fall 20s linear infinite;
-    z-index: -1;
-}
-
-/* ---------------------------------------------------- */
-/* 🎄 3. LUCES NAVIDEÑAS ANIMADAS EN LA PARTE SUPERIOR   */
-/* ---------------------------------------------------- */
-@keyframes blink {
-    0%, 100% {opacity: 1;}
-    50% {opacity: 0.3;}
-}
-
-.luces {
-    width: 100%;
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-.luces span {
-    height: 14px;
-    width: 14px;
-    margin: 0 6px;
-    display: inline-block;
-    border-radius: 50%;
-    animation: blink 1.2s infinite;
-}
-
-.l1 { background:#ff1a1a; animation-delay:0s; }
-.l2 { background:#ffd700; animation-delay:0.2s; }
-.l3 { background:#00e676; animation-delay:0.4s; }
-.l4 { background:#29b6f6; animation-delay:0.6s; }
-.l5 { background:#ff80ab; animation-delay:0.8s; }
-
-/* ---------------------------------------------------- */
-/* 🎄 4. RAMAS NAVIDEÑAS DECORATIVAS                    */
-/* ---------------------------------------------------- */
-.ramas {
-    background-image: url('https://i.imgur.com/Y9M0Cqf.png');
-    background-repeat: repeat-x;
-    height: 90px;
-    background-size: contain;
-    margin-bottom: 15px;
-}
-
-/* ---------------------------------------------------- */
-/* 🎄 5. ÁRBOL NAVIDEÑO EN LA ESQUINA                    */
-/* ---------------------------------------------------- */
-.arbol {
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    width: 130px;
-    opacity: 0.90;
-    z-index: 10;
-}
-
-/* ---------------------------------------------------- */
-/* 🎄 6. ESTRELLAS BRILLANDO                             */
-/* ---------------------------------------------------- */
-@keyframes starGlow {
-    0%,100% {opacity: 0.7;}
-    50% {opacity: 1;}
-}
-.star {
-    position: fixed;
-    width: 25px;
-    animation: starGlow 2.5s ease-in-out infinite;
-    z-index: 5;
-}
-.star1 { top: 40px; left: 40px; }
-.star2 { top: 60px; right: 50px; }
-.star3 { top: 160px; left: 120px; }
-
-/* ---------------------------------------------------- */
-/* 🎄 7. TABS NAVIDEÑOS PREMIUM                          */
-/* ---------------------------------------------------- */
-.stTabs [data-baseweb="tab"] {
-    background-color: rgba(255,255,255,0.6);
-    border-radius: 12px;
-    margin-right: 8px;
-    padding: 10px 20px;
-}
-.stTabs [aria-selected="true"] {
-    background-color: #004d40 !important;
-    color: white !important;
-    box-shadow: 0 0 10px #004d40;
-}
-
-/* Títulos */
-h1, h2, h3 {
-    color: #004d40 !important;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.15);
+    opacity: 0.25;
+    animation: snow 18s linear infinite;
 }
 </style>
-
-<!-- LUCES ANIMADAS -->
-<div class="ramas"></div>
-<div class="luces">
-    <span class="l1"></span><span class="l2"></span><span class="l3"></span>
-    <span class="l4"></span><span class="l5"></span><span class="l1"></span>
-    <span class="l2"></span><span class="l3"></span><span class="l4"></span>
-</div>
-
-<!-- ESTRELLAS -->
-<img class="star star1" src="https://i.imgur.com/2nCt3Sbl.png">
-<img class="star star2" src="https://i.imgur.com/2nCt3Sbl.png">
-<img class="star star3" src="https://i.imgur.com/2nCt3Sbl.png">
-
-<!-- ÁRBOL NAVIDEÑO -->
-<img class="arbol" src="https://i.imgur.com/LxWwQYP.png">
-
 """
 
-st.markdown(navidad_css, unsafe_allow_html=True)
+st.markdown(page_bg, unsafe_allow_html=True)
 
 # ============================================================
-# 🎄 TU APP (SIN CAMBIAR LÓGICA)
+#                     TU APP (NO CAMBIADA)
 # ============================================================
 
 st.header("Eventos raros y tamaño muestral")
 
-tab1, tab2 = st.tabs(["🌟 Aplicación #1: Enfermedad rara", "🌟 Aplicación #2: Falla química rara"])
+tab1, tab2 = st.tabs(["🌟Aplicacion #1: Enfermedad rara", "🌟 Aplicacion #2: Falla química rara"])
 
-# ===================================================================
-# EJEMPLO 1
-# ===================================================================
+# =================== EJEMPLO 1 ================================
+
 with tab1:
     st.subheader("Prevalencia de una enfermedad rara (p = 0.008)")
     st.markdown("Contexto")
     st.write("""
 Un hospital quiere estimar la proporción de pacientes que presentan **tuberculosis multirresistente (TB-MDR)**.
+
+Estudios previos indican una prevalencia:
 """)
+
+    # -----------------------------
+    # VALORES INTERACTIVOS (Z, E, p)
+    # -----------------------------
 
     p = st.number_input("Valor de p (proporción esperada)", min_value=0.0001, max_value=1.0,
                         value=0.008, step=0.0005, format="%.4f")
@@ -180,38 +136,79 @@ Un hospital quiere estimar la proporción de pacientes que presentan **tuberculo
 
     st.latex(rf"p = {p} \quad ({p*100:.2f}\%)")
 
+    # -----------------------------
+    # ALERTA según p
+    # -----------------------------
     if p < 0.10:
-        st.info("🔵 **Evento raro** (p < 0.10): la varianza real es muy baja.")
+        st.info("🔵 **p es muy pequeño:** es un evento raro, la varianza es muy baja y NO se debe usar p=0.5.")
     elif p > 0.90:
-        st.warning("🟠 p > 0.90: evento casi seguro.")
+        st.warning("🟠 **p está por encima de 0.9:** evento casi seguro, también la varianza es muy pequeña.")
     else:
-        st.error("🔴 p no es extremo.")
+        st.error("🔴 **p no es extremo:** usar esta fórmula con p=0.5 puede ser correcto para máxima varianza.")
 
-    st.markdown("### 1️⃣ Varianza máxima p = 0.5")
-    st.latex(rf"n = \frac{{{Z}^2 (0.25)}}{{{E}^2}}")
+    st.write("""
+Este es un **evento raro**.
+
+El investigador quiere:
+- Error máximo: **E = 0.01**
+- Confianza: **Z = 1.96**
+""")
+
+    st.markdown("### 1️⃣ Varianza máxima en p = 0.5 (problema que causa)")
+
+    st.latex(rf"n = \frac{{{Z}^2 (0.5)(0.5)}}{{{E}^2}}")
     n1 = (Z**2 * 0.25) / (E**2)
     st.latex(rf"n = {int(n1)}")
 
-    st.markdown("### 2️⃣ Ajuste con p real")
+    st.write("Interpretación:")
+    st.latex(rf"p(1-p) = {p}({1-p}) = {p*(1-p):.6f}")
+
+    st.info(f"La varianza real es **{0.25/(p*(1-p)):.1f} veces más pequeña**, así que {int(n1)} sería un enorme desperdicio.")
+
+    st.markdown("### 2️⃣ Ajuste usando la proporción real (p < 0.10)")
+
     st.latex(rf"n = \frac{{{Z}^2 ({p})({1-p})}}{{{E}^2}}")
+
     n2 = (Z**2 * p * (1 - p)) / (E**2)
     st.latex(rf"n = {int(n2)}")
 
-    st.success(f"✔ Tamaño correcto: {int(n2)}")
+    st.success(f"✔ **Conclusión del ajuste:** el tamaño muestral correcto es **{int(n2)}**, no **{int(n1)}**.")
 
-    st.markdown("### 3️⃣ Aproximación p(1-p) ≈ p")
+    st.markdown("### 3️⃣ Ecuación alternativa usando p(1−p) ≈ p")
+    st.latex(r"p(1-p) \approx p")
+    st.latex(rf"n \approx \frac{{{Z}^2 ({p})}}{{{E}^2}}")
+
     naprox = (Z**2 * p) / (E**2)
     st.latex(rf"n \approx {int(naprox)}")
 
+    st.markdown("### ✔ Conclusión del ejemplo 1")
+    st.write(f"""
+- Usar p = 0.5 habría requerido una muestra absurda (**{int(n1)}**).  
+- El ajuste correcto da **{int(n2)}**.  
+- La aproximación da **{int(naprox)}**, muy cercana.  
 
-# ===================================================================
-# EJEMPLO 2
-# ===================================================================
+La técnica es **crucial en epidemiología de enfermedades poco frecuentes**.
+""")
+
+
+# ============================================================
+# =================== EJEMPLO 2 ================================
+# ============================================================
+
 with tab2:
     st.subheader("Estudio de falla muy rara en reactor químico (p = 0.002)")
+    st.markdown("Contexto")
+    st.write("""
+Una empresa química quiere estimar la proporción de reacciones con aumento peligroso de temperatura.
 
-    p2 = st.number_input("Valor de p (proporción esperada) - Ejemplo 2", min_value=0.0001,
-                         max_value=1.0, value=0.002, step=0.0005, format="%.4f")
+Historial:
+""")
+
+    # -----------------------------
+    # VALORES INTERACTIVOS
+    # -----------------------------
+    p2 = st.number_input("Valor de p (proporción esperada) - Ejemplo 2", min_value=0.0001, max_value=1.0,
+                         value=0.002, step=0.0005, format="%.4f")
     Z2 = st.number_input("Valor Z - Ejemplo 2", min_value=1.0, max_value=3.0,
                          value=1.96, step=0.01)
     E2 = st.number_input("Error máximo E - Ejemplo 2", min_value=0.001, max_value=0.2,
@@ -219,24 +216,51 @@ with tab2:
 
     st.latex(rf"p = {p2} \quad ({p2*100:.2f}\%)")
 
+    # Alertas inteligentes
     if p2 < 0.10:
-        st.info("🔵 Evento extremadamente raro.")
+        st.info("🔵 **Evento extremadamente raro:** p < 0.10 → varianza muy pequeña.")
     elif p2 > 0.90:
-        st.warning("🟠 p > 0.90: varianza casi cero.")
+        st.warning("🟠 **Evento casi seguro:** p > 0.90 → varianza casi cero.")
     else:
-        st.error("🔴 p no es extremo.")
+        st.error("🔴 p no es extremo → p=0.5 podría ser apropiado para máxima varianza.")
 
-    st.markdown("### 1️⃣ Varianza máxima")
+    st.write("""
+Evento extremadamente raro.
+
+Se desea:
+- Error **E = 0.005**
+- Confianza **Z = 1.96**
+""")
+
+    st.markdown("### 1️⃣ Varianza máxima (uso incorrecto p=0.5)")
+    st.latex(rf"n = \frac{{{Z2}^2 (0.25)}}{{{E2}^2}}")
+
     n1_2 = (Z2**2 * 0.25) / (E2**2)
     st.latex(rf"n = {int(n1_2)}")
 
-    st.markdown("### 2️⃣ Ajuste usando p real")
+    st.write("Varianza real del proceso:")
+    st.latex(rf"p(1-p) = {p2}({1-p2}) = {p2*(1-p2):.6f}")
+
+    st.info(f"La varianza real es **{0.25/(p2*(1-p2)):.1f} veces menor** que 0.25.")
+
+    st.markdown("### 2️⃣ Ajuste usando la proporción real")
+    st.latex(rf"n = \frac{{{Z2}^2 ({p2})({1-p2})}}{{{E2}^2}}")
     n2_2 = (Z2**2 * p2 * (1 - p2)) / (E2**2)
     st.latex(rf"n = {int(n2_2)}")
 
-    st.success(f"✔ Tamaño correcto: {int(n2_2)}")
+    st.success(f"✔ **Conclusión:** la muestra correcta es **{int(n2_2)}**, no **{int(n1_2)}**.")
 
-    st.markdown("### 3️⃣ Aproximación")
+    st.markdown("### 3️⃣ Ecuación alternativa (p ≈ p(1−p))")
+    st.latex(rf"n \approx \frac{{{Z2}^2 ({p2})}}{{{E2}^2}}")
+
     naprox2 = (Z2**2 * p2) / (E2**2)
     st.latex(rf"n \approx {int(naprox2)}")
 
+    st.markdown("### ✔ Conclusión del ejemplo 2")
+    st.write(f"""
+- Usar p = 0.5 produjo una sobreestimación absurda (**{int(n1_2)}**).  
+- Usar p real da **{int(n2_2)}**.  
+- La aproximación da **{int(naprox2)}**.  
+
+Es esencial para **seguridad industrial y confiabilidad** en sistemas críticos.
+""")
