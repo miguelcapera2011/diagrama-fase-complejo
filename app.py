@@ -1,209 +1,117 @@
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Eventos Raros – Tamaño Muestral", layout="wide")
+st.header("🌟 Ejemplos completos — Eventos raros y tamaño muestral")
 
-st.title("📊 Tamaño Muestral en Proporciones Extremas (Eventos Raros)")
+tab1, tab2 = st.tabs(["🌟 Ejemplo 1: Enfermedad rara", "🌟 Ejemplo 2: Falla química rara"])
 
-st.markdown("""
-Esta app explica cómo calcular el tamaño muestral cuando la proporción esperada es **muy pequeña** o **muy grande**.
-Incluye:
+# ============================================================
+# =================== EJEMPLO 1 ================================
+# ============================================================
 
-- Efecto de la varianza y por qué es máxima en **p = 0.5**.  
-- Ajustes cuando **p < 0.10 o p > 0.90**.  
-- Fórmula alternativa para evitar **sobreestimación** del tamaño muestral.  
-- Dos **ejemplos reales** de estudios de eventos raros con gráficas y cálculos interactivos.  
+with tab1:
+    st.subheader("🌟 EJEMPLO 1 — Prevalencia de una enfermedad rara (p = 0.008)")
+    st.markdown("### 🔷 Contexto")
+    st.write("""
+Un hospital quiere estimar la proporción de pacientes que presentan **tuberculosis multirresistente (TB-MDR)**.
+
+Estudios previos indican una prevalencia:
+
+\\[
+p = 0.008 \quad (0.8\%)
+\\]
+
+Este es un **evento raro**.
+
+El investigador quiere:
+- Error máximo: **E = 0.01**
+- Confianza: **Z = 1.96**
+""")
+
+    st.markdown("### 1️⃣ Varianza máxima en p = 0.5 (problema que causa)")
+
+    st.latex(r"n = \frac{1.96^2 (0.5)(0.5)}{0.01^2}")
+    n1 = (1.96**2 * 0.25) / (0.01**2)
+    st.latex(r"n = 9604")
+
+    st.write("Interpretación:")
+    st.latex(r"p(1-p) = 0.008(0.992) = 0.007936")
+
+    st.info("La varianza real es **31 veces más pequeña**, así que 9604 es un enorme desperdicio de recursos.")
+
+    st.markdown("### 2️⃣ Ajuste usando la proporción real (p < 0.10)")
+
+    st.latex(r"n = \frac{1.96^2 (0.008)(0.992)}{0.01^2}")
+
+    n2 = (1.96**2 * 0.008 * (1 - 0.008)) / (0.01**2)
+    st.latex(r"n = 304")
+
+    st.success("✔ **Conclusión del ajuste:** el tamaño muestral correcto es **304**, no **9604**.")
+
+    st.markdown("### 3️⃣ Ecuación alternativa usando p(1−p) ≈ p")
+    st.latex(r"p(1-p) \approx p")
+    st.latex(r"n \approx \frac{1.96^2 (0.008)}{0.01^2}")
+    st.latex(r"n \approx 307")
+
+    st.markdown("### ✔ Conclusión del ejemplo 1")
+    st.write("""
+- Usar p = 0.5 habría requerido una muestra absurda (**9604**).  
+- El ajuste correcto da **304**.  
+- La aproximación da **307**, muy cercana.  
+
+La técnica es **crucial en epidemiología de enfermedades poco frecuentes**.
 """)
 
 
 # ============================================================
-# 1. VARIANZA Y FÓRMULA GENERAL
+# =================== EJEMPLO 2 ================================
 # ============================================================
 
-st.header("1️⃣ Varianza y fórmula clásica del tamaño muestral")
+with tab2:
+    st.subheader("🌟 EJEMPLO 2 — Estudio de falla muy rara en reactor químico (p = 0.002)")
+    st.markdown("### 🔷 Contexto")
+    st.write("""
+Una empresa química quiere estimar la proporción de reacciones con aumento peligroso de temperatura.
 
-st.markdown("""
-La fórmula clásica para estimar el tamaño muestral en proporciones es:
+Historial:
 
-\[
-n = \frac{Z^2 \, p(1-p)}{E^2}
-\]
+\\[
+p = 0.002 \quad (0.2\%)
+\\]
 
-La varianza de una proporción es:
+Evento extremadamente raro.
 
-\[
-Var(p) = p(1-p)
-\]
-
-📌 **Punto clave:** la varianza es máxima cuando **p = 0.5**, lo que genera el **mayor tamaño muestral posible**.
+Se desea:
+- Error **E = 0.005**
+- Confianza **Z = 1.96**
 """)
 
-col1, col2 = st.columns(2)
+    st.markdown("### 1️⃣ Varianza máxima (uso incorrecto p=0.5)")
+    st.latex(r"n = \frac{1.96^2 (0.25)}{0.005^2}")
 
-with col1:
-    st.subheader("Parámetros interactivos")
-    p = st.slider("Proporción esperada p", 0.0, 1.0, 0.05, 0.01)
-    Z = st.slider("Valor Z", 1.0, 3.0, 1.96, 0.01)
-    E = st.slider("Margen de error E", 0.001, 0.2, 0.05, 0.001)
+    n1 = (1.96**2 * 0.25) / (0.005**2)
+    st.latex(r"n = 38416")
 
-with col2:
-    st.subheader("Resultado")
-    n = (Z**2 * p * (1 - p)) / (E**2)
-    st.metric("Tamaño muestral clásico n", int(np.ceil(n)))
+    st.write("Varianza real del proceso:")
+    st.latex(r"p(1-p) = 0.002(0.998) = 0.001996")
 
-    if p == 0.5:
-        st.success("La varianza es MÁXIMA en p = 0.5 → mayor tamaño muestral.")
-    elif p < 0.10:
-        st.warning("p < 0.10: evento raro → varianza baja → menor tamaño muestral.")
-    elif p > 0.90:
-        st.warning("p > 0.90: evento casi seguro → varianza baja → menor tamaño muestral.")
-    else:
-        st.info("Varianza moderada.")
+    st.info("La varianza real es **125 veces menor** que 0.25.")
 
+    st.markdown("### 2️⃣ Ajuste usando la proporción real")
+    st.latex(r"n = \frac{1.96^2 (0.002)(0.998)}{0.005^2}")
+    st.latex(r"n = 307")
 
-# ---------- GRAFICA DE VARIANZA ----------
-st.subheader("📈 Comportamiento de la varianza p(1−p)")
+    st.success("✔ **Conclusión:** la muestra correcta es **307 observaciones**, no **38.416**.")
 
-p_vals = np.linspace(0, 1, 300)
-var_vals = p_vals * (1 - p_vals)
+    st.markdown("### 3️⃣ Ecuación alternativa (p ≈ p(1−p))")
+    st.latex(r"n \approx \frac{1.96^2 (0.002)}{0.005^2}")
+    st.latex(r"n \approx 302")
 
-fig, ax = plt.subplots()
-ax.plot(p_vals, var_vals)
-ax.axvline(p, color="red", linestyle="--")
-ax.set_title("Varianza de la Proporción")
-ax.set_xlabel("p")
-ax.set_ylabel("p(1-p)")
-st.pyplot(fig)
+    st.markdown("### ✔ Conclusión del ejemplo 2")
+    st.write("""
+- Usar p = 0.5 produjo una sobreestimación absurda (**38416**).  
+- Usar p real da **307**.  
+- La aproximación da **302**.  
 
-
-
-# ============================================================
-# 2. AJUSTE PARA p EXTREMAS Y FÓRMULA ALTERNATIVA
-# ============================================================
-
-st.header("2️⃣ Ajuste para proporciones extremas y fórmula alternativa")
-
-st.markdown("""
-Cuando **p < 0.10 o p > 0.90**, la fórmula clásica sobreestima el tamaño muestral.  
-Para corregir esto se usa un ajuste:
-
-\[
-n_{ajustado} = \frac{Z^2 p(1-p)}{E^2 + \frac{Z^2}{N}}
-\]
-
-La ecuación alternativa reduce el sesgo cuando el evento es muy raro o muy común.
+Es esencial para **seguridad industrial y confiabilidad** en sistemas críticos.
 """)
-
-N = st.number_input("Tamaño poblacional N", 100, 10000000, 50000)
-
-n_adj = (Z**2 * p * (1 - p)) / (E**2 + (Z**2 / N))
-
-st.metric("Tamaño muestral ajustado", int(np.ceil(n_adj)))
-
-if p < 0.10:
-    st.success("Como p es muy pequeño, este ajuste evita una sobreestimación grande.")
-elif p > 0.90:
-    st.success("Como p es muy grande, el ajuste corrige la reducción de varianza.")
-else:
-    st.info("El ajuste es menos crítico cuando p está entre 0.10 y 0.90.")
-
-# ---------- GRAFICA DEL AJUSTE ----------
-st.subheader("📉 Comparación: fórmula clásica vs ajustada")
-
-n_classic_vals = (Z**2 * p_vals * (1 - p_vals)) / (E**2)
-n_adj_vals = (Z**2 * p_vals * (1 - p_vals)) / (E**2 + (Z**2 / N))
-
-fig2, ax2 = plt.subplots()
-ax2.plot(p_vals, n_classic_vals, label="Clásica")
-ax2.plot(p_vals, n_adj_vals, label="Ajustada")
-ax2.set_xlabel("p")
-ax2.set_ylabel("Tamaño muestral")
-ax2.legend()
-ax2.axvline(p, linestyle="--")
-st.pyplot(fig2)
-
-
-
-# ============================================================
-# 3. EJEMPLO REAL 1 — ENFERMEDAD RARA
-# ============================================================
-
-st.header("3️⃣ Ejemplo real 1 — Prevalencia de una enfermedad rara")
-
-st.markdown("""
-Supongamos que queremos estimar la prevalencia de una enfermedad que afecta al **0.3%** de la población.
-
-- Evento extremadamente raro  
-- Relevante para salud pública  
-- Necesitamos evitar sobreestimar el tamaño muestral  
-""")
-
-p1 = st.slider("Proporción esperada p1 (enfermedad rara)", 0.001, 0.02, 0.003, 0.001)
-Z1 = 1.96
-E1 = st.slider("Margen E1", 0.005, 0.05, 0.01, 0.005)
-
-n1 = (Z1**2 * p1 * (1 - p1)) / (E1**2)
-n1_adj = (Z1**2 * p1 * (1 - p1)) / (E1**2 + (Z1**2 / N))
-
-colA, colB = st.columns(2)
-with colA:
-    st.metric("n clásico", int(np.ceil(n1)))
-with colB:
-    st.metric("n ajustado", int(np.ceil(n1_adj)))
-
-if n1 - n1_adj > 1000:
-    st.warning("⚠ La fórmula clásica sobreestima enormemente el tamaño muestral.")
-else:
-    st.success("Ajuste adecuado para eventos rarísimos.")
-
-# ----- Grafica -----
-st.subheader("📊 Comportamiento para enfermedad rara")
-
-fig3, ax3 = plt.subplots()
-ax3.plot(p_vals, (Z1**2 * p_vals * (1 - p_vals)) / (E1**2))
-ax3.axvline(p1, color="red", linestyle="--")
-ax3.set_title("Tamaño muestral clásico vs p")
-ax3.set_xlabel("p")
-ax3.set_ylabel("n")
-st.pyplot(fig3)
-
-
-
-# ============================================================
-# 4. EJEMPLO REAL 2 — EVENTO MUY FRECUENTE
-# ============================================================
-
-st.header("4️⃣ Ejemplo real 2 — Adopción casi universal de una vacuna")
-
-st.markdown("""
-Imaginemos medir la proporción de personas vacunadas cuando se espera un valor muy alto  
-(por ejemplo, **p = 0.97**).  
-""")
-
-p2 = st.slider("Proporción p2 (vacunación alta)", 0.90, 1.0, 0.97, 0.01)
-Z2 = 1.96
-E2 = st.slider("Margen E2", 0.005, 0.05, 0.01, 0.005)
-
-n2 = (Z2**2 * p2 * (1 - p2)) / (E2**2)
-n2_adj = (Z2**2 * p2 * (1 - p2)) / (E2**2 + (Z2**2 / N))
-
-colC, colD = st.columns(2)
-with colC:
-    st.metric("n clásico", int(np.ceil(n2)))
-with colD:
-    st.metric("n ajustado", int(np.ceil(n2_adj)))
-
-if p2 > 0.95:
-    st.info("Como p está cerca de 1, la varianza es pequeña → n disminuye.")
-
-# ----- Grafica -----
-st.subheader("📊 Comportamiento para evento muy frecuente")
-
-fig4, ax4 = plt.subplots()
-ax4.plot(p_vals, (Z2**2 * p_vals * (1 - p_vals)) / (E2**2))
-ax4.axvline(p2, color="green", linestyle="--")
-ax4.set_title("Tamaño muestral clásico vs p")
-ax4.set_xlabel("p")
-ax4.set_ylabel("n")
-st.pyplot(fig4)
