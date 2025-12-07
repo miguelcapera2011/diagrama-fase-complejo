@@ -1,104 +1,117 @@
 import streamlit as st
 import numpy as np
 
-# ===========================================================
-# 🎄 DECORACIÓN NAVIDEÑA ELEGANTE Y PROFESIONAL
-# ===========================================================
+st.header("🌟 Ejemplos completos — Eventos raros y tamaño muestral")
 
-st.markdown("""
-<style>
+tab1, tab2 = st.tabs(["🌟 Ejemplo 1: Enfermedad rara", "🌟 Ejemplo 2: Falla química rara"])
 
-body {
-    margin: 0;
-    padding: 0;
-}
+# ============================================================
+# =================== EJEMPLO 1 ================================
+# ============================================================
 
-/* --- CONTENEDOR PRINCIPAL CON RAMAS --- */
-.navidad-banner {
-    position: relative;
-    width: 100%;
-    height: 170px;
-    background: url('https://i.imgur.com/l2s8MnP.png') no-repeat center top;
-    background-size: cover;
-    overflow: hidden;
-    border-bottom: 2px solid #d8d8d8;
-    margin-bottom: 18px;
-}
+with tab1:
+    st.subheader("🌟 EJEMPLO 1 — Prevalencia de una enfermedad rara (p = 0.008)")
+    st.markdown("### 🔷 Contexto")
+    st.write("""
+Un hospital quiere estimar la proporción de pacientes que presentan **tuberculosis multirresistente (TB-MDR)**.
 
-/* --- NIEVE ELEGANTE --- */
-@keyframes nieve-caer {
-    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(200px) rotate(360deg); opacity: 0; }
-}
+Estudios previos indican una prevalencia:
+""")
 
-.snowflake {
-    position: absolute;
-    top: -10px;
-    font-size: 12px;
-    color: #ffffff;
-    opacity: 0.9;
-    animation: nieve-caer linear infinite;
-}
+    st.latex(r"p = 0.008 \quad (0.8\%)")
 
-/* Distribución y tiempos diferentes */
-.snowflake:nth-child(1) { left: 10%; animation-duration: 4s; }
-.snowflake:nth-child(2) { left: 25%; animation-duration: 5s; }
-.snowflake:nth-child(3) { left: 40%; animation-duration: 3.5s; }
-.snowflake:nth-child(4) { left: 55%; animation-duration: 4.2s; }
-.snowflake:nth-child(5) { left: 70%; animation-duration: 5.1s; }
-.snowflake:nth-child(6) { left: 85%; animation-duration: 3.8s; }
+    st.write("""
+Este es un **evento raro**.
 
-/* --- LUCES FAIRY LIGHTS ELEGANTES --- */
-.fairy-lights {
-    position: absolute;
-    bottom: 10px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    gap: 14px;
-}
+El investigador quiere:
+- Error máximo: **E = 0.01**
+- Confianza: **Z = 1.96**
+""")
 
-.light {
-    width: 10px;
-    height: 10px;
-    background: radial-gradient(circle, rgba(255,255,255,1), rgba(255,255,255,0));
-    border-radius: 50%;
-    animation: brillar 1.8s infinite alternate;
-}
+    st.markdown("### 1️⃣ Varianza máxima en p = 0.5 (problema que causa)")
 
-/* Animación de brillo suave */
-@keyframes brillar {
-    0% { opacity: 0.25; transform: scale(0.8); }
-    100% { opacity: 1; transform: scale(1.3); }
-}
+    st.latex(r"n = \frac{1.96^2 (0.5)(0.5)}{0.01^2}")
+    n1 = (1.96**2 * 0.25) / (0.01**2)
+    st.latex(r"n = 9604")
 
-/* Colores pastel elegantes */
-.light:nth-child(1) { background: #ffe5e5; animation-delay: 0s; }
-.light:nth-child(2) { background: #e5ffd9; animation-delay: 0.3s; }
-.light:nth-child(3) { background: #d9e9ff; animation-delay: 0.6s; }
-.light:nth-child(4) { background: #fff7d9; animation-delay: 0.9s; }
-.light:nth-child(5) { background: #ffd9f7; animation-delay: 0.4s; }
+    st.write("Interpretación:")
+    st.latex(r"p(1-p) = 0.008(0.992) = 0.007936")
 
-</style>
+    st.info("La varianza real es **31 veces más pequeña**, así que 9604 es un enorme desperdicio de recursos.")
 
-<div class="navidad-banner">
+    st.markdown("### 2️⃣ Ajuste usando la proporción real (p < 0.10)")
 
-    <!-- ❄️ NIEVE -->
-    <div class="snowflake">❄</div>
-    <div class="snowflake">❄</div>
-    <div class="snowflake">❄</div>
-    <div class="snowflake">❄</div>
-    <div class="snowflake">❄</div>
-    <div class="snowflake">❄</div>
+    st.latex(r"n = \frac{1.96^2 (0.008)(0.992)}{0.01^2}")
 
-    <!-- ✨ LUCES SUAVES -->
-    <div class="fairy-lights">
-        <div class="light"></div>
-        <div class="light"></div>
-        <div class="light"></div>
-        <div class="light"></div>
-        <div class="light"></div>
-    </div>
+    n2 = (1.96**2 * 0.008 * (1 - 0.008)) / (0.01**2)
+    st.latex(r"n = 304")
 
-</div>
-""", unsafe_allow_html=True)
+    st.success("✔ **Conclusión del ajuste:** el tamaño muestral correcto es **304**, no **9604**.")
+
+    st.markdown("### 3️⃣ Ecuación alternativa usando p(1−p) ≈ p")
+    st.latex(r"p(1-p) \approx p")
+    st.latex(r"n \approx \frac{1.96^2 (0.008)}{0.01^2}")
+    st.latex(r"n \approx 307")
+
+    st.markdown("### ✔ Conclusión del ejemplo 1")
+    st.write("""
+- Usar p = 0.5 habría requerido una muestra absurda (**9604**).  
+- El ajuste correcto da **304**.  
+- La aproximación da **307**, muy cercana.  
+
+La técnica es **crucial en epidemiología de enfermedades poco frecuentes**.
+""")
+
+
+# ============================================================
+# =================== EJEMPLO 2 ================================
+# ============================================================
+
+with tab2:
+    st.subheader("🌟 EJEMPLO 2 — Estudio de falla muy rara en reactor químico (p = 0.002)")
+    st.markdown("### 🔷 Contexto")
+    st.write("""
+Una empresa química quiere estimar la proporción de reacciones con aumento peligroso de temperatura.
+
+Historial:
+""")
+
+    st.latex(r"p = 0.002 \quad (0.2\%)")
+
+    st.write("""
+Evento extremadamente raro.
+
+Se desea:
+- Error **E = 0.005**
+- Confianza **Z = 1.96**
+""")
+
+    st.markdown("### 1️⃣ Varianza máxima (uso incorrecto p=0.5)")
+    st.latex(r"n = \frac{1.96^2 (0.25)}{0.005^2}")
+
+    n1 = (1.96**2 * 0.25) / (0.005**2)
+    st.latex(r"n = 38416")
+
+    st.write("Varianza real del proceso:")
+    st.latex(r"p(1-p) = 0.002(0.998) = 0.001996")
+
+    st.info("La varianza real es **125 veces menor** que 0.25.")
+
+    st.markdown("### 2️⃣ Ajuste usando la proporción real")
+    st.latex(r"n = \frac{1.96^2 (0.002)(0.998)}{0.005^2}")
+    st.latex(r"n = 307")
+
+    st.success("✔ **Conclusión:** la muestra correcta es **307 observaciones**, no **38.416**.")
+
+    st.markdown("### 3️⃣ Ecuación alternativa (p ≈ p(1−p))")
+    st.latex(r"n \approx \frac{1.96^2 (0.002)}{0.005^2}")
+    st.latex(r"n \approx 302")
+
+    st.markdown("### ✔ Conclusión del ejemplo 2")
+    st.write("""
+- Usar p = 0.5 produjo una sobreestimación absurda (**38416**).  
+- Usar p real da **307**.  
+- La aproximación da **302**.  
+
+Es esencial para **seguridad industrial y confiabilidad** en sistemas críticos.
+""")
