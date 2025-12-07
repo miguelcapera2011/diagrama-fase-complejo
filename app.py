@@ -1,12 +1,77 @@
 import streamlit as st
 import numpy as np
 
+# ============================================================
+#             🌟 ESTILOS NAVIDEÑOS — FONDO BONITO
+# ============================================================
+
+page_bg = """
+<style>
+/* Fondo con degradado navideño */
+body {
+    background: linear-gradient(135deg, #eaf6ff, #fffdf5, #f1f9ff);
+    background-attachment: fixed;
+}
+
+/* Contenedor general */
+.main {
+    background-color: rgba(255, 255, 255, 0.60);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.15);
+}
+
+/* Encabezado navideño */
+h1, h2, h3 {
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.15);
+}
+
+/* Bordes suaves tipo tarjeta */
+.stTabs [data-baseweb="tab-list"] {
+    background-color: #ffffffcc;
+    border-radius: 12px;
+    padding: 8px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background-color: #f8faff;
+    border-radius: 10px;
+    margin-right: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Camas de nieve suave */
+@keyframes snow {
+    0% {background-position: 0px 0px;}
+    100% {background-position: 0px 1000px;}
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    background-image: url('https://i.imgur.com/7eM7ZpP.png');
+    background-size: contain;
+    opacity: 0.25;
+    animation: snow 18s linear infinite;
+}
+</style>
+"""
+
+st.markdown(page_bg, unsafe_allow_html=True)
+
+# ============================================================
+#                     TU APP (NO CAMBIADA)
+# ============================================================
+
 st.header("Eventos raros y tamaño muestral")
 
-tab1, tab2 = st.tabs(["Aplicacion #1: Enfermedad rara", "🌟 Aplicacion #2: Falla química rara"])
+tab1, tab2 = st.tabs(["🌟Aplicacion #1: Enfermedad rara", "🌟 Aplicacion #2: Falla química rara"])
 
 # =================== EJEMPLO 1 ================================
-
 
 with tab1:
     st.subheader("Prevalencia de una enfermedad rara (p = 0.008)")
