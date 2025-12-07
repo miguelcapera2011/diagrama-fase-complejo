@@ -1,106 +1,104 @@
 import streamlit as st
 import numpy as np
 
-# ============================================
-# 🎄 DECORACIÓN NAVIDEÑA PROFESIONAL
-# ============================================
+# ===========================================================
+# 🎄 DECORACIÓN NAVIDEÑA ELEGANTE Y PROFESIONAL
+# ===========================================================
 
 st.markdown("""
 <style>
 
-/* --- CONTENEDOR GENERAL DE DECORACIÓN --- */
-.navidad-header {
-    position: relative;
-    width: 100%;
-    height: 140px;
-    background: url('https://i.imgur.com/XM3aQ2X.png') no-repeat center top; /* 🌲 Rama navideña PNG */
-    background-size: cover;
-    margin-bottom: 20px;
+body {
+    margin: 0;
+    padding: 0;
 }
 
-/* --- NIEVE ANIMADA --- */
-@keyframes nieve {
-    0% { transform: translateY(-10px); opacity: 1; }
-    100% { transform: translateY(140px); opacity: 0; }
+/* --- CONTENEDOR PRINCIPAL CON RAMAS --- */
+.navidad-banner {
+    position: relative;
+    width: 100%;
+    height: 170px;
+    background: url('https://i.imgur.com/l2s8MnP.png') no-repeat center top;
+    background-size: cover;
+    overflow: hidden;
+    border-bottom: 2px solid #d8d8d8;
+    margin-bottom: 18px;
+}
+
+/* --- NIEVE ELEGANTE --- */
+@keyframes nieve-caer {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(200px) rotate(360deg); opacity: 0; }
 }
 
 .snowflake {
     position: absolute;
-    top: 0;
-    color: white;
-    font-size: 10px;
+    top: -10px;
+    font-size: 12px;
+    color: #ffffff;
     opacity: 0.9;
-    animation: nieve linear infinite;
+    animation: nieve-caer linear infinite;
 }
 
-/* Crear muchos copos */
-.snowflake:nth-child(1) { left: 10%; animation-duration: 3s; }
-.snowflake:nth-child(2) { left: 20%; animation-duration: 4s; }
-.snowflake:nth-child(3) { left: 30%; animation-duration: 2.5s; }
-.snowflake:nth-child(4) { left: 40%; animation-duration: 3.7s; }
-.snowflake:nth-child(5) { left: 50%; animation-duration: 4.2s; }
-.snowflake:nth-child(6) { left: 60%; animation-duration: 3.1s; }
-.snowflake:nth-child(7) { left: 70%; animation-duration: 3.8s; }
-.snowflake:nth-child(8) { left: 80%; animation-duration: 2.9s; }
-.snowflake:nth-child(9) { left: 90%; animation-duration: 3.5s; }
+/* Distribución y tiempos diferentes */
+.snowflake:nth-child(1) { left: 10%; animation-duration: 4s; }
+.snowflake:nth-child(2) { left: 25%; animation-duration: 5s; }
+.snowflake:nth-child(3) { left: 40%; animation-duration: 3.5s; }
+.snowflake:nth-child(4) { left: 55%; animation-duration: 4.2s; }
+.snowflake:nth-child(5) { left: 70%; animation-duration: 5.1s; }
+.snowflake:nth-child(6) { left: 85%; animation-duration: 3.8s; }
 
-/* --- LUCES NAVIDEÑAS --- */
-.luces {
+/* --- LUCES FAIRY LIGHTS ELEGANTES --- */
+.fairy-lights {
     position: absolute;
-    bottom: 0;
+    bottom: 10px;
     width: 100%;
     display: flex;
     justify-content: center;
-    gap: 12px;
+    gap: 14px;
 }
 
-.bombillo {
-    width: 18px;
-    height: 28px;
+.light {
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle, rgba(255,255,255,1), rgba(255,255,255,0));
     border-radius: 50%;
-    box-shadow: 0 0 6px rgba(255,255,255,0.4);
-    animation: prender 1.5s infinite alternate;
+    animation: brillar 1.8s infinite alternate;
 }
 
-/* Colores + retardos */
-.rojo { background: #ff4b4b; animation-delay: 0s; }
-.verde { background: #2ecc71; animation-delay: 0.3s; }
-.azul { background: #3498db; animation-delay: 0.6s; }
-.amarillo { background: #f1c40f; animation-delay: 0.9s; }
-
-/* Efecto prender/apagar */
-@keyframes prender {
-    0% { opacity: 0.3; transform: scale(0.9); }
-    100% { opacity: 1; transform: scale(1.25); }
+/* Animación de brillo suave */
+@keyframes brillar {
+    0% { opacity: 0.25; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1.3); }
 }
+
+/* Colores pastel elegantes */
+.light:nth-child(1) { background: #ffe5e5; animation-delay: 0s; }
+.light:nth-child(2) { background: #e5ffd9; animation-delay: 0.3s; }
+.light:nth-child(3) { background: #d9e9ff; animation-delay: 0.6s; }
+.light:nth-child(4) { background: #fff7d9; animation-delay: 0.9s; }
+.light:nth-child(5) { background: #ffd9f7; animation-delay: 0.4s; }
 
 </style>
 
-<div class="navidad-header">
+<div class="navidad-banner">
 
-  <!-- ❄️ NIEVE -->
-  <div class="snowflake">❄</div>
-  <div class="snowflake">❄</div>
-  <div class="snowflake">❄</div>
-  <div class="snowflake">❄</div>
-  <div class="snowflake">❄</div>
-  <div class="snowflake">❄</div>
-  <div class="snowflake">❄</div>
-  <div class="snowflake">❄</div>
-  <div class="snowflake">❄</div>
+    <!-- ❄️ NIEVE -->
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❄</div>
 
-  <!-- 🎄 LUCES -->
-  <div class="luces">
-      <div class="bombillo rojo"></div>
-      <div class="bombillo verde"></div>
-      <div class="bombillo azul"></div>
-      <div class="bombillo amarillo"></div>
-      <div class="bombillo rojo"></div>
-      <div class="bombillo verde"></div>
-      <div class="bombillo azul"></div>
-      <div class="bombillo amarillo"></div>
-  </div>
+    <!-- ✨ LUCES SUAVES -->
+    <div class="fairy-lights">
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+    </div>
 
 </div>
-
 """, unsafe_allow_html=True)
