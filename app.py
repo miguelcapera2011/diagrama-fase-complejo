@@ -1,9 +1,51 @@
 import streamlit as st
 import numpy as np
 
-# ============================================================
-#             🌟 ESTILOS NAVIDEÑOS — FONDO BONITO
-# ============================================================
+# ----- FONDO BONITO -----
+page_bg = """
+<style>
+/* Fondo general con gradiente suave */
+.stApp {
+    background: linear-gradient(135deg, #e3f2fd, #fce4ec, #e8f5e9);
+    background-attachment: fixed;
+}
+
+/* Caja translúcida para que el contenido se vea más elegante */
+.block-container {
+    background: rgba(255, 255, 255, 0.82);
+    padding: 2rem;
+    border-radius: 18px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.18);
+}
+
+/* Títulos más elegantes */
+h1, h2, h3, h4 {
+    color: #1a237e;
+    font-weight: 700;
+}
+
+/* Tabs más bonitos */
+.stTabs [data-baseweb="tab"] {
+    background-color: rgba(255,255,255,0.6);
+    border-radius: 10px;
+    padding: 10px 20px;
+    margin-right: 10px;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: #3949ab !important;
+    color: white !important;
+}
+
+/* Inputs con estilo moderno */
+input, select, textarea {
+    border-radius: 10px !important;
+    border: 1px solid #3949ab !important;
+}
+</style>
+"""
+st.markdown(page_bg, unsafe_allow_html=True)
+
 
 page_bg = """
 <style>
