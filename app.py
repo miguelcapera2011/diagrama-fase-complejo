@@ -1,18 +1,16 @@
 import streamlit as st
 import numpy as np
 
-st.header("🌟 Ejemplos completos — Eventos raros y tamaño muestral")
+st.header("APLICACIONES — Eventos raros y tamaño muestral")
 
-tab1, tab2 = st.tabs(["🌟 Ejemplo 1: Enfermedad rara", "🌟 Ejemplo 2: Falla química rara"])
+tab1, tab2 = st.tabs(["Aplicacion #1: Enfermedad rara", "🌟 Aplicacion #2: Falla química rara"])
 
-
-# ============================================================
 # =================== EJEMPLO 1 ================================
-# ============================================================
+
 
 with tab1:
-    st.subheader("🌟 EJEMPLO 1 — Prevalencia de una enfermedad rara (p = 0.008)")
-    st.markdown("### 🔷 Contexto")
+    st.subheader("Aplicacion #1 — Prevalencia de una enfermedad rara (p = 0.008)")
+    st.markdown("Contexto")
     st.write("""
 Un hospital quiere estimar la proporción de pacientes que presentan **tuberculosis multirresistente (TB-MDR)**.
 
@@ -91,8 +89,8 @@ La técnica es **crucial en epidemiología de enfermedades poco frecuentes**.
 # ============================================================
 
 with tab2:
-    st.subheader("🌟 EJEMPLO 2 — Estudio de falla muy rara en reactor químico (p = 0.002)")
-    st.markdown("### 🔷 Contexto")
+    st.subheader("Aplicacion #2 — Estudio de falla muy rara en reactor químico (p = 0.002)")
+    st.markdown("Contexto")
     st.write("""
 Una empresa química quiere estimar la proporción de reacciones con aumento peligroso de temperatura.
 
