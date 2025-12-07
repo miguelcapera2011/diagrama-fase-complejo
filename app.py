@@ -1,117 +1,159 @@
 import streamlit as st
 import numpy as np
+import matplotlib.pyplot as plt
 
-st.header("🌟 Ejemplos completos — Eventos raros y tamaño muestral")
+st.set_page_config(page_title="Eventos Raros – Tamaño Muestral", layout="wide")
 
-tab1, tab2 = st.tabs(["🌟 Ejemplo 1: Enfermedad rara", "🌟 Ejemplo 2: Falla química rara"])
+st.title("📊 Cálculo de Tamaño Muestral para Proporciones Extremas (Eventos Raros)")
 
-# ============================================================
-# =================== EJEMPLO 1 ================================
-# ============================================================
+st.markdown("""
+Esta app permite analizar cómo cambia el tamaño muestral cuando la proporción esperada es muy pequeña o muy grande.
+Incluye:
 
-with tab1:
-    st.subheader("🌟 EJEMPLO 1 — Prevalencia de una enfermedad rara (p = 0.008)")
-    st.markdown("### 🔷 Contexto")
-    st.write("""
-Un hospital quiere estimar la proporción de pacientes que presentan **tuberculosis multirresistente (TB-MDR)**.
-
-Estudios previos indican una prevalencia:
-
-\\[
-p = 0.008 \quad (0.8\%)
-\\]
-
-Este es un **evento raro**.
-
-El investigador quiere:
-- Error máximo: **E = 0.01**
-- Confianza: **Z = 1.96**
+- Por qué la varianza es máxima en **p = 0.5**.
+- Ajustes cuando **p < 0.10** o **p > 0.90**.
+- Fórmula alternativa para evitar sobreestimación.
+- Dos ejemplos de **eventos raros** totalmente interactivos.
 """)
 
-    st.markdown("### 1️⃣ Varianza máxima en p = 0.5 (problema que causa)")
+# ========================
+# SECCIÓN: FÓRMULA GENERAL
+# ========================
 
-    st.latex(r"n = \frac{1.96^2 (0.5)(0.5)}{0.01^2}")
-    n1 = (1.96**2 * 0.25) / (0.01**2)
-    st.latex(r"n = 9604")
+st.header("1️⃣ Fórmula general e interacción en tiempo real")
 
-    st.write("Interpretación:")
-    st.latex(r"p(1-p) = 0.008(0.992) = 0.007936")
+col1, col2 = st.columns(2)
 
-    st.info("La varianza real es **31 veces más pequeña**, así que 9604 es un enorme desperdicio de recursos.")
+with col1:
+    st.subheader("Valores de entrada")
+    p = st.slider("Proporción esperada (p)", 0.0, 1.0, 0.05, 0.01)
+    Z = st.slider("Valor Z", 1.0, 3.0, 1.96, 0.01)
+    E = st.slider("Margen de error (E)", 0.001, 0.2, 0.05, 0.001)
 
-    st.markdown("### 2️⃣ Ajuste usando la proporción real (p < 0.10)")
+with col2:
+    st.subheader("Resultado del tamaño muestral")
 
-    st.latex(r"n = \frac{1.96^2 (0.008)(0.992)}{0.01^2}")
+    n = (Z**2 * p * (1 - p)) / (E**2)
+    st.metric("Tamaño muestral (n)", f"{int(np.ceil(n))}")
 
-    n2 = (1.96**2 * 0.008 * (1 - 0.008)) / (0.01**2)
-    st.latex(r"n = 304")
+    # Mensaje dinámico
+    if p == 0.5:
+        st.success("🟦 La varianza es MÁXIMA cuando p = 0.5. Esto produce el mayor tamaño muestral posible.")
+    elif p < 0.10:
+        st.warning("🟨 p es muy pequeño (< 0.10). Esto reduce la varianza y el tamaño muestral.")
+    elif p > 0.90:
+        st.warning("🟪 p es muy grande (> 0.90). También reduce la varianza y el tamaño muestral.")
+    else:
+        st.info("ℹ La varianza está en un nivel intermedio.")
 
-    st.success("✔ **Conclusión del ajuste:** el tamaño muestral correcto es **304**, no **9604**.")
+# ========================
+# GRÁFICA DINÁMICA varianza
+# ========================
 
-    st.markdown("### 3️⃣ Ecuación alternativa usando p(1−p) ≈ p")
-    st.latex(r"p(1-p) \approx p")
-    st.latex(r"n \approx \frac{1.96^2 (0.008)}{0.01^2}")
-    st.latex(r"n \approx 307")
+st.subheader("📈 Cómo cambia la varianza p(1 - p)")
 
-    st.markdown("### ✔ Conclusión del ejemplo 1")
-    st.write("""
-- Usar p = 0.5 habría requerido una muestra absurda (**9604**).  
-- El ajuste correcto da **304**.  
-- La aproximación da **307**, muy cercana.  
+p_vals = np.linspace(0, 1, 200)
+var_vals = p_vals * (1 - p_vals)
 
-La técnica es **crucial en epidemiología de enfermedades poco frecuentes**.
-""")
+fig, ax = plt.subplots()
+ax.plot(p_vals, var_vals)
+ax.axvline(p, linestyle="--")
+ax.set_xlabel("p")
+ax.set_ylabel("Varianza: p(1-p)")
+st.pyplot(fig)
+
 
 
 # ============================================================
-# =================== EJEMPLO 2 ================================
+# SECCIÓN 2 — AJUSTE PARA EVENTOS RAROS
 # ============================================================
 
-with tab2:
-    st.subheader("🌟 EJEMPLO 2 — Estudio de falla muy rara en reactor químico (p = 0.002)")
-    st.markdown("### 🔷 Contexto")
-    st.write("""
-Una empresa química quiere estimar la proporción de reacciones con aumento peligroso de temperatura.
+st.header("2️⃣ Ajuste cuando p < 0.10 o p > 0.90")
 
-Historial:
+st.markdown("""
+Cuando **p es extrema**, la fórmula tradicional suele sobreestimar el tamaño muestral.  
+Se usa un ajuste recomendado:
 
-\\[
-p = 0.002 \quad (0.2\%)
-\\]
+\[
+n_{ajustado} = \frac{Z^2 \cdot p(1-p)}{E^2 + \frac{Z^2}{N}}
+\]
 
-Evento extremadamente raro.
-
-Se desea:
-- Error **E = 0.005**
-- Confianza **Z = 1.96**
+*(Usado cuando el evento es muy raro o muy frecuente.)*
 """)
 
-    st.markdown("### 1️⃣ Varianza máxima (uso incorrecto p=0.5)")
-    st.latex(r"n = \frac{1.96^2 (0.25)}{0.005^2}")
+colA, colB = st.columns(2)
 
-    n1 = (1.96**2 * 0.25) / (0.005**2)
-    st.latex(r"n = 38416")
+with colA:
+    N = st.number_input("Población total (N)", 100, 10_000_000, 50000)
+    n_adj = (Z**2 * p * (1 - p)) / (E**2 + (Z**2 / N))
 
-    st.write("Varianza real del proceso:")
-    st.latex(r"p(1-p) = 0.002(0.998) = 0.001996")
+with colB:
+    st.metric("n ajustado", f"{int(np.ceil(n_adj))}")
 
-    st.info("La varianza real es **125 veces menor** que 0.25.")
+    if p < 0.10:
+        st.success("✔ Como p es muy pequeño, el ajuste evita **sobreestimar** el tamaño muestral.")
+    elif p > 0.90:
+        st.success("✔ Como p es muy grande, el ajuste también reduce la sobreestimación.")
+    else:
+        st.info("El ajuste es útil, pero menos relevante cuando p está entre 0.10 y 0.90.")
 
-    st.markdown("### 2️⃣ Ajuste usando la proporción real")
-    st.latex(r"n = \frac{1.96^2 (0.002)(0.998)}{0.005^2}")
-    st.latex(r"n = 307")
 
-    st.success("✔ **Conclusión:** la muestra correcta es **307 observaciones**, no **38.416**.")
+# ========================
+# GRÁFICA DINÁMICA DEL AJUSTE
+# ========================
 
-    st.markdown("### 3️⃣ Ecuación alternativa (p ≈ p(1−p))")
-    st.latex(r"n \approx \frac{1.96^2 (0.002)}{0.005^2}")
-    st.latex(r"n \approx 302")
+st.subheader("📉 Comparación: fórmula clásica vs. fórmula ajustada")
 
-    st.markdown("### ✔ Conclusión del ejemplo 2")
-    st.write("""
-- Usar p = 0.5 produjo una sobreestimación absurda (**38416**).  
-- Usar p real da **307**.  
-- La aproximación da **302**.  
+n_classic_vals = (Z**2 * p_vals * (1 - p_vals)) / (E**2)
+n_adj_vals = (Z**2 * p_vals * (1 - p_vals)) / (E**2 + (Z**2 / N))
 
-Es esencial para **seguridad industrial y confiabilidad** en sistemas críticos.
-""")
+fig2, ax2 = plt.subplots()
+ax2.plot(p_vals, n_classic_vals, label="Clásica")
+ax2.plot(p_vals, n_adj_vals, label="Ajustada")
+ax2.axvline(p, linestyle="--")
+ax2.legend()
+st.pyplot(fig2)
+
+
+
+# ============================================================
+# SECCIÓN 3 — EJEMPLO 1 (EVENTO RARO)
+# ============================================================
+
+st.header("3️⃣ Ejemplo 1 — Enfermedad rara (p = 0.003)")
+
+p1 = st.slider("p1 (eventos raros — enfermedad)", 0.001, 0.02, 0.003, 0.001)
+Z1 = 1.96
+E1 = 0.01
+
+n1 = (Z1**2 * p1 * (1 - p1)) / (E1**2)
+n1_adj = (Z1**2 * p1 * (1 - p1)) / (E1**2 + (Z1**2 / 1000000))
+
+st.metric("n clásico", int(np.ceil(n1)))
+st.metric("n ajustado", int(np.ceil(n1_adj)))
+
+if n1 - n1_adj > 2000:
+    st.warning("⚠ La fórmula clásica **sobreestima muchísimo** el tamaño muestral para eventos raros.")
+else:
+    st.success("Ajuste apropiado para eventos raros.")
+
+
+
+# ============================================================
+# SECCIÓN 4 — EJEMPLO 2 (EVENTO MUY FRECUENTE)
+# ============================================================
+
+st.header("4️⃣ Ejemplo 2 — Adopción casi universal de una vacuna (p = 0.97)")
+
+p2 = st.slider("p2 (evento casi seguro)", 0.90, 1.0, 0.97, 0.01)
+Z2 = 1.96
+E2 = 0.01
+
+n2 = (Z2**2 * p2 * (1 - p2)) / (E2**2)
+n2_adj = (Z2**2 * p2 * (1 - p2)) / (E2**2 + (Z2**2 / 500000))
+
+st.metric("n clásico", int(np.ceil(n2)))
+st.metric("n ajustado", int(np.ceil(n2_adj)))
+
+if p2 > 0.95:
+    st.info("Cuando p es muy alto, la varianza es pequeña → se necesita **menos muestra**.")
