@@ -16,11 +16,11 @@ with tab1:
 Un hospital quiere estimar la proporción de pacientes que presentan **tuberculosis multirresistente (TB-MDR)**.
 
 Estudios previos indican una prevalencia:
+""")
 
-\\[
-p = 0.008 \quad (0.8\%)
-\\]
+    st.latex(r"p = 0.008 \quad (0.8\%)")
 
+    st.write("""
 Este es un **evento raro**.
 
 El investigador quiere:
@@ -74,11 +74,11 @@ with tab2:
 Una empresa química quiere estimar la proporción de reacciones con aumento peligroso de temperatura.
 
 Historial:
+""")
 
-\\[
-p = 0.002 \quad (0.2\%)
-\\]
+    st.latex(r"p = 0.002 \quad (0.2\%)")
 
+    st.write("""
 Evento extremadamente raro.
 
 Se desea:
