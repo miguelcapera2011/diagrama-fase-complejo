@@ -1,31 +1,90 @@
 import streamlit as st
 import numpy as np
 
+# ============================================
+# 🎄 DECORACIÓN NAVIDEÑA (Luces animadas)
+# ============================================
+
+st.markdown("""
+<style>
+/* Contenedor superior */
+.christmas-lights {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+/* Bombillos */
+.bulb {
+  width: 18px;
+  height: 28px;
+  border-radius: 50%;
+  animation: blink 1.4s infinite alternate;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+}
+
+/* Colores */
+.red { background: #ff4b4b; animation-delay: 0s; }
+.green { background: #2ecc71; animation-delay: 0.3s; }
+.blue { background: #3498db; animation-delay: 0.6s; }
+.yellow { background: #f1c40f; animation-delay: 0.9s; }
+
+/* Animación de encendido/apagado */
+@keyframes blink {
+  0% { opacity: 0.2; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+</style>
+
+<div class="christmas-lights">
+  <div class="bulb red"></div>
+  <div class="bulb green"></div>
+  <div class="bulb blue"></div>
+  <div class="bulb yellow"></div>
+  <div class="bulb red"></div>
+  <div class="bulb green"></div>
+  <div class="bulb blue"></div>
+  <div class="bulb yellow"></div>
+</div>
+""", unsafe_allow_html=True)
+
+
+
+# ============================================================
+#  APP
+# ============================================================
+
 st.header("🌟 Ejemplos completos — Eventos raros y tamaño muestral")
 
 tab1, tab2 = st.tabs(["🌟 Ejemplo 1: Enfermedad rara", "🌟 Ejemplo 2: Falla química rara"])
 
+
 # ============================================================
-# =================== EJEMPLO 1 ================================
+# =================== EJEMPLO 1 ==============================
 # ============================================================
 
 with tab1:
     st.subheader("🌟 EJEMPLO 1 — Prevalencia de una enfermedad rara (p = 0.008)")
     st.markdown("### 🔷 Contexto")
-    st.write("""
+    st.write(r"""
 Un hospital quiere estimar la proporción de pacientes que presentan **tuberculosis multirresistente (TB-MDR)**.
 
 Estudios previos indican una prevalencia:
-""")
 
-    st.latex(r"p = 0.008 \quad (0.8\%)")
+\[
+p = 0.008 \quad (0.8\%)
+\]
 
-    st.write("""
 Este es un **evento raro**.
 
 El investigador quiere:
-- Error máximo: **E = 0.01**
-- Confianza: **Z = 1.96**
+
+- Error máximo: \(E = 0.01\)
+- Confianza: \(Z = 1.96\)
 """)
 
     st.markdown("### 1️⃣ Varianza máxima en p = 0.5 (problema que causa)")
@@ -70,20 +129,21 @@ La técnica es **crucial en epidemiología de enfermedades poco frecuentes**.
 with tab2:
     st.subheader("🌟 EJEMPLO 2 — Estudio de falla muy rara en reactor químico (p = 0.002)")
     st.markdown("### 🔷 Contexto")
-    st.write("""
+    st.write(r"""
 Una empresa química quiere estimar la proporción de reacciones con aumento peligroso de temperatura.
 
 Historial:
-""")
 
-    st.latex(r"p = 0.002 \quad (0.2\%)")
+\[
+p = 0.002 \quad (0.2\%)
+\]
 
-    st.write("""
 Evento extremadamente raro.
 
 Se desea:
-- Error **E = 0.005**
-- Confianza **Z = 1.96**
+
+- Error \(E = 0.005\)
+- Confianza \(Z = 1.96\)
 """)
 
     st.markdown("### 1️⃣ Varianza máxima (uso incorrecto p=0.5)")
