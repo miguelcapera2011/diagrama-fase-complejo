@@ -162,7 +162,7 @@ def privacidad():
 
     "Los sistemas agrícolas recopilan información sensible como ubicación de parcelas y rendimiento.",
 
-    "https://images.unsplash.com/photo-1605000797499-95a51c5269ae",
+    "https://eos.com/wp-content/uploads/2022/12/data-manager-gis-agriculture.jpg.webp",
 
     """
 Los datos agrícolas pueden revelar información estratégica
@@ -173,7 +173,7 @@ pueden generar riesgos de privacidad
 o pérdidas económicas para los agricultores.
     """,
 
-    "https://images.unsplash.com/photo-1563986768609-322da13575f3"
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOgdtxUN4b_-y6DhTnqiyimqqLePWIIeb-ng&s"
     )
 
 
