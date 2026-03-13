@@ -64,7 +64,8 @@ menu = st.sidebar.radio(
 "Privacidad",
 "Empresas Tecnológicas",
 "Gobernanza",
-"Conclusión"
+"Conclusión",
+"Referencias"
 ]
 )
 
@@ -89,7 +90,6 @@ def portada():
     """, unsafe_allow_html=True)
 
 
-
 # ------------------ FUNCION SECCION ------------------
 
 def seccion(titulo, texto, img, extra, img2):
@@ -105,7 +105,6 @@ def seccion(titulo, texto, img, extra, img2):
         st.write(extra)
 
         st.image(img2, use_container_width=True)
-
 
 
 # ------------------ SECCIONES ------------------
@@ -240,6 +239,38 @@ son fundamentales para un desarrollo agrícola sostenible.
     )
 
 
+# ------------------ REFERENCIAS ------------------
+
+def referencias():
+
+    st.markdown('<div class="slide-title">Referencias</div>', unsafe_allow_html=True)
+
+    st.markdown("""
+<div class="slide-text">
+
+1. Wolfert, S., Ge, L., Verdouw, C., & Bogaardt, M. (2017).  
+Big Data in Smart Farming: A Review. Agricultural Systems.  
+https://doi.org/10.1016/j.agsy.2017.01.023  
+
+2. Carbonell, I. (2016).  
+The Ethics of Big Data in Agriculture. Internet Policy Review.  
+
+3. FAO (Food and Agriculture Organization).  
+Digital Agriculture and Data Governance.  
+https://www.fao.org  
+
+4. OECD (2019).  
+Enhancing Access to and Sharing of Data.  
+https://www.oecd.org  
+
+5. European Commission (2020).  
+A European Strategy for Data.  
+https://commission.europa.eu  
+
+</div>
+""", unsafe_allow_html=True)
+
+
 # ------------------ NAVEGACION ------------------
 
 if menu == "Portada":
@@ -262,3 +293,6 @@ elif menu == "Gobernanza":
 
 elif menu == "Conclusión":
     conclusion()
+
+elif menu == "Referencias":
+    referencias()
