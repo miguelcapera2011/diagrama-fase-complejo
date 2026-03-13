@@ -1,266 +1,358 @@
 import streamlit as st
-import numpy as np
 
-# ----- FONDO BONITO -----
-page_bg = """
+# Configuración de la página
+st.set_page_config(
+    page_title="Ética del Análisis de Datos Agrícolas",
+    page_icon="🌱",
+    layout="wide"
+)
+
+# Estilos CSS
+st.markdown("""
 <style>
-/* Fondo general con gradiente suave */
-.stApp {
-    background: linear-gradient(135deg, #e3f2fd, #fce4ec, #e8f5e9);
-    background-attachment: fixed;
+
+body{
+background-color:#f5f7f6;
 }
 
-/* Caja translúcida para que el contenido se vea más elegante */
-.block-container {
-    background: rgba(255, 255, 255, 0.82);
-    padding: 2rem;
-    border-radius: 18px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.18);
+.main-title{
+text-align:center;
+font-size:50px;
+font-weight:bold;
+color:#2e7d32;
 }
 
-/* Títulos más elegantes */
-h1, h2, h3, h4 {
-    color: #1a237e;
-    font-weight: 700;
+.subtitle{
+text-align:center;
+font-size:25px;
+color:#4e944f;
 }
 
-/* Tabs más bonitos */
-.stTabs [data-baseweb="tab"] {
-    background-color: rgba(255,255,255,0.6);
-    border-radius: 10px;
-    padding: 10px 20px;
-    margin-right: 10px;
+.section-title{
+font-size:35px;
+color:#1b5e20;
+font-weight:bold;
+margin-top:20px;
 }
 
-.stTabs [aria-selected="true"] {
-    background-color: #3949ab !important;
-    color: white !important;
+.text-box{
+font-size:20px;
+padding:15px;
+background-color:#ffffff;
+border-radius:10px;
+box-shadow:0px 2px 8px rgba(0,0,0,0.1);
 }
 
-/* Inputs con estilo moderno */
-input, select, textarea {
-    border-radius: 10px !important;
-    border: 1px solid #3949ab !important;
-}
 </style>
-"""
-st.markdown(page_bg, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 
-page_bg = """
-<style>
-/* Fondo con degradado navideño */
-body {
-    background: linear-gradient(135deg, #eaf6ff, #fffdf5, #f1f9ff);
-    background-attachment: fixed;
-}
+# ---------------- TITULO ----------------
 
-/* Contenedor general */
-.main {
-    background-color: rgba(255, 255, 255, 0.60);
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 0 25px rgba(0,0,0,0.15);
-}
+st.markdown('<p class="main-title">Ética del Análisis de Datos Agrícolas</p>', unsafe_allow_html=True)
 
-/* Encabezado navideño */
-h1, h2, h3 {
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.15);
-}
+st.markdown('<p class="subtitle">Digitalización, privacidad y gobernanza de datos</p>', unsafe_allow_html=True)
 
-/* Bordes suaves tipo tarjeta */
-.stTabs [data-baseweb="tab-list"] {
-    background-color: #ffffffcc;
-    border-radius: 12px;
-    padding: 8px;
-}
+st.image(
+"https://images.unsplash.com/photo-1500382017468-9049fed747ef",
+use_container_width=True
+)
 
-.stTabs [data-baseweb="tab"] {
-    background-color: #f8faff;
-    border-radius: 10px;
-    margin-right: 8px;
-    padding: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-/* Camas de nieve suave */
-@keyframes snow {
-    0% {background-position: 0px 0px;}
-    100% {background-position: 0px 1000px;}
-}
-
-body::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    background-image: url('https://i.imgur.com/7eM7ZpP.png');
-    background-size: contain;
-    opacity: 0.25;
-    animation: snow 18s linear infinite;
-}
-</style>
-"""
-
-st.markdown(page_bg, unsafe_allow_html=True)
-
-# ============================================================
-#                     TU APP (NO CAMBIADA)
-# ============================================================
-
-st.header("Eventos raros y tamaño muestral")
-
-tab1, tab2 = st.tabs(["🌟Aplicacion #1: Enfermedad rara", "🌟 Aplicacion #2: Falla química rara"])
-
-# =================== EJEMPLO 1 ================================
-
-with tab1:
-    st.subheader("Prevalencia de una enfermedad rara (p = 0.008)")
-    st.markdown("Contexto")
-    st.write("""
-Un hospital quiere estimar la proporción de pacientes que presentan **tuberculosis multirresistente (TB-MDR)**.
-
-Estudios previos indican una prevalencia:
+st.markdown("""
+### Miguel Ángel Garatejo Capera  
+**Universidad del Tolima**
 """)
 
-    # -----------------------------
-    # VALORES INTERACTIVOS (Z, E, p)
-    # -----------------------------
+st.divider()
 
-    p = st.number_input("Valor de p (proporción esperada)", min_value=0.0001, max_value=1.0,
-                        value=0.008, step=0.0005, format="%.4f")
-    Z = st.number_input("Valor Z", min_value=1.0, max_value=3.0, value=1.96, step=0.01)
-    E = st.number_input("Error máximo E", min_value=0.001, max_value=0.2,
-                        value=0.01, step=0.001, format="%.3f")
+# ---------------- AGRICULTURA DIGITAL ----------------
 
-    st.latex(rf"p = {p} \quad ({p*100:.2f}\%)")
+st.markdown('<p class="section-title">Agricultura Digital</p>', unsafe_allow_html=True)
 
-    # -----------------------------
-    # ALERTA según p
-    # -----------------------------
-    if p < 0.10:
-        st.info("🔵 **p es muy pequeño:** es un evento raro, la varianza es muy baja y NO se debe usar p=0.5.")
-    elif p > 0.90:
-        st.warning("🟠 **p está por encima de 0.9:** evento casi seguro, también la varianza es muy pequeña.")
-    else:
-        st.error("🔴 **p no es extremo:** usar esta fórmula con p=0.5 puede ser correcto para máxima varianza.")
+col1, col2 = st.columns(2)
 
-    st.write("""
-Este es un **evento raro**.
+with col1:
+    st.markdown("""
+<div class="text-box">
 
-El investigador quiere:
-- Error máximo: **E = 0.01**
-- Confianza: **Z = 1.96**
-""")
+- Uso de sensores, drones e inteligencia artificial  
+- Análisis de datos para mejorar producción  
+- Optimización del uso de recursos  
 
-    st.markdown("### 1️⃣ Varianza máxima en p = 0.5 (problema que causa)")
+</div>
+""", unsafe_allow_html=True)
 
-    st.latex(rf"n = \frac{{{Z}^2 (0.5)(0.5)}}{{{E}^2}}")
-    n1 = (Z**2 * 0.25) / (E**2)
-    st.latex(rf"n = {int(n1)}")
+with col2:
+    st.image(
+"https://images.unsplash.com/photo-1598514982841-6e3f8c6b3f4a",
+use_container_width=True
+)
 
-    st.write("Interpretación:")
-    st.latex(rf"p(1-p) = {p}({1-p}) = {p*(1-p):.6f}")
+st.divider()
 
-    st.info(f"La varianza real es **{0.25/(p*(1-p)):.1f} veces más pequeña**, así que {int(n1)} sería un enorme desperdicio.")
+# ---------------- PROBLEMAS ETICOS ----------------
 
-    st.markdown("### 2️⃣ Ajuste usando la proporción real (p < 0.10)")
+st.markdown('<p class="section-title">Problemas Éticos</p>', unsafe_allow_html=True)
 
-    st.latex(rf"n = \frac{{{Z}^2 ({p})({1-p})}}{{{E}^2}}")
+col1, col2 = st.columns(2)
 
-    n2 = (Z**2 * p * (1 - p)) / (E**2)
-    st.latex(rf"n = {int(n2)}")
+with col1:
+    st.markdown("""
+<div class="text-box">
 
-    st.success(f"✔ **Conclusión del ajuste:** el tamaño muestral correcto es **{int(n2)}**, no **{int(n1)}**.")
+- Privacidad de los agricultores  
+- Propiedad de los datos  
+- Uso por empresas tecnológicas  
+- Transparencia  
 
-    st.markdown("### 3️⃣ Ecuación alternativa usando p(1−p) ≈ p")
-    st.latex(r"p(1-p) \approx p")
-    st.latex(rf"n \approx \frac{{{Z}^2 ({p})}}{{{E}^2}}")
+</div>
+""", unsafe_allow_html=True)
 
-    naprox = (Z**2 * p) / (E**2)
-    st.latex(rf"n \approx {int(naprox)}")
+with col2:
+    st.image(
+"https://images.unsplash.com/photo-1555949963-aa79dcee981c",
+use_container_width=True
+)
 
-    st.markdown("### ✔ Conclusión del ejemplo 1")
-    st.write(f"""
-- Usar p = 0.5 habría requerido una muestra absurda (**{int(n1)}**).  
-- El ajuste correcto da **{int(n2)}**.  
-- La aproximación da **{int(naprox)}**, muy cercana.  
+st.divider()
 
-La técnica es **crucial en epidemiología de enfermedades poco frecuentes**.
-""")
+# ---------------- PRIVACIDAD ----------------
 
+st.markdown('<p class="section-title">Privacidad de los Agricultores</p>', unsafe_allow_html=True)
 
-# ============================================================
-# =================== EJEMPLO 2 ================================
-# ============================================================
+col1, col2 = st.columns(2)
 
-with tab2:
-    st.subheader("Estudio de falla muy rara en reactor químico (p = 0.002)")
-    st.markdown("Contexto")
-    st.write("""
-Una empresa química quiere estimar la proporción de reacciones con aumento peligroso de temperatura.
+with col1:
+    st.markdown("""
+<div class="text-box">
 
-Historial:
-""")
+Los sistemas agrícolas recopilan:
 
-    # -----------------------------
-    # VALORES INTERACTIVOS
-    # -----------------------------
-    p2 = st.number_input("Valor de p (proporción esperada) - Ejemplo 2", min_value=0.0001, max_value=1.0,
-                         value=0.002, step=0.0005, format="%.4f")
-    Z2 = st.number_input("Valor Z - Ejemplo 2", min_value=1.0, max_value=3.0,
-                         value=1.96, step=0.01)
-    E2 = st.number_input("Error máximo E - Ejemplo 2", min_value=0.001, max_value=0.2,
-                         value=0.005, step=0.001, format="%.3f")
+- Ubicación de parcelas  
+- Producción agrícola  
+- Uso de insumos  
+- Información personal  
 
-    st.latex(rf"p = {p2} \quad ({p2*100:.2f}\%)")
+</div>
+""", unsafe_allow_html=True)
 
-    # Alertas inteligentes
-    if p2 < 0.10:
-        st.info("🔵 **Evento extremadamente raro:** p < 0.10 → varianza muy pequeña.")
-    elif p2 > 0.90:
-        st.warning("🟠 **Evento casi seguro:** p > 0.90 → varianza casi cero.")
-    else:
-        st.error("🔴 p no es extremo → p=0.5 podría ser apropiado para máxima varianza.")
+with col2:
+    st.image(
+"https://images.unsplash.com/photo-1560493676-04071c5f467b",
+use_container_width=True
+)
 
-    st.write("""
-Evento extremadamente raro.
+st.divider()
 
-Se desea:
-- Error **E = 0.005**
-- Confianza **Z = 1.96**
-""")
+# ---------------- EMPRESAS TECNOLOGICAS ----------------
 
-    st.markdown("### 1️⃣ Varianza máxima (uso incorrecto p=0.5)")
-    st.latex(rf"n = \frac{{{Z2}^2 (0.25)}}{{{E2}^2}}")
+st.markdown('<p class="section-title">Empresas Tecnológicas</p>', unsafe_allow_html=True)
 
-    n1_2 = (Z2**2 * 0.25) / (E2**2)
-    st.latex(rf"n = {int(n1_2)}")
+col1, col2 = st.columns(2)
 
-    st.write("Varianza real del proceso:")
-    st.latex(rf"p(1-p) = {p2}({1-p2}) = {p2*(1-p2):.6f}")
+with col1:
+    st.markdown("""
+<div class="text-box">
 
-    st.info(f"La varianza real es **{0.25/(p2*(1-p2)):.1f} veces menor** que 0.25.")
+- Plataformas digitales recopilan datos  
+- Gran concentración de información  
+- Riesgo de dependencia tecnológica  
 
-    st.markdown("### 2️⃣ Ajuste usando la proporción real")
-    st.latex(rf"n = \frac{{{Z2}^2 ({p2})({1-p2})}}{{{E2}^2}}")
-    n2_2 = (Z2**2 * p2 * (1 - p2)) / (E2**2)
-    st.latex(rf"n = {int(n2_2)}")
+</div>
+""", unsafe_allow_html=True)
 
-    st.success(f"✔ **Conclusión:** la muestra correcta es **{int(n2_2)}**, no **{int(n1_2)}**.")
+with col2:
+    st.image(
+"https://images.unsplash.com/photo-1581091870627-3a5c9f7f6a1b",
+use_container_width=True
+)
 
-    st.markdown("### 3️⃣ Ecuación alternativa (p ≈ p(1−p))")
-    st.latex(rf"n \approx \frac{{{Z2}^2 ({p2})}}{{{E2}^2}}")
+st.divider()
 
-    naprox2 = (Z2**2 * p2) / (E2**2)
-    st.latex(rf"n \approx {int(naprox2)}")
+# ---------------- TRANSPARENCIA ----------------
 
-    st.markdown("### ✔ Conclusión del ejemplo 2")
-    st.write(f"""
-- Usar p = 0.5 produjo una sobreestimación absurda (**{int(n1_2)}**).  
-- Usar p real da **{int(n2_2)}**.  
-- La aproximación da **{int(naprox2)}**.  
+st.markdown('<p class="section-title">Transparencia</p>', unsafe_allow_html=True)
 
-Es esencial para **seguridad industrial y confiabilidad** en sistemas críticos.
-""")
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+<div class="text-box">
+
+Los agricultores deben saber:
+
+- Qué datos se recolectan  
+- Cómo se usan  
+- Quién accede a ellos  
+
+</div>
+""", unsafe_allow_html=True)
+
+with col2:
+    st.image(
+"https://images.unsplash.com/photo-1551288049-bebda4e38f71",
+use_container_width=True
+)
+
+st.divider()
+
+# ---------------- CONSENTIMIENTO ----------------
+
+st.markdown('<p class="section-title">Consentimiento Informado</p>', unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+<div class="text-box">
+
+- Entender el uso de sus datos  
+- Autorizar su uso  
+- Poder retirar su consentimiento  
+
+</div>
+""", unsafe_allow_html=True)
+
+with col2:
+    st.image(
+"https://images.unsplash.com/photo-1554224155-8d04cb21cd6c",
+use_container_width=True
+)
+
+st.divider()
+
+# ---------------- GOBERNANZA ----------------
+
+st.markdown('<p class="section-title">Gobernanza de Datos</p>', unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+<div class="text-box">
+
+Modelos de gestión:
+
+- Cooperativas de datos  
+- Data Trusts  
+- Commons digitales  
+
+</div>
+""", unsafe_allow_html=True)
+
+with col2:
+    st.image(
+"https://images.unsplash.com/photo-1521737604893-d14cc237f11d",
+use_container_width=True
+)
+
+st.divider()
+
+# ---------------- IMPACTOS SOCIALES ----------------
+
+st.markdown('<p class="section-title">Impactos Sociales</p>', unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+<div class="text-box">
+
+**Positivos**
+
+- Mayor productividad  
+- Mejor uso de recursos  
+
+**Riesgos**
+
+- Exclusión de pequeños agricultores  
+- Concentración económica  
+
+</div>
+""", unsafe_allow_html=True)
+
+with col2:
+    st.image(
+"https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+use_container_width=True
+)
+
+st.divider()
+
+# ---------------- INCLUSION ----------------
+
+st.markdown('<p class="section-title">Inclusión y Equidad</p>', unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+<div class="text-box">
+
+Grupos vulnerables:
+
+- Mujeres rurales  
+- Jóvenes  
+- Comunidades indígenas  
+
+</div>
+""", unsafe_allow_html=True)
+
+with col2:
+    st.image(
+"https://images.unsplash.com/photo-1464226184884-fa280b87c399",
+use_container_width=True
+)
+
+st.divider()
+
+# ---------------- SEGURIDAD ----------------
+
+st.markdown('<p class="section-title">Seguridad de Datos</p>', unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+<div class="text-box">
+
+- Encriptación  
+- Anonimización  
+- Auditorías de seguridad  
+
+</div>
+""", unsafe_allow_html=True)
+
+with col2:
+    st.image(
+"https://images.unsplash.com/photo-1563986768494-4dee2763ff3f",
+use_container_width=True
+)
+
+st.divider()
+
+# ---------------- CONCLUSION ----------------
+
+st.markdown('<p class="section-title">Conclusión</p>', unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+<div class="text-box">
+
+La ética en datos agrícolas requiere:
+
+- Privacidad  
+- Transparencia  
+- Inclusión  
+- Regulación justa  
+
+</div>
+""", unsafe_allow_html=True)
+
+with col2:
+    st.image(
+"https://images.unsplash.com/photo-1492496913980-501348b61469",
+use_container_width=True
+)
