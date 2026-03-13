@@ -6,44 +6,68 @@ st.set_page_config(
     layout="centered"
 )
 
-# ------------------ ESTILO ------------------
+# ------------------ ESTILO GENERAL ------------------
 
 st.markdown("""
 <style>
 
-.main-title{
-text-align:center;
-font-size:50px;
-font-weight:bold;
-margin-top:120px;
+body {
+background-color:#f5f9f6;
 }
 
+/* titulo portada */
+.main-title{
+text-align:center;
+font-size:52px;
+font-weight:bold;
+margin-top:120px;
+background: linear-gradient(90deg,#2E7D32,#66BB6A,#81C784);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+/* subtitulo portada */
 .subtitle{
 text-align:center;
 font-size:22px;
+color:#2f4f4f;
 }
 
+/* titulos secciones */
 .slide-title{
 font-size:34px;
 font-weight:600;
 margin-top:40px;
+color:#2E7D32;
 }
 
+/* texto */
 .slide-text{
 font-size:18px;
+color:#37474F;
+}
+
+/* sidebar */
+[data-testid="stSidebar"]{
+background-color:#e8f5e9;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
+
 # ------------------ SIDEBAR ------------------
 
-st.sidebar.image(
-"https://cdn-icons-png.flaticon.com/512/2103/2103633.png",
-width=80
-)
+col1, col2 = st.sidebar.columns([1,4])
 
-st.sidebar.title("Minería de Datos")
+with col1:
+    st.image(
+        "https://cdn-icons-png.flaticon.com/512/2103/2103633.png",
+        width=35
+    )
+
+with col2:
+    st.markdown("### Minería de Datos")
 
 menu = st.sidebar.radio(
 "Secciones",
@@ -74,8 +98,6 @@ def portada():
 
     Universidad del Tolima  
 
-    Curso: Minería de Datos
-
     </div>
     """, unsafe_allow_html=True)
 
@@ -90,7 +112,6 @@ def seccion(titulo, texto, img, extra, img2):
 
     st.image(img, use_container_width=True)
 
-    # expander con key única por sección
     with st.expander("🔎 Ver más información", key=titulo):
 
         st.write(extra)
@@ -110,12 +131,13 @@ def agricultura():
     "https://images.unsplash.com/photo-1598514983318-2f64f8f4796c",
 
     """
-La agricultura digital utiliza tecnologías como sensores,
-drones e inteligencia artificial para recopilar datos
-sobre cultivos, suelos y clima.
+La agricultura digital integra tecnologías como sensores,
+satélites, drones e inteligencia artificial para recopilar
+y analizar grandes cantidades de datos agrícolas.
 
-Esto permite optimizar el uso de agua, fertilizantes
-y otros recursos agrícolas.
+Esto permite optimizar el uso de recursos,
+mejorar la productividad y tomar decisiones
+basadas en información precisa.
     """,
 
     "https://images.unsplash.com/photo-1500382017468-9049fed747ef"
@@ -132,13 +154,13 @@ def etica():
     "https://images.unsplash.com/photo-1581092335397-9583eb92d232",
 
     """
-El análisis de datos agrícolas plantea preguntas éticas importantes.
+El análisis de datos agrícolas plantea interrogantes éticos.
 
-Por ejemplo, quién es el propietario de los datos
-generados por sensores o maquinaria agrícola.
+Por ejemplo, quién es el dueño de los datos generados
+por sensores o maquinaria inteligente.
 
-También existe el riesgo de que empresas tecnológicas
-acumulen grandes cantidades de información.
+También existe preocupación sobre el uso indebido
+de la información por parte de grandes empresas tecnológicas.
     """,
 
     "https://images.unsplash.com/photo-1551288049-bebda4e38f71"
@@ -150,17 +172,17 @@ def privacidad():
     seccion(
     "Privacidad de los Agricultores",
 
-    "Los sistemas agrícolas recopilan información sensible como ubicación de parcelas y rendimiento.",
+    "Los sistemas agrícolas recopilan información sensible como ubicación y rendimiento de cultivos.",
 
     "https://images.unsplash.com/photo-1605000797499-95a51c5269ae",
 
     """
 Los datos agrícolas pueden revelar información estratégica
-sobre producción y uso de insumos.
+sobre producción, rendimiento y gestión de recursos.
 
-Si estos datos no se protegen adecuadamente,
-pueden generar riesgos de privacidad
-o pérdidas económicas para los agricultores.
+Por esta razón es fundamental implementar políticas
+de seguridad y privacidad para proteger
+la información de los agricultores.
     """,
 
     "https://images.unsplash.com/photo-1563986768609-322da13575f3"
@@ -177,11 +199,12 @@ def empresas():
     "https://images.unsplash.com/photo-1509395176047-4a66953fd231",
 
     """
-Muchas empresas tecnológicas han transformado
-la maquinaria agrícola en sistemas conectados.
+Muchas empresas tecnológicas desarrollan plataformas
+para recopilar y analizar datos agrícolas.
 
-Esto permite recopilar datos de miles de productores,
-pero también genera riesgos de concentración de poder.
+Esto puede generar dependencia tecnológica
+si los agricultores pierden el control
+sobre su propia información.
     """,
 
     "https://images.unsplash.com/photo-1464226184884-fa280b87c399"
@@ -198,11 +221,13 @@ def gobernanza():
     "https://images.unsplash.com/photo-1523741543316-beb7fc7023d8",
 
     """
-Las cooperativas de datos permiten que los agricultores
-gestionen colectivamente su información.
+La gobernanza de datos busca establecer reglas claras
+sobre cómo se recopilan, almacenan y utilizan
+los datos agrícolas.
 
-También existen modelos como los data trusts,
-donde los datos son administrados bajo principios éticos.
+Las cooperativas de datos permiten
+que los agricultores gestionen su información
+de manera colectiva y transparente.
     """,
 
     "https://images.unsplash.com/photo-1592997572594-34be01bc36c7"
@@ -219,11 +244,12 @@ def conclusion():
     "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
 
     """
-La digitalización agrícola ofrece grandes beneficios,
-pero también requiere regulaciones claras.
+La agricultura digital tiene el potencial
+de mejorar la productividad y sostenibilidad.
 
-La privacidad, la transparencia y la equidad
-son fundamentales para un desarrollo agrícola sostenible.
+Sin embargo, es necesario garantizar
+la privacidad, transparencia y equidad
+en el uso de los datos.
     """,
 
     "https://images.unsplash.com/photo-1500382017468-9049fed747ef"
