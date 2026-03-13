@@ -6,9 +6,11 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- ESTILO VISUAL ---
+# ---- ESTILO ----
+
 st.markdown("""
 <style>
+
 .main-title{
 text-align:center;
 font-size:50px;
@@ -30,10 +32,11 @@ margin-top:40px;
 .slide-text{
 font-size:18px;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
-# --- PORTADA ---
+# ---- PORTADA ----
 
 def portada():
 
@@ -41,15 +44,18 @@ def portada():
 
     st.markdown("""
     <div class="subtitle">
+
     Miguel Ángel Garatejo Capera  
-    <br>
+
     Universidad del Tolima  
-    <br>
+
     Curso: Minería de Datos
+
     </div>
     """, unsafe_allow_html=True)
 
-# --- FUNCION GENERICA PARA SECCIONES ---
+
+# ---- FUNCION DE SECCION ----
 
 def seccion(titulo, texto, img, extra, img2):
 
@@ -59,16 +65,14 @@ def seccion(titulo, texto, img, extra, img2):
 
     st.image(img, use_container_width=True)
 
-    if st.button(f"Ver más sobre {titulo}"):
+    with st.expander("🔎 Ver más información"):
 
-        with st.modal(titulo):
+        st.write(extra)
 
-            st.write(extra)
-
-            st.image(img2, use_container_width=True)
+        st.image(img2, use_container_width=True)
 
 
-# --- CONTENIDO ---
+# ---- SECCIONES ----
 
 def agricultura():
 
@@ -80,15 +84,14 @@ def agricultura():
         "https://images.unsplash.com/photo-1598514983318-2f64f8f4796c",
 
         """
-La agricultura digital se basa en la recolección masiva de datos sobre suelos,
-clima, cultivos y maquinaria agrícola.
+La agricultura digital utiliza tecnologías avanzadas para recopilar
+datos sobre suelos, cultivos, clima y maquinaria.
 
-Estos datos permiten a los agricultores tomar decisiones más informadas,
-optimizar el uso de recursos como agua o fertilizantes y anticipar riesgos
-como plagas o cambios climáticos.
+Estos datos permiten optimizar el uso de recursos como agua,
+fertilizantes y energía.
 
-Esta transformación forma parte de la llamada agricultura de precisión,
-donde cada decisión se basa en información detallada obtenida mediante tecnología.
+Además, ayudan a anticipar riesgos climáticos o plagas,
+permitiendo tomar decisiones más eficientes y sostenibles.
         """,
 
         "https://images.unsplash.com/photo-1500382017468-9049fed747ef"
@@ -100,20 +103,19 @@ def etica():
     seccion(
         "Problemas Éticos",
 
-        "La digitalización agrícola genera desafíos relacionados con privacidad, propiedad de datos y uso por empresas tecnológicas.",
+        "La digitalización agrícola genera desafíos relacionados con privacidad y propiedad de datos.",
 
         "https://images.unsplash.com/photo-1581092335397-9583eb92d232",
 
         """
-El análisis de datos agrícolas plantea preguntas fundamentales:
+La recopilación masiva de datos agrícolas plantea preguntas éticas importantes.
 
-¿Quién es el propietario de los datos generados en las fincas?
+Por ejemplo, quién es el propietario de los datos generados
+por sensores o maquinaria.
 
-Muchas plataformas digitales recopilan información que puede ser utilizada
-para fines comerciales sin que los agricultores tengan control total.
-
-Esto puede generar desigualdades en el sector agrícola y dependencia
-tecnológica hacia grandes empresas que controlan la infraestructura digital.
+También existe el riesgo de que grandes empresas tecnológicas
+controlen grandes cantidades de información agrícola,
+lo que podría generar desigualdades en el sector.
         """,
 
         "https://images.unsplash.com/photo-1551288049-bebda4e38f71"
@@ -125,19 +127,20 @@ def privacidad():
     seccion(
         "Privacidad de los Agricultores",
 
-        "Los sistemas agrícolas recopilan información sensible como ubicación de parcelas y rendimiento de cultivos.",
+        "Los sistemas agrícolas recopilan información sensible como ubicación y rendimiento de cultivos.",
 
         "https://images.unsplash.com/photo-1605000797499-95a51c5269ae",
 
         """
-Los datos generados por sensores, drones o maquinaria pueden revelar
-información estratégica sobre la producción agrícola.
+Los datos agrícolas pueden revelar información estratégica
+sobre la producción de una finca.
 
-Si estos datos se utilizan sin protección adecuada,
-los agricultores pueden perder privacidad o incluso ventajas económicas.
+Por ejemplo, ubicación exacta de parcelas,
+rendimiento de cultivos o uso de insumos.
 
-Por esta razón, es necesario aplicar medidas de seguridad como
-encriptación, anonimización y políticas claras de protección de datos.
+Si estos datos no se protegen adecuadamente,
+podrían ser utilizados de forma indebida
+o generar desventajas económicas para los agricultores.
         """,
 
         "https://images.unsplash.com/photo-1563986768609-322da13575f3"
@@ -149,19 +152,19 @@ def empresas():
     seccion(
         "Empresas Tecnológicas",
 
-        "Las plataformas digitales agrícolas pueden concentrar grandes cantidades de información.",
+        "Las plataformas agrícolas pueden concentrar grandes volúmenes de datos.",
 
         "https://images.unsplash.com/photo-1509395176047-4a66953fd231",
 
         """
-Muchas empresas tecnológicas han pasado de fabricar maquinaria
-a convertirse en proveedores de servicios de análisis de datos.
+Muchas empresas tecnológicas han transformado
+la maquinaria agrícola en sistemas digitales conectados.
 
-Esto significa que pueden almacenar información sobre millones de hectáreas
-de cultivo alrededor del mundo.
+Esto permite recopilar datos de miles de agricultores.
 
-Si no existen regulaciones adecuadas,
-los agricultores podrían perder control sobre el valor económico de sus propios datos.
+Sin regulaciones claras,
+los agricultores podrían perder control
+sobre el valor económico de su información.
         """,
 
         "https://images.unsplash.com/photo-1464226184884-fa280b87c399"
@@ -173,20 +176,19 @@ def gobernanza():
     seccion(
         "Gobernanza de Datos",
 
-        "Existen modelos alternativos como cooperativas de datos y plataformas colaborativas.",
+        "Modelos como cooperativas de datos permiten mayor control para los agricultores.",
 
         "https://images.unsplash.com/photo-1523741543316-beb7fc7023d8",
 
         """
-Para equilibrar el poder entre agricultores y empresas,
-han surgido modelos de gobernanza de datos.
+Los modelos de gobernanza de datos buscan equilibrar
+las relaciones entre agricultores y empresas tecnológicas.
 
-Entre ellos destacan las cooperativas de datos,
+Entre estos modelos se encuentran las cooperativas de datos,
 donde los agricultores gestionan colectivamente su información.
 
-También existen los llamados data trusts,
-entidades que administran datos bajo principios éticos
-y garantizan que los beneficios se distribuyan de forma justa.
+También existen data trusts,
+organizaciones que administran datos bajo principios éticos.
         """,
 
         "https://images.unsplash.com/photo-1592997572594-34be01bc36c7"
@@ -198,27 +200,27 @@ def conclusion():
     seccion(
         "Conclusión",
 
-        "La agricultura digital ofrece grandes beneficios, pero requiere principios éticos claros.",
+        "La ética en datos agrícolas busca una digitalización justa y sostenible.",
 
         "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
 
         """
-La ética del análisis de datos agrícolas busca garantizar que la tecnología
-beneficie realmente a los agricultores y a la sociedad.
+La digitalización agrícola ofrece grandes oportunidades
+para mejorar la producción y sostenibilidad.
 
-Esto implica proteger la privacidad, garantizar transparencia,
-promover inclusión y crear regulaciones justas.
+Sin embargo,
+es fundamental garantizar privacidad,
+transparencia y control de los datos por parte de los agricultores.
 
-Si estos principios se respetan,
-la digitalización puede contribuir a una agricultura más sostenible,
-eficiente y equitativa.
+Solo así la tecnología podrá contribuir
+a un sistema agrícola más justo y equilibrado.
         """,
 
         "https://images.unsplash.com/photo-1500382017468-9049fed747ef"
     )
 
 
-# --- MENU ---
+# ---- MENU ----
 
 menu = st.sidebar.radio(
     "Secciones",
