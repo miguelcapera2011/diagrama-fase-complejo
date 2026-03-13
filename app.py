@@ -1,227 +1,180 @@
 import streamlit as st
-import streamlit.components.v1 as components
-
-st.set_page_config(
-    page_title="Infografía Ética de Datos Agrícolas",
-    layout="wide"
-)
-
-html_code = """
-<!DOCTYPE html>
-<html lang="es">
-
-<head>
-<meta charset="UTF-8">
-
-<style>
-
-body{
-font-family: Arial;
-background: linear-gradient(120deg,#e8f5e9,#f1f8e9);
-text-align:center;
-margin:0;
-}
-
-h1{
-margin-top:40px;
-color:#1b5e20;
-font-size:40px;
-}
-
-.container{
-position:relative;
-width:800px;
-height:800px;
-margin:auto;
-margin-top:40px;
-}
-
-.center{
-
-position:absolute;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-width:220px;
-height:220px;
-
-background:#2e7d32;
-color:white;
-
-border-radius:50%;
-
-display:flex;
-align-items:center;
-justify-content:center;
-
-font-size:22px;
-font-weight:bold;
-
-box-shadow:0 0 30px rgba(0,0,0,0.3);
-
-}
-
-.node{
-
-position:absolute;
-
-width:180px;
-height:180px;
-
-background:white;
-border-radius:50%;
-
-box-shadow:0 8px 20px rgba(0,0,0,0.2);
-
-padding:10px;
-
-transition:0.4s;
-
-cursor:pointer;
-
-}
-
-.node:hover{
-
-transform:scale(1.15) rotate(3deg);
-
-box-shadow:0 12px 30px rgba(0,0,0,0.4);
-
-}
-
-.node img{
-
-width:70px;
-height:70px;
-
-border-radius:50%;
-margin-top:5px;
-
-}
-
-.node p{
-
-font-size:14px;
-padding:5px;
-
-}
-
-/* posiciones circulares */
-
-.n1{ top:0; left:310px; }
-
-.n2{ top:120px; right:0; }
-
-.n3{ top:310px; right:0; }
-
-.n4{ bottom:120px; right:0; }
-
-.n5{ bottom:0; left:310px; }
-
-.n6{ bottom:120px; left:0; }
-
-.n7{ top:310px; left:0; }
-
-.n8{ top:120px; left:0; }
-
-</style>
-
-</head>
-
-<body>
-
-<h1>Ética del Análisis de Datos Agrícolas</h1>
-
-<div class="container">
-
-<div class="center">
-Agricultura<br>Digital<br>y Ética
-</div>
-
-<div class="node n1">
-
-<img src="https://cdn-icons-png.flaticon.com/512/2909/2909767.png">
-
-<p><b>Agricultura digital</b><br>
-Uso de sensores, drones y análisis de datos para mejorar la producción.</p>
-
-</div>
-
-
-<div class="node n2">
-
-<img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
-
-<p><b>Privacidad</b><br>
-Protección de la información personal y productiva de los agricultores.</p>
-
-</div>
-
-
-<div class="node n3">
-
-<img src="https://cdn-icons-png.flaticon.com/512/2721/2721297.png">
-
-<p><b>Empresas tecnológicas</b><br>
-Plataformas digitales que recopilan y analizan grandes volúmenes de datos.</p>
-
-</div>
-
-
-<div class="node n4">
-
-<img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png">
-
-<p><b>Transparencia</b><br>
-Los agricultores deben conocer cómo se utilizan sus datos.</p>
-
-</div>
-
-
-<div class="node n5">
-
-<img src="https://cdn-icons-png.flaticon.com/512/3176/3176364.png">
-
-<p><b>Consentimiento</b><br>
-Autorización clara para el uso y procesamiento de datos.</p>
-
-</div>
-
-
-<div class="node n6">
-
-<img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png">
-
-<p><b>Impacto social</b><br>
-La tecnología puede generar beneficios pero también desigualdades.</p>
-
-</div>
-
-
-<div class="node n7">
-
-<img src="https://cdn-icons-png.flaticon.com/512/4359/4359963.png">
-
-<p><b>Inclusión</b><br>
-Participación de mujeres, jóvenes y comunidades rurales.</p>
-
-</div>
-
-
-<div class="node n8">
-
-<img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png">
-
-<p><b>Seguridad</b><br>
-Uso de encriptación y sistemas de protección de datos.</p>
-
-</div>
-
-</div>
-
-</body>
-
-</html>
-"""
-
-components.html(html_code, height=900)
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
+from pptx.enum.text import PP_ALIGN
+from pptx.enum.shapes import MSO_SHAPE
+import io
+
+st.title("Generador de Presentación")
+st.write("Ética del Análisis de Datos Agrícolas")
+
+def crear_presentacion():
+
+    prs = Presentation()
+
+    def fondo(slide, color):
+        bg = slide.background
+        fill = bg.fill
+        fill.solid()
+        fill.fore_color.rgb = color
+
+    def titulo(slide, texto):
+        box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(1))
+        tf = box.text_frame
+        p = tf.paragraphs[0]
+        p.text = texto
+        p.font.size = Pt(40)
+        p.font.bold = True
+        p.font.color.rgb = RGBColor(255,255,255)
+        p.alignment = PP_ALIGN.CENTER
+
+    def bullets(slide, lista):
+        box = slide.shapes.add_textbox(Inches(1), Inches(2), Inches(4.5), Inches(3))
+        tf = box.text_frame
+        tf.clear()
+
+        for i,texto in enumerate(lista):
+            p = tf.paragraphs[0] if i==0 else tf.add_paragraph()
+            p.text = texto
+            p.font.size = Pt(24)
+            p.font.color.rgb = RGBColor(255,255,255)
+
+    def placeholder_imagen(slide):
+        shape = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            Inches(5.8),
+            Inches(2),
+            Inches(3.5),
+            Inches(3)
+        )
+        shape.fill.background()
+        shape.line.color.rgb = RGBColor(255,255,255)
+
+        tf = shape.text_frame
+        tf.text = "Imagen aquí"
+
+    def boton(slide,text,left):
+        shape = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            left,
+            Inches(5),
+            Inches(2),
+            Inches(0.7)
+        )
+        shape.fill.solid()
+        shape.fill.fore_color.rgb = RGBColor(255,255,255)
+
+        tf = shape.text_frame
+        tf.text = text
+        p = tf.paragraphs[0]
+        p.alignment = PP_ALIGN.CENTER
+
+    # PORTADA
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    fondo(slide,RGBColor(34,139,34))
+    titulo(slide,"Ética del Análisis de Datos Agrícolas")
+
+    sub = slide.shapes.add_textbox(Inches(2),Inches(2),Inches(6),Inches(1))
+    tf=sub.text_frame
+    tf.text="Digitalización, privacidad y gobernanza de datos"
+
+    name = slide.shapes.add_textbox(Inches(3),Inches(3),Inches(4),Inches(1))
+    tf=name.text_frame
+    tf.text="Miguel Ángel Garatejo Capera\nUniversidad del Tolima"
+
+    boton(slide,"Ética",Inches(2))
+    boton(slide,"Datos",Inches(4))
+    boton(slide,"Agricultura",Inches(6))
+
+    contenido = [
+
+        ("Agricultura Digital",
+        ["Uso de sensores y drones",
+        "Análisis de datos",
+        "Optimización de recursos"]),
+
+        ("Problemas Éticos",
+        ["Privacidad de agricultores",
+        "Propiedad de datos",
+        "Uso por empresas",
+        "Falta de transparencia"]),
+
+        ("Privacidad de Datos",
+        ["Ubicación de parcelas",
+        "Producción agrícola",
+        "Uso de insumos",
+        "Datos personales"]),
+
+        ("Empresas Tecnológicas",
+        ["Plataformas digitales",
+        "Acumulación de datos",
+        "Dependencia tecnológica"]),
+
+        ("Transparencia",
+        ["Qué datos se recolectan",
+        "Cómo se usan",
+        "Quién accede"]),
+
+        ("Consentimiento Informado",
+        ["Comprender el uso",
+        "Autorizar datos",
+        "Retirar consentimiento"]),
+
+        ("Gobernanza de Datos",
+        ["Cooperativas de datos",
+        "Data Trusts",
+        "Commons digitales"]),
+
+        ("Impactos Sociales",
+        ["Mayor productividad",
+        "Optimización recursos",
+        "Riesgo exclusión"]),
+
+        ("Inclusión",
+        ["Mujeres rurales",
+        "Jóvenes",
+        "Comunidades indígenas"]),
+
+        ("Seguridad de Datos",
+        ["Encriptación",
+        "Anonimización",
+        "Auditorías"]),
+
+        ("Conclusión",
+        ["Privacidad",
+        "Transparencia",
+        "Inclusión",
+        "Regulación justa"])
+    ]
+
+    for titulo_slide,lista in contenido:
+
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        fondo(slide,RGBColor(60,120,60))
+
+        titulo(slide,titulo_slide)
+        bullets(slide,lista)
+        placeholder_imagen(slide)
+
+        boton(slide,"Datos",Inches(1))
+        boton(slide,"Ética",Inches(3.5))
+        boton(slide,"Tecnología",Inches(6))
+
+    buffer = io.BytesIO()
+    prs.save(buffer)
+    buffer.seek(0)
+
+    return buffer
+
+
+if st.button("Generar presentación"):
+
+    archivo = crear_presentacion()
+
+    st.download_button(
+        label="Descargar PowerPoint",
+        data=archivo,
+        file_name="exposicion_etica_datos_agricolas.pptx",
+        mime="application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    )
