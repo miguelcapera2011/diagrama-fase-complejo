@@ -1,180 +1,271 @@
 import streamlit as st
-from pptx import Presentation
-from pptx.util import Inches, Pt
-from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
-from pptx.enum.shapes import MSO_SHAPE
-import io
 
-st.title("Generador de Presentación")
-st.write("Ética del Análisis de Datos Agrícolas")
+# CONFIGURACION DE PAGINA
+st.set_page_config(
+    page_title="Ética del Análisis de Datos Agrícolas",
+    page_icon="🌱",
+    layout="wide"
+)
 
-def crear_presentacion():
+# ----- PORTADA -----
 
-    prs = Presentation()
+def portada():
+    st.title("🌱 Ética del Análisis de Datos Agrícolas")
 
-    def fondo(slide, color):
-        bg = slide.background
-        fill = bg.fill
-        fill.solid()
-        fill.fore_color.rgb = color
+    st.subheader("Digitalización, privacidad y gobernanza de datos")
 
-    def titulo(slide, texto):
-        box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(1))
-        tf = box.text_frame
-        p = tf.paragraphs[0]
-        p.text = texto
-        p.font.size = Pt(40)
-        p.font.bold = True
-        p.font.color.rgb = RGBColor(255,255,255)
-        p.alignment = PP_ALIGN.CENTER
-
-    def bullets(slide, lista):
-        box = slide.shapes.add_textbox(Inches(1), Inches(2), Inches(4.5), Inches(3))
-        tf = box.text_frame
-        tf.clear()
-
-        for i,texto in enumerate(lista):
-            p = tf.paragraphs[0] if i==0 else tf.add_paragraph()
-            p.text = texto
-            p.font.size = Pt(24)
-            p.font.color.rgb = RGBColor(255,255,255)
-
-    def placeholder_imagen(slide):
-        shape = slide.shapes.add_shape(
-            MSO_SHAPE.RECTANGLE,
-            Inches(5.8),
-            Inches(2),
-            Inches(3.5),
-            Inches(3)
-        )
-        shape.fill.background()
-        shape.line.color.rgb = RGBColor(255,255,255)
-
-        tf = shape.text_frame
-        tf.text = "Imagen aquí"
-
-    def boton(slide,text,left):
-        shape = slide.shapes.add_shape(
-            MSO_SHAPE.ROUNDED_RECTANGLE,
-            left,
-            Inches(5),
-            Inches(2),
-            Inches(0.7)
-        )
-        shape.fill.solid()
-        shape.fill.fore_color.rgb = RGBColor(255,255,255)
-
-        tf = shape.text_frame
-        tf.text = text
-        p = tf.paragraphs[0]
-        p.alignment = PP_ALIGN.CENTER
-
-    # PORTADA
-    slide = prs.slides.add_slide(prs.slide_layouts[6])
-    fondo(slide,RGBColor(34,139,34))
-    titulo(slide,"Ética del Análisis de Datos Agrícolas")
-
-    sub = slide.shapes.add_textbox(Inches(2),Inches(2),Inches(6),Inches(1))
-    tf=sub.text_frame
-    tf.text="Digitalización, privacidad y gobernanza de datos"
-
-    name = slide.shapes.add_textbox(Inches(3),Inches(3),Inches(4),Inches(1))
-    tf=name.text_frame
-    tf.text="Miguel Ángel Garatejo Capera\nUniversidad del Tolima"
-
-    boton(slide,"Ética",Inches(2))
-    boton(slide,"Datos",Inches(4))
-    boton(slide,"Agricultura",Inches(6))
-
-    contenido = [
-
-        ("Agricultura Digital",
-        ["Uso de sensores y drones",
-        "Análisis de datos",
-        "Optimización de recursos"]),
-
-        ("Problemas Éticos",
-        ["Privacidad de agricultores",
-        "Propiedad de datos",
-        "Uso por empresas",
-        "Falta de transparencia"]),
-
-        ("Privacidad de Datos",
-        ["Ubicación de parcelas",
-        "Producción agrícola",
-        "Uso de insumos",
-        "Datos personales"]),
-
-        ("Empresas Tecnológicas",
-        ["Plataformas digitales",
-        "Acumulación de datos",
-        "Dependencia tecnológica"]),
-
-        ("Transparencia",
-        ["Qué datos se recolectan",
-        "Cómo se usan",
-        "Quién accede"]),
-
-        ("Consentimiento Informado",
-        ["Comprender el uso",
-        "Autorizar datos",
-        "Retirar consentimiento"]),
-
-        ("Gobernanza de Datos",
-        ["Cooperativas de datos",
-        "Data Trusts",
-        "Commons digitales"]),
-
-        ("Impactos Sociales",
-        ["Mayor productividad",
-        "Optimización recursos",
-        "Riesgo exclusión"]),
-
-        ("Inclusión",
-        ["Mujeres rurales",
-        "Jóvenes",
-        "Comunidades indígenas"]),
-
-        ("Seguridad de Datos",
-        ["Encriptación",
-        "Anonimización",
-        "Auditorías"]),
-
-        ("Conclusión",
-        ["Privacidad",
-        "Transparencia",
-        "Inclusión",
-        "Regulación justa"])
-    ]
-
-    for titulo_slide,lista in contenido:
-
-        slide = prs.slides.add_slide(prs.slide_layouts[6])
-        fondo(slide,RGBColor(60,120,60))
-
-        titulo(slide,titulo_slide)
-        bullets(slide,lista)
-        placeholder_imagen(slide)
-
-        boton(slide,"Datos",Inches(1))
-        boton(slide,"Ética",Inches(3.5))
-        boton(slide,"Tecnología",Inches(6))
-
-    buffer = io.BytesIO()
-    prs.save(buffer)
-    buffer.seek(0)
-
-    return buffer
-
-
-if st.button("Generar presentación"):
-
-    archivo = crear_presentacion()
-
-    st.download_button(
-        label="Descargar PowerPoint",
-        data=archivo,
-        file_name="exposicion_etica_datos_agricolas.pptx",
-        mime="application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    st.markdown(
+    """
+    **Miguel Ángel Garatejo Capera**  
+    Universidad del Tolima  
+    """
     )
+
+    st.image(
+        "https://images.unsplash.com/photo-1500382017468-9049fed747ef",
+        caption="Agricultura moderna y tecnología",
+        use_container_width=True
+    )
+
+    st.markdown("""
+    Esta aplicación presenta los principales aspectos éticos relacionados con el uso de datos en la agricultura digital.
+    """)
+
+
+# ----- SECCIONES -----
+
+def agricultura_digital():
+
+    st.header("Agricultura Digital")
+
+    st.write("""
+    Uso de tecnologías como sensores, drones e inteligencia artificial para analizar datos agrícolas y mejorar la producción.
+    """)
+
+    st.image(
+        "https://images.unsplash.com/photo-1598514983318-2f64f8f4796c",
+        caption="Drones y tecnología en agricultura",
+        use_container_width=True
+    )
+
+
+def problema_etico():
+
+    st.header("Problemas Éticos en los Datos Agrícolas")
+
+    st.write("""
+    La digitalización agrícola plantea desafíos importantes relacionados con la privacidad,
+    propiedad de los datos, transparencia y control de la información.
+    """)
+
+    st.image(
+        "https://images.unsplash.com/photo-1581092335397-9583eb92d232",
+        caption="Datos y tecnología en el campo",
+        use_container_width=True
+    )
+
+
+def privacidad():
+
+    st.header("Privacidad de los Agricultores")
+
+    st.write("""
+    Los sistemas digitales recopilan información como ubicación de parcelas,
+    rendimiento de cultivos y uso de insumos, lo que requiere medidas para proteger la privacidad.
+    """)
+
+    st.image(
+        "https://images.unsplash.com/photo-1605000797499-95a51c5269ae",
+        caption="Tecnología agrícola y monitoreo de cultivos",
+        use_container_width=True
+    )
+
+
+def empresas():
+
+    st.header("Empresas Tecnológicas")
+
+    st.write("""
+    Muchas empresas ofrecen plataformas para recopilar y analizar datos agrícolas,
+    lo que puede generar concentración de información y dependencia tecnológica.
+    """)
+
+    st.image(
+        "https://images.unsplash.com/photo-1509395176047-4a66953fd231",
+        caption="Tecnología digital aplicada a la agricultura",
+        use_container_width=True
+    )
+
+
+def transparencia():
+
+    st.header("Transparencia en el Uso de Datos")
+
+    st.write("""
+    Los agricultores deben conocer qué datos se recopilan, cómo se utilizan
+    y quién tiene acceso a esa información.
+    """)
+
+    st.image(
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71",
+        caption="Visualización y análisis de datos",
+        use_container_width=True
+    )
+
+
+def consentimiento():
+
+    st.header("Consentimiento Informado")
+
+    st.write("""
+    Los agricultores deben aceptar el uso de sus datos de manera libre
+    y comprender claramente los riesgos y beneficios del uso de la información.
+    """)
+
+    st.image(
+        "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c",
+        caption="Acuerdos y consentimiento digital",
+        use_container_width=True
+    )
+
+
+def gobernanza():
+
+    st.header("Gobernanza de Datos")
+
+    st.write("""
+    Existen modelos alternativos como cooperativas de datos,
+    data trusts y plataformas colaborativas que permiten a los agricultores
+    controlar mejor su información.
+    """)
+
+    st.image(
+        "https://images.unsplash.com/photo-1523741543316-beb7fc7023d8",
+        caption="Trabajo colaborativo en agricultura",
+        use_container_width=True
+    )
+
+
+def impacto():
+
+    st.header("Impactos Sociales")
+
+    st.write("""
+    El análisis de datos agrícolas puede mejorar la productividad,
+    pero también puede generar desigualdades si no todos los agricultores
+    tienen acceso a la tecnología.
+    """)
+
+    st.image(
+        "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+        caption="Producción agrícola sostenible",
+        use_container_width=True
+    )
+
+
+def inclusion():
+
+    st.header("Inclusión y Equidad")
+
+    st.write("""
+    La digitalización agrícola debe incluir a mujeres, jóvenes y comunidades rurales,
+    garantizando acceso a tecnología y capacitación.
+    """)
+
+    st.image(
+        "https://images.unsplash.com/photo-1592997572594-34be01bc36c7",
+        caption="Comunidades rurales y agricultura",
+        use_container_width=True
+    )
+
+
+def seguridad():
+
+    st.header("Seguridad de Datos")
+
+    st.write("""
+    Para proteger la información agrícola se utilizan técnicas como
+    encriptación, anonimización y auditorías de seguridad.
+    """)
+
+    st.image(
+        "https://images.unsplash.com/photo-1563986768609-322da13575f3",
+        caption="Seguridad de datos digitales",
+        use_container_width=True
+    )
+
+
+def conclusion():
+
+    st.header("Conclusión")
+
+    st.write("""
+    La agricultura digital ofrece grandes beneficios, pero requiere
+    regulaciones éticas que protejan la privacidad, promuevan la transparencia
+    y garanticen el control de los datos por parte de los agricultores.
+    """)
+
+    st.image(
+        "https://images.unsplash.com/photo-1464226184884-fa280b87c399",
+        caption="Agricultura sostenible con tecnología",
+        use_container_width=True
+    )
+
+
+# ----- MENU LATERAL -----
+
+menu = st.sidebar.selectbox(
+    "Navegación",
+    [
+        "Portada",
+        "Agricultura Digital",
+        "Problemas Éticos",
+        "Privacidad",
+        "Empresas Tecnológicas",
+        "Transparencia",
+        "Consentimiento",
+        "Gobernanza de Datos",
+        "Impactos Sociales",
+        "Inclusión",
+        "Seguridad",
+        "Conclusión"
+    ]
+)
+
+# ----- CONTROL DE PAGINAS -----
+
+if menu == "Portada":
+    portada()
+
+elif menu == "Agricultura Digital":
+    agricultura_digital()
+
+elif menu == "Problemas Éticos":
+    problema_etico()
+
+elif menu == "Privacidad":
+    privacidad()
+
+elif menu == "Empresas Tecnológicas":
+    empresas()
+
+elif menu == "Transparencia":
+    transparencia()
+
+elif menu == "Consentimiento":
+    consentimiento()
+
+elif menu == "Gobernanza de Datos":
+    gobernanza()
+
+elif menu == "Impactos Sociales":
+    impacto()
+
+elif menu == "Inclusión":
+    inclusion()
+
+elif menu == "Seguridad":
+    seguridad()
+
+elif menu == "Conclusión":
+    conclusion()
