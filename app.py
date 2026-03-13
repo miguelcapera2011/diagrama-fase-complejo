@@ -128,7 +128,7 @@ Esto permite optimizar el uso de agua, fertilizantes
 y otros recursos agrícolas.
     """,
 
-    "https://images.unsplash.com/photo-1500382017468-9049fed747ef"
+    "https://imagenes.eleconomista.com.mx/files/webp_768_768/uploads/2025/06/18/6852f9dea9b60.jpeg"
     )
 
 
