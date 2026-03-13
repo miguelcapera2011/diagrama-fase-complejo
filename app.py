@@ -1,9 +1,17 @@
+import streamlit as st
+import streamlit.components.v1 as components
+
+st.set_page_config(
+    page_title="Infografía Ética de Datos Agrícolas",
+    layout="wide"
+)
+
+html_code = """
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
 <meta charset="UTF-8">
-<title>Ética del Análisis de Datos Agrícolas</title>
 
 <style>
 
@@ -17,6 +25,7 @@ margin:0;
 h1{
 margin-top:40px;
 color:#1b5e20;
+font-size:40px;
 }
 
 .container{
@@ -116,6 +125,7 @@ padding:5px;
 .n8{ top:120px; left:0; }
 
 </style>
+
 </head>
 
 <body>
@@ -133,7 +143,7 @@ Agricultura<br>Digital<br>y Ética
 <img src="https://cdn-icons-png.flaticon.com/512/2909/2909767.png">
 
 <p><b>Agricultura digital</b><br>
-Uso de sensores, drones y datos.</p>
+Uso de sensores, drones y análisis de datos para mejorar la producción.</p>
 
 </div>
 
@@ -143,7 +153,7 @@ Uso de sensores, drones y datos.</p>
 <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
 
 <p><b>Privacidad</b><br>
-Protección de datos de agricultores.</p>
+Protección de la información personal y productiva de los agricultores.</p>
 
 </div>
 
@@ -153,7 +163,7 @@ Protección de datos de agricultores.</p>
 <img src="https://cdn-icons-png.flaticon.com/512/2721/2721297.png">
 
 <p><b>Empresas tecnológicas</b><br>
-Plataformas que analizan datos.</p>
+Plataformas digitales que recopilan y analizan grandes volúmenes de datos.</p>
 
 </div>
 
@@ -163,7 +173,7 @@ Plataformas que analizan datos.</p>
 <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png">
 
 <p><b>Transparencia</b><br>
-Uso claro de la información.</p>
+Los agricultores deben conocer cómo se utilizan sus datos.</p>
 
 </div>
 
@@ -173,7 +183,7 @@ Uso claro de la información.</p>
 <img src="https://cdn-icons-png.flaticon.com/512/3176/3176364.png">
 
 <p><b>Consentimiento</b><br>
-Autorización para usar datos.</p>
+Autorización clara para el uso y procesamiento de datos.</p>
 
 </div>
 
@@ -183,7 +193,7 @@ Autorización para usar datos.</p>
 <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png">
 
 <p><b>Impacto social</b><br>
-Beneficios y riesgos.</p>
+La tecnología puede generar beneficios pero también desigualdades.</p>
 
 </div>
 
@@ -193,7 +203,7 @@ Beneficios y riesgos.</p>
 <img src="https://cdn-icons-png.flaticon.com/512/4359/4359963.png">
 
 <p><b>Inclusión</b><br>
-Participación de comunidades.</p>
+Participación de mujeres, jóvenes y comunidades rurales.</p>
 
 </div>
 
@@ -203,11 +213,15 @@ Participación de comunidades.</p>
 <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png">
 
 <p><b>Seguridad</b><br>
-Protección y encriptación de datos.</p>
+Uso de encriptación y sistemas de protección de datos.</p>
 
 </div>
 
 </div>
 
 </body>
+
 </html>
+"""
+
+components.html(html_code, height=900)
