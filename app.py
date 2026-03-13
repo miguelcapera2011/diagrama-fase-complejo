@@ -117,7 +117,7 @@ def agricultura():
 
     "Uso de sensores, drones e inteligencia artificial para analizar datos agrícolas y mejorar la producción.",
 
-    "https://images.unsplash.com/photo-1598514983318-2f64f8f4796c",
+    "https://circulotne.com/la-ia-esta-revolucionando-la-agricultura-revista-tne.html",
 
     """
 La agricultura digital utiliza tecnologías como sensores,
