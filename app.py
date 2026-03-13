@@ -6,31 +6,49 @@ st.set_page_config(
     layout="centered"
 )
 
-# ---- ESTILO ----
+# ---- FONDO + ESTILOS ----
 
 st.markdown("""
 <style>
 
+[data-testid="stAppViewContainer"]{
+background-image: url("https://images.unsplash.com/photo-1500382017468-9049fed747ef");
+background-size: cover;
+background-position: center;
+}
+
+[data-testid="stHeader"]{
+background: rgba(0,0,0,0);
+}
+
+[data-testid="stSidebar"]{
+background: rgba(240,245,240,0.9);
+}
+
 .main-title{
 text-align:center;
-font-size:50px;
-font-weight:bold;
-margin-top:100px;
+font-size:52px;
+font-weight:700;
+color:#1B4332;
+margin-top:80px;
 }
 
 .subtitle{
 text-align:center;
 font-size:22px;
+color:#344e41;
 }
 
 .slide-title{
 font-size:34px;
 font-weight:600;
+color:#1B4332;
 margin-top:40px;
 }
 
 .slide-text{
-font-size:18px;
+font-size:19px;
+color:#081c15;
 }
 
 </style>
@@ -65,14 +83,15 @@ def seccion(titulo, texto, img, extra, img2):
 
     st.image(img, use_container_width=True)
 
-    with st.expander("🔎 Ver más información"):
+    # expander siempre cerrado
+    with st.expander("🔎 Ver más información", expanded=False):
 
         st.write(extra)
 
         st.image(img2, use_container_width=True)
 
 
-# ---- SECCIONES ----
+# ---- CONTENIDO ----
 
 def agricultura():
 
@@ -84,11 +103,10 @@ def agricultura():
         "https://images.unsplash.com/photo-1598514983318-2f64f8f4796c",
 
         """
-La agricultura digital utiliza tecnologías avanzadas para recopilar
-datos sobre suelos, cultivos, clima y maquinaria.
+La agricultura digital utiliza tecnologías avanzadas para recopilar datos sobre suelos,
+clima, cultivos y maquinaria agrícola.
 
-Estos datos permiten optimizar el uso de recursos como agua,
-fertilizantes y energía.
+Estos datos permiten optimizar el uso de recursos como agua, fertilizantes y energía.
 
 Además, ayudan a anticipar riesgos climáticos o plagas,
 permitiendo tomar decisiones más eficientes y sostenibles.
@@ -108,14 +126,14 @@ def etica():
         "https://images.unsplash.com/photo-1581092335397-9583eb92d232",
 
         """
-La recopilación masiva de datos agrícolas plantea preguntas éticas importantes.
+El análisis de datos agrícolas plantea preguntas importantes:
 
-Por ejemplo, quién es el propietario de los datos generados
-por sensores o maquinaria.
+¿Quién es propietario de los datos generados por sensores o maquinaria?
 
-También existe el riesgo de que grandes empresas tecnológicas
-controlen grandes cantidades de información agrícola,
-lo que podría generar desigualdades en el sector.
+También existe el riesgo de que grandes empresas tecnológicas controlen
+gran parte de la información agrícola.
+
+Esto puede generar dependencia tecnológica y desigualdades en el sector.
         """,
 
         "https://images.unsplash.com/photo-1551288049-bebda4e38f71"
@@ -127,20 +145,19 @@ def privacidad():
     seccion(
         "Privacidad de los Agricultores",
 
-        "Los sistemas agrícolas recopilan información sensible como ubicación y rendimiento de cultivos.",
+        "Los sistemas agrícolas recopilan información sensible como ubicación de parcelas y rendimiento de cultivos.",
 
         "https://images.unsplash.com/photo-1605000797499-95a51c5269ae",
 
         """
-Los datos agrícolas pueden revelar información estratégica
-sobre la producción de una finca.
+Los datos agrícolas pueden revelar información estratégica sobre la producción
+de una finca.
 
-Por ejemplo, ubicación exacta de parcelas,
-rendimiento de cultivos o uso de insumos.
+Por ejemplo ubicación exacta de parcelas,
+rendimiento de cultivos o uso de fertilizantes.
 
-Si estos datos no se protegen adecuadamente,
-podrían ser utilizados de forma indebida
-o generar desventajas económicas para los agricultores.
+Por ello es necesario implementar técnicas como anonimización,
+encriptación y políticas de protección de datos.
         """,
 
         "https://images.unsplash.com/photo-1563986768609-322da13575f3"
@@ -157,14 +174,14 @@ def empresas():
         "https://images.unsplash.com/photo-1509395176047-4a66953fd231",
 
         """
-Muchas empresas tecnológicas han transformado
-la maquinaria agrícola en sistemas digitales conectados.
+Las empresas tecnológicas han comenzado a ofrecer plataformas
+para recopilar y analizar datos agrícolas.
 
-Esto permite recopilar datos de miles de agricultores.
+Esto les permite almacenar información de millones de hectáreas.
 
-Sin regulaciones claras,
-los agricultores podrían perder control
-sobre el valor económico de su información.
+Sin regulaciones adecuadas,
+los agricultores podrían perder control sobre el valor económico
+de su propia información.
         """,
 
         "https://images.unsplash.com/photo-1464226184884-fa280b87c399"
@@ -181,10 +198,10 @@ def gobernanza():
         "https://images.unsplash.com/photo-1523741543316-beb7fc7023d8",
 
         """
-Los modelos de gobernanza de datos buscan equilibrar
-las relaciones entre agricultores y empresas tecnológicas.
+Los modelos de gobernanza de datos buscan equilibrar las relaciones
+entre agricultores y empresas tecnológicas.
 
-Entre estos modelos se encuentran las cooperativas de datos,
+Entre estos modelos destacan las cooperativas de datos,
 donde los agricultores gestionan colectivamente su información.
 
 También existen data trusts,
@@ -205,22 +222,23 @@ def conclusion():
         "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
 
         """
-La digitalización agrícola ofrece grandes oportunidades
-para mejorar la producción y sostenibilidad.
+La digitalización agrícola ofrece grandes beneficios para mejorar la producción
+y sostenibilidad.
 
-Sin embargo,
-es fundamental garantizar privacidad,
+Sin embargo es fundamental garantizar privacidad,
 transparencia y control de los datos por parte de los agricultores.
 
-Solo así la tecnología podrá contribuir
-a un sistema agrícola más justo y equilibrado.
+Solo así la tecnología podrá contribuir a una agricultura
+más justa y equilibrada.
         """,
 
         "https://images.unsplash.com/photo-1500382017468-9049fed747ef"
     )
 
 
-# ---- MENU ----
+# ---- SIDEBAR ----
+
+st.sidebar.markdown("## ⛏️ Minería de Datos")
 
 menu = st.sidebar.radio(
     "Secciones",
@@ -234,6 +252,8 @@ menu = st.sidebar.radio(
         "Conclusión"
     ]
 )
+
+# ---- CONTROL ----
 
 if menu == "Portada":
     portada()
