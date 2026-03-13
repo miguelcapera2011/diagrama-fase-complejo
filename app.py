@@ -139,7 +139,7 @@ def etica():
 
     "La digitalización agrícola genera desafíos relacionados con privacidad y propiedad de datos.",
 
-    "https://images.unsplash.com/photo-1581092335397-9583eb92d232",
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTN-k1r3BQIRydUtV787uLt9F1OHVey8s9fnw&s",
 
     """
 El análisis de datos agrícolas plantea preguntas éticas importantes.
@@ -151,7 +151,7 @@ También existe el riesgo de que empresas tecnológicas
 acumulen grandes cantidades de información.
     """,
 
-    "https://images.unsplash.com/photo-1551288049-bebda4e38f71"
+    "https://noticiassalamanca.com/wp-content/uploads/2023/05/La-privacidad-de-los-datos-y-la-importancia-de-la-seguridad-digital.jpg"
     )
 
 
@@ -184,7 +184,7 @@ def empresas():
 
     "Las plataformas digitales pueden concentrar grandes volúmenes de datos agrícolas.",
 
-    "https://images.unsplash.com/photo-1509395176047-4a66953fd231",
+    "https://farmonaut.com/wp-content/uploads/2024/10/Revoluciona-tu-Productividad-Agricola-Monitoreo-de-Cultivos-por-Satelite-y-Analisis-de-Datos-para-una-Agricultura-de-Precision_2.jpg",
 
     """
 Muchas empresas tecnológicas han transformado
@@ -194,7 +194,7 @@ Esto permite recopilar datos de miles de productores,
 pero también genera riesgos de concentración de poder.
     """,
 
-    "https://images.unsplash.com/photo-1464226184884-fa280b87c399"
+    "https://clickpetroleoegas.com.br/wp-content/uploads/2025/07/Lider-em-acucar-e-etanol-no-Brasil-usa-5G-e-IA-para-conectar-3.000-maquinas-e-aumentar-produtividade-em-15-no-campo.jpg"
     )
 
 
@@ -205,7 +205,7 @@ def gobernanza():
 
     "Modelos como cooperativas de datos permiten mayor control para los agricultores.",
 
-    "https://images.unsplash.com/photo-1523741543316-beb7fc7023d8",
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp5J8dTVlKib6qHq1zAyStseI6cnPwXVa5_g&s",
 
     """
 Las cooperativas de datos permiten que los agricultores
@@ -215,7 +215,7 @@ También existen modelos como los data trusts,
 donde los datos son administrados bajo principios éticos.
     """,
 
-    "https://images.unsplash.com/photo-1592997572594-34be01bc36c7"
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcST3Pnah1CE-ockFi_wQqDeMXHRpgDt5niPGA&s"
     )
 
 
@@ -226,7 +226,7 @@ def conclusion():
 
     "La ética en datos agrícolas busca una digitalización justa y sostenible.",
 
-    "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQz6Q-t6n3-eX9_aXGvjnUfiUPwugFUqLR5uA&s",
 
     """
 La digitalización agrícola ofrece grandes beneficios,
@@ -236,7 +236,7 @@ La privacidad, la transparencia y la equidad
 son fundamentales para un desarrollo agrícola sostenible.
     """,
 
-    "https://images.unsplash.com/photo-1500382017468-9049fed747ef"
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyQYenm5dMNy6YWLPhHurLEEXUlvp6EKn2qw&s"
     )
 
 
