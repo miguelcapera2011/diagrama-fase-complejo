@@ -6,50 +6,39 @@ st.set_page_config(
     layout="centered"
 )
 
-# ------------------ ESTILO GENERAL ------------------
+# ------------------ ESTILO ------------------
 
 st.markdown("""
 <style>
 
-body {
-background-color:#f5f9f6;
-}
-
-/* titulo portada */
 .main-title{
 text-align:center;
-font-size:52px;
+font-size:50px;
 font-weight:bold;
 margin-top:120px;
-background: linear-gradient(90deg,#2E7D32,#66BB6A,#81C784);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
 }
 
-/* subtitulo portada */
 .subtitle{
 text-align:center;
 font-size:22px;
-color:#2f4f4f;
 }
 
-/* titulos secciones */
 .slide-title{
 font-size:34px;
 font-weight:600;
 margin-top:40px;
-color:#2E7D32;
 }
 
-/* texto */
 .slide-text{
 font-size:18px;
-color:#37474F;
 }
 
-/* sidebar */
-[data-testid="stSidebar"]{
-background-color:#e8f5e9;
+.sidebar-title{
+display:flex;
+align-items:center;
+gap:10px;
+font-size:22px;
+font-weight:bold;
 }
 
 </style>
@@ -58,16 +47,13 @@ background-color:#e8f5e9;
 
 # ------------------ SIDEBAR ------------------
 
-col1, col2 = st.sidebar.columns([1,4])
+st.sidebar.markdown("""
+<div class="sidebar-title">
+<img src="https://cdn-icons-png.flaticon.com/512/2103/2103633.png" width="30">
+<span>Minería de Datos</span>
+</div>
+""", unsafe_allow_html=True)
 
-with col1:
-    st.image(
-        "https://cdn-icons-png.flaticon.com/512/2103/2103633.png",
-        width=35
-    )
-
-with col2:
-    st.markdown("### Minería de Datos")
 
 menu = st.sidebar.radio(
 "Secciones",
@@ -81,6 +67,7 @@ menu = st.sidebar.radio(
 "Conclusión"
 ]
 )
+
 
 # ------------------ PORTADA ------------------
 
@@ -102,6 +89,7 @@ def portada():
     """, unsafe_allow_html=True)
 
 
+
 # ------------------ FUNCION SECCION ------------------
 
 def seccion(titulo, texto, img, extra, img2):
@@ -119,7 +107,8 @@ def seccion(titulo, texto, img, extra, img2):
         st.image(img2, use_container_width=True)
 
 
-# ------------------ CONTENIDO ------------------
+
+# ------------------ SECCIONES ------------------
 
 def agricultura():
 
@@ -131,13 +120,12 @@ def agricultura():
     "https://images.unsplash.com/photo-1598514983318-2f64f8f4796c",
 
     """
-La agricultura digital integra tecnologías como sensores,
-satélites, drones e inteligencia artificial para recopilar
-y analizar grandes cantidades de datos agrícolas.
+La agricultura digital utiliza tecnologías como sensores,
+drones e inteligencia artificial para recopilar datos
+sobre cultivos, suelos y clima.
 
-Esto permite optimizar el uso de recursos,
-mejorar la productividad y tomar decisiones
-basadas en información precisa.
+Esto permite optimizar el uso de agua, fertilizantes
+y otros recursos agrícolas.
     """,
 
     "https://images.unsplash.com/photo-1500382017468-9049fed747ef"
@@ -154,13 +142,13 @@ def etica():
     "https://images.unsplash.com/photo-1581092335397-9583eb92d232",
 
     """
-El análisis de datos agrícolas plantea interrogantes éticos.
+El análisis de datos agrícolas plantea preguntas éticas importantes.
 
-Por ejemplo, quién es el dueño de los datos generados
-por sensores o maquinaria inteligente.
+Por ejemplo, quién es el propietario de los datos
+generados por sensores o maquinaria agrícola.
 
-También existe preocupación sobre el uso indebido
-de la información por parte de grandes empresas tecnológicas.
+También existe el riesgo de que empresas tecnológicas
+acumulen grandes cantidades de información.
     """,
 
     "https://images.unsplash.com/photo-1551288049-bebda4e38f71"
@@ -172,17 +160,17 @@ def privacidad():
     seccion(
     "Privacidad de los Agricultores",
 
-    "Los sistemas agrícolas recopilan información sensible como ubicación y rendimiento de cultivos.",
+    "Los sistemas agrícolas recopilan información sensible como ubicación de parcelas y rendimiento.",
 
     "https://images.unsplash.com/photo-1605000797499-95a51c5269ae",
 
     """
 Los datos agrícolas pueden revelar información estratégica
-sobre producción, rendimiento y gestión de recursos.
+sobre producción y uso de insumos.
 
-Por esta razón es fundamental implementar políticas
-de seguridad y privacidad para proteger
-la información de los agricultores.
+Si estos datos no se protegen adecuadamente,
+pueden generar riesgos de privacidad
+o pérdidas económicas para los agricultores.
     """,
 
     "https://images.unsplash.com/photo-1563986768609-322da13575f3"
@@ -199,12 +187,11 @@ def empresas():
     "https://images.unsplash.com/photo-1509395176047-4a66953fd231",
 
     """
-Muchas empresas tecnológicas desarrollan plataformas
-para recopilar y analizar datos agrícolas.
+Muchas empresas tecnológicas han transformado
+la maquinaria agrícola en sistemas conectados.
 
-Esto puede generar dependencia tecnológica
-si los agricultores pierden el control
-sobre su propia información.
+Esto permite recopilar datos de miles de productores,
+pero también genera riesgos de concentración de poder.
     """,
 
     "https://images.unsplash.com/photo-1464226184884-fa280b87c399"
@@ -221,13 +208,11 @@ def gobernanza():
     "https://images.unsplash.com/photo-1523741543316-beb7fc7023d8",
 
     """
-La gobernanza de datos busca establecer reglas claras
-sobre cómo se recopilan, almacenan y utilizan
-los datos agrícolas.
+Las cooperativas de datos permiten que los agricultores
+gestionen colectivamente su información.
 
-Las cooperativas de datos permiten
-que los agricultores gestionen su información
-de manera colectiva y transparente.
+También existen modelos como los data trusts,
+donde los datos son administrados bajo principios éticos.
     """,
 
     "https://images.unsplash.com/photo-1592997572594-34be01bc36c7"
@@ -244,12 +229,11 @@ def conclusion():
     "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
 
     """
-La agricultura digital tiene el potencial
-de mejorar la productividad y sostenibilidad.
+La digitalización agrícola ofrece grandes beneficios,
+pero también requiere regulaciones claras.
 
-Sin embargo, es necesario garantizar
-la privacidad, transparencia y equidad
-en el uso de los datos.
+La privacidad, la transparencia y la equidad
+son fundamentales para un desarrollo agrícola sostenible.
     """,
 
     "https://images.unsplash.com/photo-1500382017468-9049fed747ef"
