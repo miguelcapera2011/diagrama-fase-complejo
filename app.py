@@ -6,55 +6,62 @@ st.set_page_config(
     layout="centered"
 )
 
-# ---- FONDO + ESTILOS ----
+# -------- COLORES Y ESTILO --------
 
 st.markdown("""
 <style>
 
-[data-testid="stAppViewContainer"]{
-background-image: url("https://images.unsplash.com/photo-1500382017468-9049fed747ef");
-background-size: cover;
-background-position: center;
+body {
+background-color:#f4f8f6;
 }
 
-[data-testid="stHeader"]{
-background: rgba(0,0,0,0);
-}
-
-[data-testid="stSidebar"]{
-background: rgba(240,245,240,0.9);
+.header{
+display:flex;
+align-items:center;
+gap:10px;
+font-size:20px;
+font-weight:bold;
+color:#2c6e49;
 }
 
 .main-title{
 text-align:center;
-font-size:52px;
-font-weight:700;
-color:#1B4332;
+font-size:48px;
+font-weight:bold;
 margin-top:80px;
+color:#2c6e49;
 }
 
 .subtitle{
 text-align:center;
 font-size:22px;
-color:#344e41;
+color:#555;
 }
 
 .slide-title{
 font-size:34px;
 font-weight:600;
-color:#1B4332;
-margin-top:40px;
+margin-top:30px;
+color:#1b4332;
 }
 
 .slide-text{
-font-size:19px;
-color:#081c15;
+font-size:18px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ---- PORTADA ----
+# -------- HEADER --------
+
+st.markdown("""
+<div class="header">
+<img src="https://cdn-icons-png.flaticon.com/512/4149/4149670.png" width="40">
+Minería de Datos
+</div>
+""", unsafe_allow_html=True)
+
+# -------- PORTADA --------
 
 def portada():
 
@@ -72,8 +79,12 @@ def portada():
     </div>
     """, unsafe_allow_html=True)
 
+# -------- CONTROL PARA OCULTAR INFO --------
 
-# ---- FUNCION DE SECCION ----
+if "expander_state" not in st.session_state:
+    st.session_state.expander_state = False
+
+# -------- FUNCION SECCION --------
 
 def seccion(titulo, texto, img, extra, img2):
 
@@ -83,15 +94,13 @@ def seccion(titulo, texto, img, extra, img2):
 
     st.image(img, use_container_width=True)
 
-    # expander siempre cerrado
     with st.expander("🔎 Ver más información", expanded=False):
 
         st.write(extra)
 
         st.image(img2, use_container_width=True)
 
-
-# ---- CONTENIDO ----
+# -------- SECCIONES --------
 
 def agricultura():
 
@@ -103,13 +112,11 @@ def agricultura():
         "https://images.unsplash.com/photo-1598514983318-2f64f8f4796c",
 
         """
-La agricultura digital utiliza tecnologías avanzadas para recopilar datos sobre suelos,
-clima, cultivos y maquinaria agrícola.
+La agricultura digital utiliza sensores, drones y plataformas digitales
+para recopilar información sobre suelos, cultivos y clima.
 
-Estos datos permiten optimizar el uso de recursos como agua, fertilizantes y energía.
-
-Además, ayudan a anticipar riesgos climáticos o plagas,
-permitiendo tomar decisiones más eficientes y sostenibles.
+Esto permite mejorar la productividad, optimizar recursos y tomar
+decisiones basadas en datos en lugar de solo experiencia.
         """,
 
         "https://images.unsplash.com/photo-1500382017468-9049fed747ef"
@@ -126,14 +133,11 @@ def etica():
         "https://images.unsplash.com/photo-1581092335397-9583eb92d232",
 
         """
-El análisis de datos agrícolas plantea preguntas importantes:
+El uso de datos agrícolas plantea preguntas importantes sobre quién
+controla la información y cómo se utiliza.
 
-¿Quién es propietario de los datos generados por sensores o maquinaria?
-
-También existe el riesgo de que grandes empresas tecnológicas controlen
-gran parte de la información agrícola.
-
-Esto puede generar dependencia tecnológica y desigualdades en el sector.
+Si grandes empresas tecnológicas concentran los datos,
+los agricultores podrían perder control sobre su propio conocimiento agrícola.
         """,
 
         "https://images.unsplash.com/photo-1551288049-bebda4e38f71"
@@ -145,19 +149,16 @@ def privacidad():
     seccion(
         "Privacidad de los Agricultores",
 
-        "Los sistemas agrícolas recopilan información sensible como ubicación de parcelas y rendimiento de cultivos.",
+        "Los sistemas agrícolas recopilan información sensible como ubicación y producción.",
 
         "https://images.unsplash.com/photo-1605000797499-95a51c5269ae",
 
         """
-Los datos agrícolas pueden revelar información estratégica sobre la producción
-de una finca.
+Los datos agrícolas pueden revelar información estratégica
+sobre el rendimiento de cultivos o prácticas agrícolas.
 
-Por ejemplo ubicación exacta de parcelas,
-rendimiento de cultivos o uso de fertilizantes.
-
-Por ello es necesario implementar técnicas como anonimización,
-encriptación y políticas de protección de datos.
+Por eso es necesario aplicar medidas de seguridad como
+anonimización y cifrado de datos.
         """,
 
         "https://images.unsplash.com/photo-1563986768609-322da13575f3"
@@ -169,19 +170,15 @@ def empresas():
     seccion(
         "Empresas Tecnológicas",
 
-        "Las plataformas agrícolas pueden concentrar grandes volúmenes de datos.",
+        "Las plataformas agrícolas pueden concentrar grandes volúmenes de información.",
 
         "https://images.unsplash.com/photo-1509395176047-4a66953fd231",
 
         """
-Las empresas tecnológicas han comenzado a ofrecer plataformas
-para recopilar y analizar datos agrícolas.
+Muchas empresas tecnológicas ahora gestionan plataformas de datos agrícolas.
 
-Esto les permite almacenar información de millones de hectáreas.
-
-Sin regulaciones adecuadas,
-los agricultores podrían perder control sobre el valor económico
-de su propia información.
+Esto puede generar dependencia tecnológica y concentración de poder
+si los agricultores no tienen control sobre su información.
         """,
 
         "https://images.unsplash.com/photo-1464226184884-fa280b87c399"
@@ -198,14 +195,11 @@ def gobernanza():
         "https://images.unsplash.com/photo-1523741543316-beb7fc7023d8",
 
         """
-Los modelos de gobernanza de datos buscan equilibrar las relaciones
-entre agricultores y empresas tecnológicas.
+Las cooperativas de datos permiten que los agricultores
+gestionen colectivamente su información.
 
-Entre estos modelos destacan las cooperativas de datos,
-donde los agricultores gestionan colectivamente su información.
-
-También existen data trusts,
-organizaciones que administran datos bajo principios éticos.
+Esto ayuda a equilibrar las relaciones entre agricultores
+y empresas tecnológicas.
         """,
 
         "https://images.unsplash.com/photo-1592997572594-34be01bc36c7"
@@ -222,23 +216,17 @@ def conclusion():
         "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
 
         """
-La digitalización agrícola ofrece grandes beneficios para mejorar la producción
-y sostenibilidad.
+La digitalización agrícola puede mejorar la producción,
+pero requiere principios éticos claros.
 
-Sin embargo es fundamental garantizar privacidad,
-transparencia y control de los datos por parte de los agricultores.
-
-Solo así la tecnología podrá contribuir a una agricultura
-más justa y equilibrada.
+La privacidad, transparencia y control de datos
+son fundamentales para un futuro agrícola sostenible.
         """,
 
         "https://images.unsplash.com/photo-1500382017468-9049fed747ef"
     )
 
-
-# ---- SIDEBAR ----
-
-st.sidebar.markdown("## ⛏️ Minería de Datos")
+# -------- MENU --------
 
 menu = st.sidebar.radio(
     "Secciones",
@@ -253,7 +241,8 @@ menu = st.sidebar.radio(
     ]
 )
 
-# ---- CONTROL ----
+# Reinicia el estado al cambiar sección
+st.session_state.expander_state = False
 
 if menu == "Portada":
     portada()
