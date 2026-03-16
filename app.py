@@ -62,6 +62,7 @@ menu = st.sidebar.radio(
 "Agricultura Digital",
 "Problemas Éticos",
 "Privacidad",
+"Seguridad",
 "Empresas Tecnológicas",
 "Gobernanza",
 "Conclusión",
@@ -84,7 +85,9 @@ def portada():
 
     Miguel Ángel Garatejo Capera  
 
-    Universidad del Tolima  
+    Universidad del Tolima 
+    Ibague - Tolima
+    2026
 
     </div>
     """, unsafe_allow_html=True)
