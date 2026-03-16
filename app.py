@@ -62,6 +62,7 @@ menu = st.sidebar.radio(
 "Agricultura Digital",
 "Problemas Éticos",
 "Privacidad",
+"Seguridad",
 "Empresas Tecnológicas",
 "Gobernanza",
 "Conclusión",
@@ -152,17 +153,7 @@ acumulen grandes cantidades de información.
 
     "https://noticiassalamanca.com/wp-content/uploads/2023/05/La-privacidad-de-los-datos-y-la-importancia-de-la-seguridad-digital.jpg"
     )
-
-def agricultura():
-
-    seccion(
-    "Agricultura Digital",
-
-    "Uso de sensores, drones e inteligencia artificial para analizar datos agrícolas y mejorar la producción.",
-
-    "https://circulotne.com/wp-content/uploads/2024/11/ia-agricultura.png",
-
-    """
+"
 def seguridad():
 
     seccion(
@@ -172,8 +163,8 @@ def seguridad():
 
     "https://circulotne.com/wp-content/uploads/2024/11/ia-agricultura.png",
 
-    Existen tecnologías para proteger la información agrícola, como la encriptación y la anonimización.
-Estas medidas ayudan a garantizar la seguridad y privacidad de los datos.
+    "Existen tecnologías para proteger la información agrícola, como la encriptación y la anonimización.
+Estas medidas ayudan a garantizar la seguridad y privacidad de los datos."
 
     "https://imagenes.eleconomista.com.mx/files/webp_768_768/uploads/2025/06/18/6852f9dea9b60.jpeg"
     )
