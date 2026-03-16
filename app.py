@@ -183,22 +183,18 @@ o pérdidas económicas para los agricultores.
 def seguridad():
 
     seccion(
-    "Privacidad de los Agricultores",
+    "Seguridad de Datos",
 
-    "Los sistemas agrícolas recopilan información sensible como ubicación de parcelas y rendimiento.",
+    "Protección técnica de datos: Encriptación, Anonimización, Auditorías de seguridad",
 
-    "https://eos.com/wp-content/uploads/2022/12/data-manager-gis-agriculture.jpg.webp",
+    "https://www.timware.com.mx/wp-content/uploads/2023/02/cifrado-anonimizacion-tokenizacion-TIMWare.jpg",
 
     """
-Los datos agrícolas pueden revelar información estratégica
-sobre producción y uso de insumos.
-
-Si estos datos no se protegen adecuadamente,
-pueden generar riesgos de privacidad
-o pérdidas económicas para los agricultores.
+    Existen tecnologías para proteger la información agrícola, como la encriptación y la anonimización.
+    Estas medidas ayudan a garantizar la seguridad y privacidad de los datos.
     """,
 
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOgdtxUN4b_-y6DhTnqiyimqqLePWIIeb-ng&s"
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPrAty6MQRuvNQTvjhnzF2npf_S2ad-maSGA&s"
     )
 
 
