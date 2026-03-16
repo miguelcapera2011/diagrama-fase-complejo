@@ -86,7 +86,9 @@ def portada():
     Miguel Ángel Garatejo Capera  
 
     Universidad del Tolima 
+    
     Ibague - Tolima
+    
     2026
 
     </div>
@@ -310,7 +312,7 @@ elif menu == "Problemas Éticos":
 elif menu == "Privacidad":
     privacidad()
 
-elif menu == "Privacidad":
+elif menu == "Seguridad de Datos":
     seguridad()
 
 elif menu == "Empresas Tecnológicas":
