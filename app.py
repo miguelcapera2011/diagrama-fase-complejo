@@ -175,6 +175,28 @@ o pérdidas económicas para los agricultores.
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOgdtxUN4b_-y6DhTnqiyimqqLePWIIeb-ng&s"
     )
 
+def seguridad():
+
+    seccion(
+    "Privacidad de los Agricultores",
+
+    "Los sistemas agrícolas recopilan información sensible como ubicación de parcelas y rendimiento.",
+
+    "https://eos.com/wp-content/uploads/2022/12/data-manager-gis-agriculture.jpg.webp",
+
+    """
+Los datos agrícolas pueden revelar información estratégica
+sobre producción y uso de insumos.
+
+Si estos datos no se protegen adecuadamente,
+pueden generar riesgos de privacidad
+o pérdidas económicas para los agricultores.
+    """,
+
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOgdtxUN4b_-y6DhTnqiyimqqLePWIIeb-ng&s"
+    )
+
+
 
 def empresas():
 
@@ -284,6 +306,9 @@ elif menu == "Problemas Éticos":
 
 elif menu == "Privacidad":
     privacidad()
+
+elif menu == "Privacidad":
+    seguridad()
 
 elif menu == "Empresas Tecnológicas":
     empresas()
