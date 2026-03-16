@@ -62,7 +62,7 @@ menu = st.sidebar.radio(
 "Agricultura Digital",
 "Problemas Éticos",
 "Privacidad",
-"Seguridad",
+"Seguridad de Datos",
 "Empresas Tecnológicas",
 "Gobernanza",
 "Conclusión",
