@@ -153,7 +153,7 @@ acumulen grandes cantidades de información.
 
     "https://noticiassalamanca.com/wp-content/uploads/2023/05/La-privacidad-de-los-datos-y-la-importancia-de-la-seguridad-digital.jpg"
     )
-"
+
 def seguridad():
 
     seccion(
