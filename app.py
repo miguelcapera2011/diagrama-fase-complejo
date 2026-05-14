@@ -1,12 +1,4 @@
-# App Profesional de Clustering K-Means con Streamlit
 
-## Archivo: `app.py`
-
-
-# =========================================================
-# APP PROFESIONAL K-MEANS + PCA + VISUALIZACIONES DINÁMICAS
-# Dataset: USArrests
-# =========================================================
 
 import streamlit as st
 import pandas as pd
@@ -23,9 +15,9 @@ from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import euclidean_distances
 from scipy.spatial.distance import pdist, squareform
 
-# =========================================================
+
 # CONFIGURACIÓN GENERAL
-# =========================================================
+
 
 st.set_page_config(
     page_title="K-Means Profesional",
@@ -462,246 +454,396 @@ if uploaded_file:
     # PCA 3D + ANIMACIÓN COMPLETA K-MEANS
     # =====================================================
 
-    st.subheader("🎥 Simulación completa K-Means en 3D")
+    st.subheader("🎥 Simulación REAL del algoritmo K-Means")
 
     st.markdown("""
-    Esta simulación muestra paso a paso:
+    La simulación reproduce exactamente el comportamiento del algoritmo:
 
-    1. Inicialización de centroides
-    2. Cálculo de distancias
-    3. Asignación de clusters
-    4. Movimiento de centroides
-    5. Repetición iterativa
-    6. Convergencia final
+    - Todos los puntos empiezan con un solo color.
+    - Aparecen centroides aleatorios.
+    - Se calculan distancias desde TODOS los datos hacia TODOS los centroides.
+    - Los puntos cambian de color según el centroide más cercano.
+    - Los centroides se mueven hacia el promedio de sus puntos.
+    - El proceso continúa hasta converger.
     """)
+
+    # =====================================================
+    # DATOS PCA 3D
+    # =====================================================
 
     X3D = pca_df[['PC1', 'PC2', 'PC3']].values
 
     np.random.seed(42)
 
-    centroides = X3D[np.random.choice(len(X3D), k, replace=False)]
-
-    frames_3d = []
-
-    colores_anim = [
-        'red', 'green', 'blue', 'yellow', 'purple',
-        'orange', 'cyan', 'magenta', 'lime', 'white'
+    colores_kmeans = [
+        'red', 'green', 'blue', 'yellow',
+        'purple', 'orange', 'cyan', 'magenta'
     ]
+
+    # =====================================================
+    # CENTROIDES INICIALES ALEATORIOS
+    # =====================================================
+
+    centroides = X3D[
+        np.random.choice(len(X3D), k, replace=False)
+    ]
+
+    frames = []
+
+    # =====================================================
+    # FRAME 0
+    # TODOS LOS DATOS IGUAL COLOR
+    # =====================================================
+
+    frame0 = []
+
+    frame0.append(
+        go.Scatter3d(
+            x=X3D[:,0],
+            y=X3D[:,1],
+            z=X3D[:,2],
+            mode='markers+text',
+            text=datos['State'],
+            textposition='top center',
+            marker=dict(
+                size=5,
+                color='lightblue'
+            ),
+            name='Datos Iniciales'
+        )
+    )
+
+    frames.append(
+        go.Frame(
+            data=frame0,
+            name='Datos Iniciales'
+        )
+    )
+
+    # =====================================================
+    # FRAME 1
+    # APARECEN LOS CENTROIDES
+    # =====================================================
+
+    frame1 = []
+
+    frame1.append(
+        go.Scatter3d(
+            x=X3D[:,0],
+            y=X3D[:,1],
+            z=X3D[:,2],
+            mode='markers',
+            marker=dict(
+                size=5,
+                color='lightblue'
+            ),
+            name='Datos'
+        )
+    )
+
+    frame1.append(
+        go.Scatter3d(
+            x=centroides[:,0],
+            y=centroides[:,1],
+            z=centroides[:,2],
+            mode='markers',
+            marker=dict(
+                size=20,
+                color='white',
+                symbol='diamond'
+            ),
+            name='Centroides Iniciales'
+        )
+    )
+
+    frames.append(
+        go.Frame(
+            data=frame1,
+            name='Centroides Iniciales'
+        )
+    )
+
+    # =====================================================
+    # ITERACIONES KMEANS
+    # =====================================================
 
     for iteracion in range(iteraciones_animadas):
 
-        # ===============================================
+        # ================================================
         # DISTANCIAS
-        # ===============================================
+        # ================================================
 
         distancias = np.linalg.norm(
             X3D[:, np.newaxis] - centroides,
             axis=2
         )
 
-        labels_iter = np.argmin(distancias, axis=1)
+        labels = np.argmin(distancias, axis=1)
 
-        # ===============================================
-        # NUEVOS CENTROIDES
-        # ===============================================
+        # ================================================
+        # FRAME DISTANCIAS
+        # ================================================
 
-        nuevos_centroides = []
+        frame_distancias = []
 
-        for i in range(k):
-
-            puntos_cluster = X3D[labels_iter == i]
-
-            if len(puntos_cluster) > 0:
-                nuevo = puntos_cluster.mean(axis=0)
-            else:
-                nuevo = centroides[i]
-
-            nuevos_centroides.append(nuevo)
-
-        nuevos_centroides = np.array(nuevos_centroides)
-
-        data_frame = []
-
-        # ===============================================
-        # PUNTOS POR CLUSTER
-        # ===============================================
+        # puntos coloreados según centroide más cercano
 
         for cluster_id in range(k):
 
-            puntos = X3D[labels_iter == cluster_id]
+            puntos = X3D[labels == cluster_id]
 
-            etiquetas = datos['State'][labels_iter == cluster_id]
+            etiquetas = datos['State'][labels == cluster_id]
 
-            data_frame.append(
+            frame_distancias.append(
                 go.Scatter3d(
-                    x=puntos[:, 0],
-                    y=puntos[:, 1],
-                    z=puntos[:, 2],
+                    x=puntos[:,0],
+                    y=puntos[:,1],
+                    z=puntos[:,2],
                     mode='markers+text',
                     text=etiquetas,
                     textposition='top center',
                     marker=dict(
                         size=5,
-                        color=colores_anim[cluster_id],
-                        opacity=0.85
+                        color=colores_kmeans[cluster_id]
                     ),
                     name=f'Cluster {cluster_id}'
                 )
             )
 
-        # ===============================================
-        # LÍNEAS DISTANCIA
-        # ===============================================
+        # líneas distancia
 
         for punto_id in range(len(X3D)):
 
-            cluster_actual = labels_iter[punto_id]
+            for centroide_id in range(k):
 
-            centroide_actual = centroides[cluster_actual]
+                color_linea = 'rgba(255,255,255,0.10)'
 
-            data_frame.append(
-                go.Scatter3d(
-                    x=[X3D[punto_id, 0], centroide_actual[0]],
-                    y=[X3D[punto_id, 1], centroide_actual[1]],
-                    z=[X3D[punto_id, 2], centroide_actual[2]],
-                    mode='lines',
-                    line=dict(
-                        color='gray',
-                        width=2
-                    ),
-                    showlegend=False
+                if centroide_id == labels[punto_id]:
+                    color_linea = colores_kmeans[centroide_id]
+
+                frame_distancias.append(
+                    go.Scatter3d(
+                        x=[X3D[punto_id,0], centroides[centroide_id,0]],
+                        y=[X3D[punto_id,1], centroides[centroide_id,1]],
+                        z=[X3D[punto_id,2], centroides[centroide_id,2]],
+                        mode='lines',
+                        line=dict(
+                            color=color_linea,
+                            width=2
+                        ),
+                        showlegend=False
+                    )
                 )
-            )
 
-        # ===============================================
-        # CENTROIDES ACTUALES
-        # ===============================================
+        # centroides actuales
 
-        data_frame.append(
+        frame_distancias.append(
             go.Scatter3d(
-                x=centroides[:, 0],
-                y=centroides[:, 1],
-                z=centroides[:, 2],
-                mode='markers',
-                marker=dict(
-                    size=15,
-                    color='black',
-                    symbol='diamond'
-                ),
-                name='Centroides Actuales'
-            )
-        )
-
-        # ===============================================
-        # MOVIMIENTO CENTROIDES
-        # ===============================================
-
-        for centroide_id in range(k):
-
-            data_frame.append(
-                go.Scatter3d(
-                    x=[centroides[centroide_id, 0], nuevos_centroides[centroide_id, 0]],
-                    y=[centroides[centroide_id, 1], nuevos_centroides[centroide_id, 1]],
-                    z=[centroides[centroide_id, 2], nuevos_centroides[centroide_id, 2]],
-                    mode='lines',
-                    line=dict(
-                        color='white',
-                        width=8
-                    ),
-                    showlegend=False
-                )
-            )
-
-        # ===============================================
-        # NUEVOS CENTROIDES
-        # ===============================================
-
-        data_frame.append(
-            go.Scatter3d(
-                x=nuevos_centroides[:, 0],
-                y=nuevos_centroides[:, 1],
-                z=nuevos_centroides[:, 2],
+                x=centroides[:,0],
+                y=centroides[:,1],
+                z=centroides[:,2],
                 mode='markers',
                 marker=dict(
                     size=18,
+                    color='white',
+                    symbol='diamond'
+                ),
+                name='Centroides'
+            )
+        )
+
+        frames.append(
+            go.Frame(
+                data=frame_distancias,
+                name=f'Distancias Iteración {iteracion+1}'
+            )
+        )
+
+        # ================================================
+        # NUEVOS CENTROIDES
+        # ================================================
+
+        nuevos_centroides = []
+
+        for cluster_id in range(k):
+
+            puntos_cluster = X3D[labels == cluster_id]
+
+            if len(puntos_cluster) > 0:
+                nuevo_centroide = puntos_cluster.mean(axis=0)
+            else:
+                nuevo_centroide = centroides[cluster_id]
+
+            nuevos_centroides.append(nuevo_centroide)
+
+        nuevos_centroides = np.array(nuevos_centroides)
+
+        # ================================================
+        # FRAME MOVIMIENTO
+        # ================================================
+
+        frame_movimiento = []
+
+        for cluster_id in range(k):
+
+            puntos = X3D[labels == cluster_id]
+
+            etiquetas = datos['State'][labels == cluster_id]
+
+            frame_movimiento.append(
+                go.Scatter3d(
+                    x=puntos[:,0],
+                    y=puntos[:,1],
+                    z=puntos[:,2],
+                    mode='markers+text',
+                    text=etiquetas,
+                    textposition='top center',
+                    marker=dict(
+                        size=5,
+                        color=colores_kmeans[cluster_id]
+                    ),
+                    name=f'Cluster {cluster_id}'
+                )
+            )
+
+        # líneas movimiento centroides
+
+        for centroide_id in range(k):
+
+            frame_movimiento.append(
+                go.Scatter3d(
+                    x=[centroides[centroide_id,0], nuevos_centroides[centroide_id,0]],
+                    y=[centroides[centroide_id,1], nuevos_centroides[centroide_id,1]],
+                    z=[centroides[centroide_id,2], nuevos_centroides[centroide_id,2]],
+                    mode='lines',
+                    line=dict(
+                        color='white',
+                        width=10
+                    ),
+                    showlegend=False
+                )
+            )
+
+        # centroides antiguos
+
+        frame_movimiento.append(
+            go.Scatter3d(
+                x=centroides[:,0],
+                y=centroides[:,1],
+                z=centroides[:,2],
+                mode='markers',
+                marker=dict(
+                    size=16,
+                    color='white',
+                    symbol='diamond'
+                ),
+                name='Centroide Anterior'
+            )
+        )
+
+        # centroides nuevos
+
+        frame_movimiento.append(
+            go.Scatter3d(
+                x=nuevos_centroides[:,0],
+                y=nuevos_centroides[:,1],
+                z=nuevos_centroides[:,2],
+                mode='markers',
+                marker=dict(
+                    size=20,
                     color='yellow',
                     symbol='diamond-open'
                 ),
-                name='Nuevos Centroides'
+                name='Nuevo Centroide'
             )
         )
 
-        frames_3d.append(
+        frames.append(
             go.Frame(
-                data=data_frame,
-                name=f'Iteración {iteracion+1}'
+                data=frame_movimiento,
+                name=f'Movimiento Iteración {iteracion+1}'
             )
         )
 
-        # ===============================================
+        # ================================================
         # CONVERGENCIA
-        # ===============================================
+        # ================================================
 
-        movimiento = np.linalg.norm(nuevos_centroides - centroides)
+        movimiento_total = np.linalg.norm(
+            nuevos_centroides - centroides
+        )
 
         centroides = nuevos_centroides
 
-        if movimiento < 0.001:
+        if movimiento_total < 0.0001:
             break
 
     # =====================================================
     # FIGURA PRINCIPAL
     # =====================================================
 
-    fig_3d_anim = go.Figure(
-        data=frames_3d[0].data,
-        frames=frames_3d
+    fig_kmeans_real = go.Figure(
+        data=frames[0].data,
+        frames=frames
     )
 
-    botones = []
+    botones_iteraciones = []
 
-    for i in range(len(frames_3d)):
+    for i, frame in enumerate(frames):
 
-        botones.append(
+        botones_iteraciones.append(
             dict(
-                label=f'Iteración {i+1}',
+                label=frame.name,
                 method='animate',
                 args=[
-                    [frames_3d[i].name],
+                    [frame.name],
                     {
                         'mode': 'immediate',
-                        'frame': {'duration': 1200, 'redraw': True},
-                        'transition': {'duration': 500}
+                        'frame': {
+                            'duration': 1500,
+                            'redraw': True
+                        },
+                        'transition': {
+                            'duration': 800
+                        }
                     }
                 ]
             )
         )
 
-    fig_3d_anim.update_layout(
-        title='Proceso Completo de Convergencia K-Means 3D',
-        width=1600,
+    fig_kmeans_real.update_layout(
+        title='Simulación REAL del algoritmo K-Means',
+        width=1700,
         height=950,
+        paper_bgcolor='#0e1117',
+        plot_bgcolor='#0e1117',
+        font=dict(color='white'),
         scene=dict(
+            bgcolor='black',
             xaxis_title='PC1',
             yaxis_title='PC2',
-            zaxis_title='PC3',
-            bgcolor='black'
+            zaxis_title='PC3'
         ),
-        paper_bgcolor='#0e1117',
-        font=dict(color='white'),
         updatemenus=[
             dict(
                 type='buttons',
                 direction='right',
+                x=0.02,
+                y=1.18,
                 buttons=[
                     dict(
-                        label='▶ Reproducir Todo',
+                        label='▶ Reproducir K-Means',
                         method='animate',
                         args=[
                             None,
                             {
-                                'frame': {'duration': 1200, 'redraw': True},
-                                'transition': {'duration': 500},
+                                'frame': {
+                                    'duration': 1500,
+                                    'redraw': True
+                                },
+                                'transition': {
+                                    'duration': 700
+                                },
                                 'fromcurrent': True
                             }
                         ]
@@ -712,31 +854,28 @@ if uploaded_file:
                         args=[
                             [None],
                             {
-                                'frame': {'duration': 0, 'redraw': False},
-                                'mode': 'immediate'
+                                'mode': 'immediate',
+                                'frame': {
+                                    'duration': 0,
+                                    'redraw': False
+                                }
                             }
                         ]
                     )
-                ],
-                pad={'r': 10, 't': 10},
-                showactive=True,
-                x=0.05,
-                xanchor='left',
-                y=1.15,
-                yanchor='top'
+                ]
             ),
             dict(
                 type='dropdown',
                 direction='down',
-                buttons=botones,
+                buttons=botones_iteraciones,
                 x=0.35,
-                y=1.15,
+                y=1.18,
                 showactive=True
             )
         ]
     )
 
-    st.plotly_chart(fig_3d_anim, use_container_width=True)
+    st.plotly_chart(fig_kmeans_real, use_container_width=True)
 
     # =====================================================
     # BOXPLOT
