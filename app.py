@@ -885,12 +885,11 @@ streamlit run app.py
 
 # Estructura recomendada
 
-```bash
+```text
 proyecto/
-│
-├── app.py
-├── data_USArrests.xlsx
-└── requirements.txt
+|-- app.py
+|-- data_USArrests.xlsx
+|-- requirements.txt
 ```
 
 ---
