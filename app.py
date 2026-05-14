@@ -2,7 +2,7 @@
 
 ## Archivo: `app.py`
 
-```python
+
 # =========================================================
 # APP PROFESIONAL K-MEANS + PCA + VISUALIZACIONES DINÁMICAS
 # Dataset: USArrests
@@ -863,47 +863,3 @@ else:
 
     st.warning("⚠ Suba el archivo data_USArrests.xlsx para iniciar")
 
-```
-
----
-
-# Librerías necesarias
-
-```bash
-pip install streamlit pandas numpy matplotlib seaborn scikit-learn scipy plotly openpyxl
-```
-
----
-
-# Ejecutar la app
-
-```bash
-streamlit run app.py
-```
-
----
-
-# Estructura recomendada
-
-```text
-proyecto/
-|-- app.py
-|-- data_USArrests.xlsx
-|-- requirements.txt
-```
-
----
-
-# Archivo requirements.txt
-
-```txt
-streamlit
-pandas
-numpy
-matplotlib
-seaborn
-scikit-learn
-scipy
-plotly
-openpyxl
-```
