@@ -2,116 +2,94 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
+from sklearn.preprocessing import MinMaxScaler
 
-# 1. CONFIGURACIÓN DE LA APP
-st.set_page_config(page_title="K-Means: Saldo vs Transacciones", layout="wide")
-st.title("Segmentación Bancaria (K-Means 2D)")
-st.markdown("""
-Esta aplicación utiliza las **dos características** mencionadas en las fuentes: 
-**Saldo** y **Transacciones** [1]. El objetivo es encontrar patrones naturales sin etiquetas previas [2].
-""")
+# Configuración de la página
+st.set_page_config(page_title="K-Means 3D Visualizer", layout="wide")
+st.title("Visualización Avanzada de K-Means en 3D")
 
-# 2. GENERACIÓN DE DATOS (Basado estrictamente en los 2 valores de la fuente)
+# 1. Generación de datos (Simulando el contexto bancario del video pero en 3D)
+# Agregamos una tercera variable: "Antigüedad del Cliente"
 @st.cache_data
-def load_data():
+def get_data():
     np.random.seed(42)
-    # Grupo 1: Saldo bajo, pocas transacciones
-    g1 = np.random.normal(loc=[3, 4], scale=[1, 2], size=(20, 2))
-    # Grupo 2: Saldo medio, muchas transacciones 
-    g2 = np.random.normal(loc=[5, 6], scale=[1, 7], size=(20, 2))
-    # Grupo 3: Saldo alto, transacciones moderadas
-    g3 = np.random.normal(loc=[8], scale=[4, 1.5], size=(20, 2))
-    
-    data = np.vstack([g1, g2, g3])
-    # Usamos exactamente los nombres del video [9]
-    return pd.DataFrame(data, columns=['Saldo', 'Transacciones'])
+    data = np.random.rand(100, 3) * 100
+    return pd.DataFrame(data, columns=['Saldo', 'Transacciones', 'Antigüedad'])
 
-df_raw = load_data()
+df = get_data()
 
-# 3. PREPROCESAMIENTO: ESCALAMIENTO (Concepto clave de la fuente [10, 11])
-# Se usa MinMaxScaler porque el algoritmo es susceptible a las diferentes escalas [10].
+# Sidebar para controles
+st.sidebar.header("Configuración")
+k = st.sidebar.slider("Selecciona el número de clusters (k)", 2, 10, 3)
+run_button = st.sidebar.button("Ejecutar K-Means")
+
+# 2. Pre-procesamiento (Como se explica en el video [13, 16])
 scaler = MinMaxScaler()
-df_scaled = pd.DataFrame(scaler.fit_transform(df_raw), columns=df_raw.columns)
+df_scaled = scaler.fit_transform(df)
 
-# 4. MÉTODO DEL CODO (Mencionado en la fuente [12])
-st.subheader("1. Análisis de Inercia (Método del Codo)")
-inercias = []
-for i in range(1, 11):
-    km = KMeans(n_clusters=i, random_state=42, n_init=10)
-    km.fit(df_scaled)
-    inercias.append(km.inertia_)
-
-fig_elbow = go.Figure(data=go.Scatter(x=list(range(1, 11)), y=inercias, mode='lines+markers'))
-fig_elbow.update_layout(height=300, xaxis_title="K (Clusters)", yaxis_title="Inercia")
-st.plotly_chart(fig_elbow, use_container_width=True)
-
-# 5. EJECUCIÓN SECUENCIAL (Algoritmo Iterativo [3, 13])
-st.divider()
-st.subheader("2. Simulación Paso a Paso")
-k_user = st.sidebar.slider("Selecciona K", 2, 6, 3)
-
-if 'centroids' not in st.session_state or st.sidebar.button("Reiniciar"):
-    # Paso 1: Inicialización aleatoria de centroides [4]
-    st.session_state.centroids = df_scaled.sample(k_user).values
-    st.session_state.labels = np.zeros(len(df_scaled))
-    st.session_state.iteration = 0
-    st.session_state.current_inertia = 0
-
-def run_step():
-    data = df_scaled.values
-    centroids = st.session_state.centroids
+if run_button:
+    # 3. Aplicación del Modelo
+    model = KMeans(n_clusters=k, random_state=42)
+    labels = model.fit_predict(df_scaled)
+    centroids = model.cluster_centers_
     
-    # Paso 2: Asignación por Distancia Euclidiana [13]
-    distances = np.linalg.norm(data[:, np.newaxis] - centroids, axis=2)
-    labels = np.argmin(distances, axis=1)
+    # 4. Creación del gráfico 3D con enlaces
+    fig = go.Figure()
+
+    # Colores para los clusters
+    colors = ['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52']
+
+    # Dibujar puntos y líneas de conexión (enlaces)
+    for i in range(k):
+        # Puntos del cluster actual
+        cluster_points = df_scaled[labels == i]
+        centroid = centroids[i]
+        
+        # Agregar puntos del cluster
+        fig.add_trace(go.Scatter3d(
+            x=cluster_points[:, 0], y=cluster_points[:, 1], z=cluster_points[:, 2],
+            mode='markers',
+            marker=dict(size=5, color=colors[i % len(colors)], opacity=0.8),
+            name=f"Cluster {i}"
+        ))
+
+        # Agregar el centroide (X estilizada)
+        fig.add_trace(go.Scatter3d(
+            x=[centroid], y=[centroid[1]], z=[centroid[15]],
+            mode='markers',
+            marker=dict(size=10, symbol='x', color=colors[i % len(colors)], line=dict(width=2, color='black')),
+            name=f"Centroide {i}"
+        ))
+
+        # Crear los enlaces (líneas del punto al centroide)
+        for point in cluster_points:
+            fig.add_trace(go.Scatter3d(
+                x=[point, centroid],
+                y=[point[1], centroid[1]],
+                z=[point[15], centroid[15]],
+                mode='lines',
+                line=dict(color=colors[i % len(colors)], width=1),
+                showlegend=False,
+                opacity=0.2 # Transparencia para que se vea "bonito" y no saturado
+            ))
+
+    # Estética del plano 3D (quitando el "encierro" clásico)
+    fig.update_layout(
+        scene=dict(
+            xaxis=dict(showbackground=False, showgrid=True, title='Saldo (Escalado)'),
+            yaxis=dict(showbackground=False, showgrid=True, title='Transacciones (Escalado)'),
+            zaxis=dict(showbackground=False, showgrid=True, title='Antigüedad (Escalado)'),
+        ),
+        margin=dict(l=0, r=0, b=0, t=40),
+        template="plotly_dark" # Fondo oscuro para resaltar los colores
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
     
-    # Paso 3: Actualización por Promedio [14, 15]
-    new_centroids = np.array([data[labels == i].mean(axis=0) if len(data[labels == i]) > 0 
-                             else centroids[i] for i in range(k_user)])
-    
-    # Cálculo de Inercia: Distancia al cuadrado [16]
-    inertia = np.sum([np.linalg.norm(data[i] - new_centroids[labels[i]])**2 for i in range(len(data))])
-    
-    st.session_state.labels = labels
-    st.session_state.centroids = new_centroids
-    st.session_state.iteration += 1
-    st.session_state.current_inertia = inertia
+    # Mostrar métrica de Inercia explicada en el video [17, 18]
+    st.write(f"**Inercia del modelo:** {model.inertia_:.4f}")
+    st.info("La inercia representa la suma de las distancias al cuadrado de los puntos a su centroide. Menor inercia suele indicar clusters más compactos [18, 19].")
 
-if st.button(f"Siguiente Paso (Iteración {st.session_state.iteration + 1})"):
-    run_step()
-
-st.write(f"Iteración: **{st.session_state.iteration}** | Inercia: **{st.session_state.current_inertia:.4f}**")
-
-# 6. VISUALIZACIÓN 2D SIN CUADRÍCULAS
-fig = go.Figure()
-
-# Puntos de Clientes
-fig.add_trace(go.Scatter(
-    x=df_scaled['Saldo'], y=df_scaled['Transacciones'],
-    mode='markers',
-    marker=dict(size=10, color=st.session_state.labels, colorscale='Viridis', opacity=0.8),
-    name="Clientes"
-))
-
-# Centroides (Cruces rojas como en el video [17])
-fig.add_trace(go.Scatter(
-    x=st.session_state.centroids[:, 0], 
-    y=st.session_state.centroids[:, 1],
-    mode='markers',
-    marker=dict(size=15, color='red', symbol='x', line=dict(width=2, color='black')),
-    name="Centroides"
-))
-
-# Diseño limpio sin cuadrículas ni ejes visibles
-fig.update_layout(
-    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, title=""),
-    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, title=""),
-    plot_bgcolor='rgba(0,0,0,0)', # Fondo transparente
-    height=600
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-st.info("El proceso se detiene cuando la posición de las cruces rojas (centroides) ya no cambia [8].")
+else:
+    st.write("Ajusta el valor de **k** en la barra lateral y presiona **Ejecutar** para ver la magia de la agrupación.")
