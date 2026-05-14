@@ -1,118 +1,619 @@
+# App Profesional de Clustering K-Means con Streamlit
+
+## Archivo: `app.py`
+
+```python
+# =========================================================
+# APP PROFESIONAL K-MEANS + PCA + VISUALIZACIONES DINÁMICAS
+# Dataset: USArrests
+# =========================================================
+
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.express as px
 import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+import seaborn as sns
+import time
+
 from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from sklearn.metrics import pairwise_distances
+from sklearn.metrics.pairwise import euclidean_distances
+from scipy.spatial.distance import pdist, squareform
 
-# 1. Configuración de la App
-st.set_page_config(page_title="K-Means 3D Lab", layout="wide")
-st.title("🧶 Laboratorio K-Means 3D: USArrests")
-st.markdown("Visualización del proceso: **Distancia Euclidiana** e **Iteración de Centroides**.")
+# =========================================================
+# CONFIGURACIÓN GENERAL
+# =========================================================
 
-# 2. Carga de Datos (Dataset Completo de 50 estados)
-@st.cache_data
-def load_data():
-    url = "https://raw.githubusercontent.com/vincentarelbundock/Rdatasets/master/csv/datasets/USArrests.csv"
-    df = pd.read_csv(url)
-    # Renombrar columnas para consistencia con las fuentes [1]
-    df.columns = ['State', 'Murder', 'Assault', 'UrbanPop', 'Rape']
-    return df
-
-df_raw = load_data()
-features = ['Murder', 'Assault', 'UrbanPop', 'Rape']
-
-# 3. Preprocesamiento (Fuentes [3, 4])
-# Escalamos los datos para que variables como Assault no dominen la distancia euclidiana.
-scaler = StandardScaler()
-df_scaled = scaler.fit_transform(df_raw[features])
-
-# 4. Reducción a 3D con PCA (Fuentes [5, 6])
-# Proyectamos las 4 variables en 3 componentes principales para el plano 3D.
-pca = PCA(n_components=3)
-data_3d = pca.fit_transform(df_scaled)
-df_pca = pd.DataFrame(data_3d, columns=['PC1', 'PC2', 'PC3'])
-
-# Sidebar: Controles
-st.sidebar.header("Parámetros del Algoritmo")
-k = st.sidebar.slider("Número de Clusters (k)", 2, 5, 4)
-etapa = st.sidebar.select_slider("Fase del Proceso", options=[
-    "Puntos Base", "Asignación (Distancias)", "Actualización (Movimiento)"
-])
-
-# 5. Lógica del Algoritmo (Semilla 42 para reproducibilidad [7])
-np.random.seed(42)
-idx_ini = np.random.choice(len(df_pca), k, replace=False)
-centroids_ini = df_pca.iloc[idx_ini].values # Arreglo de tamaño (k, 3)
-
-# Cálculo de distancias euclidianas (La "hipotenusa" [8])
-distancias = pairwise_distances(df_pca, centroids_ini, metric='euclidean')
-etiquetas = np.argmin(distancias, axis=1) # Etiquetas 0 a k-1 para los 50 estados [9]
-
-# Cálculo de nuevos centroides (Promedio de puntos asignados [10, 11])
-centroids_nuevos = np.array([df_pca[etiquetas == i].mean(axis=0) for i in range(k)])
-
-# --- 6. VISUALIZACIÓN 3D INTERACTIVA ---
-fig = go.Figure()
-colores = ['#FF4B4B', '#00CC96', '#636EFA', '#AB63FA', '#FFA15A']
-
-# Capa de puntos de los Estados
-fig.add_trace(go.Scatter3d(
-    x=df_pca['PC1'], y=df_pca['PC2'], z=df_pca['PC3'],
-    mode='markers',
-    marker=dict(size=5, color=[colores[l] if etapa != "Puntos Base" else 'white' for l in etiquetas], opacity=0.8),
-    text=df_raw['State'], name="Estados"
-))
-
-# Bucle sobre los CLUSTERS (Evita el error index 9 out of bounds)
-for i in range(k):
-    # Elegir qué posición del centroide mostrar
-    c_actual = centroids_ini[i] if etapa != "Actualización (Movimiento)" else centroids_nuevos[i]
-    
-    # Dibujar Centroide (Diamante resaltado)
-    fig.add_trace(go.Scatter3d(
-        x=[c_actual], y=[c_actual[1]], z=[c_actual[12]],
-        mode='markers',
-        marker=dict(size=12, color=colores[i], symbol='diamond', line=dict(width=2, color='white')),
-        name=f"Centroide {i}"
-    ))
-
-    # ENLACE EUCLIDIANO (Visualización de distancias [8, 13])
-    if etapa == "Asignación (Distancias)":
-        puntos_cluster = df_pca[etiquetas == i]
-        for _, fila in puntos_cluster.iterrows():
-            fig.add_trace(go.Scatter3d(
-                x=[fila['PC1'], centroids_ini[i, 0]],
-                y=[fila['PC2'], centroides_ini[i, 1]],
-                z=[fila['PC3'], centroides_ini[i, 2]],
-                mode='lines', line=dict(color=colores[i], width=1),
-                opacity=0.2, showlegend=False
-            ))
-
-    # TRAYECTORIA DE MOVIMIENTO (Hacia el promedio [14, 15])
-    if etapa == "Actualización (Movimiento)":
-        fig.add_trace(go.Scatter3d(
-            x=[centroids_ini[i, 0], centroids_nuevos[i, 0]],
-            y=[centroids_ini[i, 1], centroids_nuevos[i, 1]],
-            z=[centroids_ini[i, 2], centroids_nuevos[i, 2]],
-            mode='lines+markers', line=dict(color='white', width=3, dash='dash'),
-            marker=dict(size=4, color='white'), name=f"Desplazamiento C{i}"
-        ))
-
-# Estética del plano 3D
-fig.update_layout(
-    scene=dict(xaxis_title="PC1", yaxis_title="PC2", zaxis_title="PC3", bgcolor="#0e1117"),
-    paper_bgcolor="#0e1117", font=dict(color="white"), height=800, margin=dict(l=0, r=0, b=0, t=30)
+st.set_page_config(
+    page_title="K-Means Profesional",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-st.plotly_chart(fig, use_container_width=True)
+# =========================================================
+# ESTILOS CSS
+# =========================================================
 
-# 7. Explicaciones Técnicas basadas en fuentes
-if etapa == "Asignación (Distancias)":
-    st.info("💡 **Mecánica:** Se calcula la **distancia euclidiana** entre cada estado y los centroides. Visualmente, estas líneas representan la 'hipotenusa' en el espacio de datos [8].")
-elif etapa == "Actualización (Movimiento)":
-    st.success("💡 **Mecánica:** Los centroides se desplazan hacia el **promedio** de las coordenadas de todos los estados asignados a su grupo [10].")
+st.markdown("""
+<style>
+.main {
+    background-color: #0e1117;
+}
 
-st.write("### Vista previa de los datos originales [1]")
-st.dataframe(df_raw.head(10))
+h1 {
+    color: #00ffd5;
+    text-align: center;
+    font-size: 50px;
+}
+
+h2 {
+    color: #00c3ff;
+}
+
+h3 {
+    color: #ffffff;
+}
+
+.stMetric {
+    background-color: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.block-container {
+    padding-top: 2rem;
+}
+
+.css-1d391kg {
+    background-color: #111827;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# =========================================================
+# TÍTULO
+# =========================================================
+
+st.title("📊 App Profesional de Clustering K-Means")
+
+st.markdown("""
+Esta aplicación permite explorar paso a paso el algoritmo K-Means usando el dataset USArrests.
+
+Incluye:
+
+- Exploración de datos
+- Estandarización
+- Distancias Euclidianas y Manhattan
+- Método del codo
+- Animación de convergencia de K-Means
+- PCA 2D y 3D
+- Boxplots interactivos
+- Visualizaciones dinámicas
+- Movimiento de centroides
+- Explicaciones matemáticas
+""")
+
+# =========================================================
+# SIDEBAR
+# =========================================================
+
+st.sidebar.title("⚙ Configuración")
+
+uploaded_file = st.sidebar.file_uploader(
+    "Suba el archivo data_USArrests.xlsx",
+    type=["xlsx"]
+)
+
+k = st.sidebar.slider("Número de Clusters", 2, 10, 4)
+
+iteraciones_animadas = st.sidebar.slider(
+    "Frames Animación",
+    5,
+    50,
+    20
+)
+
+# =========================================================
+# CARGA DE DATOS
+# =========================================================
+
+if uploaded_file:
+
+    datos = pd.read_excel(uploaded_file)
+
+    st.header("📁 Dataset")
+    st.dataframe(datos)
+
+    # =====================================================
+    # INFORMACIÓN GENERAL
+    # =====================================================
+
+    st.header("📌 Información del Dataset")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("Filas", datos.shape[0])
+
+    with col2:
+        st.metric("Columnas", datos.shape[1])
+
+    with col3:
+        st.metric("Valores faltantes", datos.isnull().sum().sum())
+
+    st.write(datos.describe())
+
+    # =====================================================
+    # LIMPIEZA
+    # =====================================================
+
+    datos = datos.dropna()
+
+    # =====================================================
+    # HISTOGRAMAS
+    # =====================================================
+
+    st.header("📈 Histogramas")
+
+    columnas_numericas = ['Murder', 'Assault', 'UrbanPop', 'Rape']
+
+    fig_hist = px.histogram(
+        datos,
+        x='Murder',
+        nbins=10,
+        title='Distribución Murder'
+    )
+
+    st.plotly_chart(fig_hist, use_container_width=True)
+
+    tabs = st.tabs(columnas_numericas)
+
+    for i, col in enumerate(columnas_numericas):
+        with tabs[i]:
+            fig = px.histogram(
+                datos,
+                x=col,
+                marginal='box',
+                color_discrete_sequence=['cyan']
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+    # =====================================================
+    # ESTANDARIZACIÓN
+    # =====================================================
+
+    st.header("⚖ Estandarización")
+
+    scaler = StandardScaler()
+
+    numericas = datos.select_dtypes(include=['float64', 'int64']).columns
+
+    datos[numericas] = scaler.fit_transform(datos[numericas])
+
+    st.write(datos.head())
+
+    # =====================================================
+    # MATRICES DE DISTANCIA
+    # =====================================================
+
+    st.header("📏 Distancias Euclidianas")
+
+    distancias = euclidean_distances(datos.drop(columns=['State']))
+
+    dist_matrix = pd.DataFrame(
+        distancias,
+        index=datos['State'],
+        columns=datos['State']
+    )
+
+    fig_heat = px.imshow(
+        dist_matrix,
+        color_continuous_scale='RdBu',
+        title='Mapa de calor Distancias Euclidianas'
+    )
+
+    st.plotly_chart(fig_heat, use_container_width=True)
+
+    # =====================================================
+    # DISTANCIAS MANHATTAN
+    # =====================================================
+
+    st.header("📐 Distancias Manhattan")
+
+    manhattan = pdist(
+        datos.drop(columns=['State']),
+        metric='cityblock'
+    )
+
+    manhattan_square = squareform(manhattan)
+
+    manhattan_df = pd.DataFrame(
+        manhattan_square,
+        index=datos['State'],
+        columns=datos['State']
+    )
+
+    fig_manhattan = px.imshow(
+        manhattan_df,
+        color_continuous_scale='Viridis',
+        title='Mapa Distancias Manhattan'
+    )
+
+    st.plotly_chart(fig_manhattan, use_container_width=True)
+
+    # =====================================================
+    # MÉTODO DEL CODO
+    # =====================================================
+
+    st.header("🦴 Método del Codo")
+
+    wss = []
+
+    for i in range(1, 11):
+        modelo = KMeans(
+            n_clusters=i,
+            n_init=50,
+            random_state=42
+        )
+
+        modelo.fit(datos.drop(columns=['State']))
+
+        wss.append(modelo.inertia_)
+
+    elbow_df = pd.DataFrame({
+        'Clusters': range(1, 11),
+        'WSS': wss
+    })
+
+    fig_elbow = px.line(
+        elbow_df,
+        x='Clusters',
+        y='WSS',
+        markers=True,
+        title='Método del Codo'
+    )
+
+    fig_elbow.add_vline(
+        x=k,
+        line_dash='dash',
+        line_color='red'
+    )
+
+    st.plotly_chart(fig_elbow, use_container_width=True)
+
+    # =====================================================
+    # KMEANS
+    # =====================================================
+
+    st.header("🤖 Algoritmo K-Means")
+
+    kmeans = KMeans(
+        n_clusters=k,
+        n_init=50,
+        random_state=42
+    )
+
+    inicio = time.time()
+
+    km4_clusters = kmeans.fit(datos.drop(columns=['State']))
+
+    fin = time.time()
+
+    st.success(f"Tiempo ejecución: {(fin - inicio)*1000:.2f} ms")
+
+    st.subheader("Centroides")
+    st.write(kmeans.cluster_centers_)
+
+    datos['Cluster'] = km4_clusters.labels_
+
+    # =====================================================
+    # ANIMACIÓN DE CONVERGENCIA
+    # =====================================================
+
+    st.header("🎬 Animación de Convergencia")
+
+    pca_anim = PCA(n_components=2)
+
+    X_pca = pca_anim.fit_transform(datos[numericas])
+
+    fig_anim = go.Figure()
+
+    colores = ['red', 'green', 'blue', 'yellow', 'purple', 'orange', 'cyan', 'pink', 'lime', 'white']
+
+    centroides = X_pca[np.random.choice(len(X_pca), k, replace=False)]
+
+    frames = []
+
+    for frame_num in range(iteraciones_animadas):
+
+        distancias = np.linalg.norm(
+            X_pca[:, np.newaxis] - centroides,
+            axis=2
+        )
+
+        labels = np.argmin(distancias, axis=1)
+
+        nuevos_centroides = np.array([
+            X_pca[labels == i].mean(axis=0)
+            for i in range(k)
+        ])
+
+        scatter_data = []
+
+        for i in range(k):
+
+            puntos = X_pca[labels == i]
+
+            scatter_data.append(
+                go.Scatter(
+                    x=puntos[:,0],
+                    y=puntos[:,1],
+                    mode='markers+text',
+                    text=datos['State'],
+                    textposition='top center',
+                    marker=dict(size=10, color=colores[i]),
+                    name=f'Cluster {i}'
+                )
+            )
+
+        scatter_data.append(
+            go.Scatter(
+                x=nuevos_centroides[:,0],
+                y=nuevos_centroides[:,1],
+                mode='markers',
+                marker=dict(
+                    size=25,
+                    color='black',
+                    symbol='star'
+                ),
+                name='Centroides'
+            )
+        )
+
+        # líneas distancia
+
+        for i in range(len(X_pca)):
+            centroide = nuevos_centroides[labels[i]]
+
+            scatter_data.append(
+                go.Scatter(
+                    x=[X_pca[i,0], centroide[0]],
+                    y=[X_pca[i,1], centroide[1]],
+                    mode='lines',
+                    line=dict(color='gray', width=1),
+                    showlegend=False
+                )
+            )
+
+        frames.append(go.Frame(data=scatter_data, name=str(frame_num)))
+
+        centroides = nuevos_centroides
+
+    fig_anim.frames = frames
+
+    fig_anim.add_trace(
+        go.Scatter(x=[], y=[])
+    )
+
+    fig_anim.update_layout(
+        title='Movimiento de centroides y convergencia K-Means',
+        width=1200,
+        height=800,
+        updatemenus=[
+            {
+                'type': 'buttons',
+                'buttons': [
+                    {
+                        'label': '▶ Iniciar',
+                        'method': 'animate',
+                        'args': [None]
+                    }
+                ]
+            }
+        ]
+    )
+
+    st.plotly_chart(fig_anim, use_container_width=True)
+
+    # =====================================================
+    # PCA
+    # =====================================================
+
+    st.header("🧠 PCA")
+
+    pca = PCA(n_components=4)
+
+    pca_scores = pca.fit_transform(datos[numericas])
+
+    pca_df = pd.DataFrame(
+        pca_scores,
+        columns=['PC1', 'PC2', 'PC3', 'PC4']
+    )
+
+    pca_df['Cluster'] = km4_clusters.labels_.astype(str)
+    pca_df['Etiqueta'] = datos['State']
+
+    # =====================================================
+    # PCA 2D
+    # =====================================================
+
+    st.subheader("PCA Interactivo 2D")
+
+    fig_2d = px.scatter(
+        pca_df,
+        x='PC1',
+        y='PC2',
+        color='Cluster',
+        text='Etiqueta',
+        title='PCA 2D'
+    )
+
+    fig_2d.update_traces(
+        textposition='top center'
+    )
+
+    st.plotly_chart(fig_2d, use_container_width=True)
+
+    # =====================================================
+    # PCA 3D
+    # =====================================================
+
+    st.subheader("PCA Interactivo 3D")
+
+    fig_3d = px.scatter_3d(
+        pca_df,
+        x='PC1',
+        y='PC2',
+        z='PC3',
+        color='Cluster',
+        text='Etiqueta'
+    )
+
+    centroides_pca = pca.transform(kmeans.cluster_centers_)
+
+    fig_3d.add_trace(
+        go.Scatter3d(
+            x=centroides_pca[:,0],
+            y=centroides_pca[:,1],
+            z=centroides_pca[:,2],
+            mode='markers',
+            marker=dict(
+                size=12,
+                color='yellow',
+                symbol='diamond'
+            ),
+            name='Centroides'
+        )
+    )
+
+    st.plotly_chart(fig_3d, use_container_width=True)
+
+    # =====================================================
+    # BOXPLOT
+    # =====================================================
+
+    st.header("📦 Boxplot Interactivo")
+
+    fig_box = px.box(
+        datos,
+        x='Cluster',
+        y='Rape',
+        color='Cluster',
+        points='all',
+        hover_data=['State']
+    )
+
+    st.plotly_chart(fig_box, use_container_width=True)
+
+    # =====================================================
+    # TABLA DE CLUSTERS
+    # =====================================================
+
+    st.header("📋 Estados por Cluster")
+
+    grupos = pd.DataFrame()
+
+    grupos['State'] = datos['State']
+    grupos['Cluster'] = km4_clusters.labels_
+
+    st.dataframe(
+        grupos.sort_values(by='Cluster'),
+        use_container_width=True
+    )
+
+    # =====================================================
+    # CANTIDAD POR CLUSTER
+    # =====================================================
+
+    st.header("📊 Cantidad de individuos por Cluster")
+
+    conteo = grupos.groupby('Cluster').size().reset_index()
+
+    conteo.columns = ['Cluster', 'Cantidad']
+
+    fig_count = px.bar(
+        conteo,
+        x='Cluster',
+        y='Cantidad',
+        color='Cluster',
+        text='Cantidad'
+    )
+
+    st.plotly_chart(fig_count, use_container_width=True)
+
+    # =====================================================
+    # VISUALIZACIÓN MURDER VS URBANPOP
+    # =====================================================
+
+    st.header("🎯 Murder vs UrbanPop")
+
+    fig_mu = px.scatter(
+        datos,
+        x='Murder',
+        y='UrbanPop',
+        color='Cluster',
+        hover_data=['State'],
+        title='Murder vs UrbanPop'
+    )
+
+    st.plotly_chart(fig_mu, use_container_width=True)
+
+    # =====================================================
+    # VISUALIZACIÓN RAPE VS ASSAULT
+    # =====================================================
+
+    st.header("🎯 Rape vs Assault")
+
+    fig_ra = px.scatter(
+        datos,
+        x='Rape',
+        y='Assault',
+        color='Cluster',
+        hover_data=['State'],
+        title='Rape vs Assault'
+    )
+
+    st.plotly_chart(fig_ra, use_container_width=True)
+
+    # =====================================================
+    # EXPLICACIÓN MATEMÁTICA
+    # =====================================================
+
+    st.header("📘 Explicación Matemática")
+
+    st.markdown("""
+    ## ¿Cómo funciona K-Means?
+
+    1. Se eligen centroides aleatorios.
+
+    2. Cada punto calcula su distancia al centroide más cercano.
+
+    3. Los puntos se asignan al cluster más cercano.
+
+    4. Los centroides se recalculan usando el promedio de los puntos.
+
+    5. El proceso se repite hasta converger.
+
+    ## Distancia Euclidiana
+
+    La distancia usada normalmente es:
+
+    d(x,y)=√((x1-y1)^2+(x2-y2)^2+...)
+
+    ## Inercia
+
+    La inercia mide qué tan compactos son los clusters.
+
+    Menor inercia = mejores agrupaciones.
+    """)
+
+    st.success("✅ Aplicación cargada correctamente")
+
+else:
+
+    st.warning("⚠ Suba el archivo data_USArrests.xlsx para iniciar")
+
