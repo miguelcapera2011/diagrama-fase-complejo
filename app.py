@@ -616,4 +616,3 @@ if uploaded_file:
 else:
 
     st.warning("⚠ Suba el archivo data_USArrests.xlsx para iniciar")
-
