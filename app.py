@@ -2,7 +2,7 @@
 
 ## Archivo: `app.py`
 
-
+```python
 # =========================================================
 # APP PROFESIONAL K-MEANS + PCA + VISUALIZACIONES DINÁMICAS
 # Dataset: USArrests
@@ -459,38 +459,284 @@ if uploaded_file:
     st.plotly_chart(fig_2d, use_container_width=True)
 
     # =====================================================
-    # PCA 3D
+    # PCA 3D + ANIMACIÓN COMPLETA K-MEANS
     # =====================================================
 
-    st.subheader("PCA Interactivo 3D")
+    st.subheader("🎥 Simulación completa K-Means en 3D")
 
-    fig_3d = px.scatter_3d(
-        pca_df,
-        x='PC1',
-        y='PC2',
-        z='PC3',
-        color='Cluster',
-        text='Etiqueta'
-    )
+    st.markdown("""
+    Esta simulación muestra paso a paso:
 
-    centroides_pca = pca.transform(kmeans.cluster_centers_)
+    1. Inicialización de centroides
+    2. Cálculo de distancias
+    3. Asignación de clusters
+    4. Movimiento de centroides
+    5. Repetición iterativa
+    6. Convergencia final
+    """)
 
-    fig_3d.add_trace(
-        go.Scatter3d(
-            x=centroides_pca[:,0],
-            y=centroides_pca[:,1],
-            z=centroides_pca[:,2],
-            mode='markers',
-            marker=dict(
-                size=12,
-                color='yellow',
-                symbol='diamond'
-            ),
-            name='Centroides'
+    X3D = pca_df[['PC1', 'PC2', 'PC3']].values
+
+    np.random.seed(42)
+
+    centroides = X3D[np.random.choice(len(X3D), k, replace=False)]
+
+    frames_3d = []
+
+    colores_anim = [
+        'red', 'green', 'blue', 'yellow', 'purple',
+        'orange', 'cyan', 'magenta', 'lime', 'white'
+    ]
+
+    for iteracion in range(iteraciones_animadas):
+
+        # ===============================================
+        # DISTANCIAS
+        # ===============================================
+
+        distancias = np.linalg.norm(
+            X3D[:, np.newaxis] - centroides,
+            axis=2
         )
+
+        labels_iter = np.argmin(distancias, axis=1)
+
+        # ===============================================
+        # NUEVOS CENTROIDES
+        # ===============================================
+
+        nuevos_centroides = []
+
+        for i in range(k):
+
+            puntos_cluster = X3D[labels_iter == i]
+
+            if len(puntos_cluster) > 0:
+                nuevo = puntos_cluster.mean(axis=0)
+            else:
+                nuevo = centroides[i]
+
+            nuevos_centroides.append(nuevo)
+
+        nuevos_centroides = np.array(nuevos_centroides)
+
+        data_frame = []
+
+        # ===============================================
+        # PUNTOS POR CLUSTER
+        # ===============================================
+
+        for cluster_id in range(k):
+
+            puntos = X3D[labels_iter == cluster_id]
+
+            etiquetas = datos['State'][labels_iter == cluster_id]
+
+            data_frame.append(
+                go.Scatter3d(
+                    x=puntos[:, 0],
+                    y=puntos[:, 1],
+                    z=puntos[:, 2],
+                    mode='markers+text',
+                    text=etiquetas,
+                    textposition='top center',
+                    marker=dict(
+                        size=5,
+                        color=colores_anim[cluster_id],
+                        opacity=0.85
+                    ),
+                    name=f'Cluster {cluster_id}'
+                )
+            )
+
+        # ===============================================
+        # LÍNEAS DISTANCIA
+        # ===============================================
+
+        for punto_id in range(len(X3D)):
+
+            cluster_actual = labels_iter[punto_id]
+
+            centroide_actual = centroides[cluster_actual]
+
+            data_frame.append(
+                go.Scatter3d(
+                    x=[X3D[punto_id, 0], centroide_actual[0]],
+                    y=[X3D[punto_id, 1], centroide_actual[1]],
+                    z=[X3D[punto_id, 2], centroide_actual[2]],
+                    mode='lines',
+                    line=dict(
+                        color='gray',
+                        width=2
+                    ),
+                    showlegend=False
+                )
+            )
+
+        # ===============================================
+        # CENTROIDES ACTUALES
+        # ===============================================
+
+        data_frame.append(
+            go.Scatter3d(
+                x=centroides[:, 0],
+                y=centroides[:, 1],
+                z=centroides[:, 2],
+                mode='markers',
+                marker=dict(
+                    size=15,
+                    color='black',
+                    symbol='diamond'
+                ),
+                name='Centroides Actuales'
+            )
+        )
+
+        # ===============================================
+        # MOVIMIENTO CENTROIDES
+        # ===============================================
+
+        for centroide_id in range(k):
+
+            data_frame.append(
+                go.Scatter3d(
+                    x=[centroides[centroide_id, 0], nuevos_centroides[centroide_id, 0]],
+                    y=[centroides[centroide_id, 1], nuevos_centroides[centroide_id, 1]],
+                    z=[centroides[centroide_id, 2], nuevos_centroides[centroide_id, 2]],
+                    mode='lines',
+                    line=dict(
+                        color='white',
+                        width=8
+                    ),
+                    showlegend=False
+                )
+            )
+
+        # ===============================================
+        # NUEVOS CENTROIDES
+        # ===============================================
+
+        data_frame.append(
+            go.Scatter3d(
+                x=nuevos_centroides[:, 0],
+                y=nuevos_centroides[:, 1],
+                z=nuevos_centroides[:, 2],
+                mode='markers',
+                marker=dict(
+                    size=18,
+                    color='yellow',
+                    symbol='diamond-open'
+                ),
+                name='Nuevos Centroides'
+            )
+        )
+
+        frames_3d.append(
+            go.Frame(
+                data=data_frame,
+                name=f'Iteración {iteracion+1}'
+            )
+        )
+
+        # ===============================================
+        # CONVERGENCIA
+        # ===============================================
+
+        movimiento = np.linalg.norm(nuevos_centroides - centroides)
+
+        centroides = nuevos_centroides
+
+        if movimiento < 0.001:
+            break
+
+    # =====================================================
+    # FIGURA PRINCIPAL
+    # =====================================================
+
+    fig_3d_anim = go.Figure(
+        data=frames_3d[0].data,
+        frames=frames_3d
     )
 
-    st.plotly_chart(fig_3d, use_container_width=True)
+    botones = []
+
+    for i in range(len(frames_3d)):
+
+        botones.append(
+            dict(
+                label=f'Iteración {i+1}',
+                method='animate',
+                args=[
+                    [frames_3d[i].name],
+                    {
+                        'mode': 'immediate',
+                        'frame': {'duration': 1200, 'redraw': True},
+                        'transition': {'duration': 500}
+                    }
+                ]
+            )
+        )
+
+    fig_3d_anim.update_layout(
+        title='Proceso Completo de Convergencia K-Means 3D',
+        width=1600,
+        height=950,
+        scene=dict(
+            xaxis_title='PC1',
+            yaxis_title='PC2',
+            zaxis_title='PC3',
+            bgcolor='black'
+        ),
+        paper_bgcolor='#0e1117',
+        font=dict(color='white'),
+        updatemenus=[
+            dict(
+                type='buttons',
+                direction='right',
+                buttons=[
+                    dict(
+                        label='▶ Reproducir Todo',
+                        method='animate',
+                        args=[
+                            None,
+                            {
+                                'frame': {'duration': 1200, 'redraw': True},
+                                'transition': {'duration': 500},
+                                'fromcurrent': True
+                            }
+                        ]
+                    ),
+                    dict(
+                        label='⏸ Pausar',
+                        method='animate',
+                        args=[
+                            [None],
+                            {
+                                'frame': {'duration': 0, 'redraw': False},
+                                'mode': 'immediate'
+                            }
+                        ]
+                    )
+                ],
+                pad={'r': 10, 't': 10},
+                showactive=True,
+                x=0.05,
+                xanchor='left',
+                y=1.15,
+                yanchor='top'
+            ),
+            dict(
+                type='dropdown',
+                direction='down',
+                buttons=botones,
+                x=0.35,
+                y=1.15,
+                showactive=True
+            )
+        ]
+    )
+
+    st.plotly_chart(fig_3d_anim, use_container_width=True)
 
     # =====================================================
     # BOXPLOT
@@ -616,3 +862,49 @@ if uploaded_file:
 else:
 
     st.warning("⚠ Suba el archivo data_USArrests.xlsx para iniciar")
+
+```
+
+---
+
+# Librerías necesarias
+
+```bash
+pip install streamlit pandas numpy matplotlib seaborn scikit-learn scipy plotly openpyxl
+```
+
+---
+
+# Ejecutar la app
+
+```bash
+streamlit run app.py
+```
+
+---
+
+# Estructura recomendada
+
+```bash
+proyecto/
+│
+├── app.py
+├── data_USArrests.xlsx
+└── requirements.txt
+```
+
+---
+
+# Archivo requirements.txt
+
+```txt
+streamlit
+pandas
+numpy
+matplotlib
+seaborn
+scikit-learn
+scipy
+plotly
+openpyxl
+```
