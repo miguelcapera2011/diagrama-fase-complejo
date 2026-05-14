@@ -1,4 +1,4 @@
-mport streamlit as st
+import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -7,157 +7,125 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import pairwise_distances
 
 # Configuración de la página
-st.set_page_config(page_title="K-Means 3D Lab", layout="wide")
+st.set_page_config(page_title="K-Means 3D: Análisis de USArrests", layout="wide")
 
-st.title("📊 Laboratorio K-Means: USArrests Completo")
+st.title("🧶 Visualizador K-Means: Proceso Completo en 3D")
 st.markdown("""
-Esta aplicación utiliza los 50 estados del dataset **USArrests** para demostrar el proceso de clustering 
-paso a paso, tal como se explica en la teoría de minería de datos y el algoritmo de K-medias [3, 4].
+Esta aplicación permite entender el algoritmo K-means paso a paso, desde la asignación por **distancia euclidiana** 
+hasta el movimiento de los **centroides** basándose en el promedio de sus puntos.
 """)
 
-# 1. Carga de datos desde la URL proporcionada
+# 1. Carga de datos completa (Fuente: URL proporcionada)
 @st.cache_data
 def load_data():
     url = "https://raw.githubusercontent.com/vincentarelbundock/Rdatasets/master/csv/datasets/USArrests.csv"
     df = pd.read_csv(url)
-    # Renombrar la primera columna a 'State'
+    # Renombrar la columna de estados para que sea descriptiva [1, 2]
     df.rename(columns={df.columns: 'State'}, inplace=True)
     return df
 
 df_original = load_data()
-features = ['Murder', 'Assault', 'UrbanPop', 'Rape']
+features = ['Murder', 'Assault', 'UrbanPop', 'Rape'] # Variables del dataset [1]
 
-# 2. Preprocesamiento: Escalado (Fuente [5, 6])
-# Es vital normalizar porque variables como 'Assault' dominan la escala [7].
+# 2. Preprocesamiento: Escalado (Fuente)
+# El escalado es crítico porque variables como Assault tienen magnitudes mucho mayores [3, 4].
 scaler = StandardScaler()
 df_scaled = scaler.fit_transform(df_original[features])
 
-# 3. Reducción a 3D con PCA (Fuente [8, 9])
-# Para visualizar 4 dimensiones en un plano 3D "bonito".
+# 3. Reducción a 3D con PCA (Fuente)
+# Reducimos las 4 variables originales a 3 Componentes Principales para visualizar en 3D [5-7].
 pca = PCA(n_components=3)
 data_3d = pca.fit_transform(df_scaled)
 df_pca = pd.DataFrame(data_3d, columns=['PC1', 'PC2', 'PC3'])
 
-# Sidebar: Controles detallados
-st.sidebar.header("Parámetros del Experimento")
-k = st.sidebar.slider("Número de Clusters (k)", 2, 5, 4)
-step = st.sidebar.select_slider("Etapa del Algoritmo", options=[
-    "Puntos Escaleados", 
-    "Inicialización Aleatoria", 
-    "Cálculo de Distancias", 
-    "Actualización de Centroides"
-])
+# Sidebar: Controles de la simulación
+st.sidebar.header("Parámetros del Algoritmo")
+k_val = st.sidebar.slider("Número de Clusters (k)", 2, 5, 4)
+fase = st.sidebar.radio("Selecciona la Fase:", 
+                         ["Puntos Base", "Asignación (Distancia)", "Actualización (Movimiento)"])
 
-# Semilla fija para reproducibilidad [10, 11]
+# Lógica del algoritmo (Semilla fija para reproducibilidad [8, 9])
 np.random.seed(42)
-initial_indices = np.random.choice(len(df_pca), k, replace=False)
-centroids = df_pca.iloc[initial_indices].values
+indices_iniciales = np.random.choice(len(df_pca), k_val, replace=False)
+centroides_iniciales = df_pca.iloc[indices_iniciales].values
 
-# Lógica del proceso (Fuentes [1, 2, 12-14])
-distances = pairwise_distances(df_pca, centroids, metric='euclidean')
-labels = np.argmin(distances, axis=1)
-new_centroids = np.array([df_pca[labels == i].mean(axis=0) for i in range(k)])
+# Cálculo de distancias euclidianas y etiquetas [10, 11]
+distancias = pairwise_distances(df_pca, centroides_iniciales, metric='euclidean')
+etiquetas = np.argmin(distancias, axis=1)
 
-# --- Visualización 3D Interactiva ---
+# Cálculo de la nueva posición de centroides (Promedio [12, 13])
+centroides_nuevos = np.array([df_pca[etiquetas == i].mean(axis=0) for i in range(k_val)])
+
+# --- Visualización 3D Interactiva con Plotly ---
 fig = go.Figure()
-colors = ['#FF4B4B', '#00CC96', '#636EFA', '#AB63FA', '#FFA15A']
+colores = ['#EF553B', '#00CC96', '#636EFA', '#AB63FA', '#FFA15A']
 
-# Capas de visualización según el paso seleccionado
-if step == "Puntos Escaleados":
+# Capa de puntos de datos
+fig.add_trace(go.Scatter3d(
+    x=df_pca['PC1'], y=df_pca['PC2'], z=df_pca['PC3'],
+    mode='markers',
+    marker=dict(size=5, color=[colores[l] if fase != "Puntos Base" else 'white' for l in etiquetas], opacity=0.8),
+    text=df_original['State'],
+    name="Estados (Datos)"
+))
+
+for i in range(k_val):
+    # Definir centroide a mostrar según la fase
+    centroide_actual = centroides_iniciales[i] if fase != "Actualización (Movimiento)" else centroides_nuevos[i]
+    
+    # Dibujar Centroide
     fig.add_trace(go.Scatter3d(
-        x=df_pca['PC1'], y=df_pca['PC2'], z=df_pca['PC3'],
-        mode='markers', marker=dict(size=5, color='white', opacity=0.8),
-        text=df_original['State'], name="Estados"
+        x=[centroide_actual], y=[centroide_actual[1]], z=[centroide_actual[2]],
+        mode='markers',
+        marker=dict(size=12, color=colores[i], symbol='diamond', line=dict(width=2, color='black')),
+        name=f"Centroide {i}"
     ))
 
-elif step == "Inicialización Aleatoria":
-    fig.add_trace(go.Scatter3d(
-        x=df_pca['PC1'], y=df_pca['PC2'], z=df_pca['PC3'],
-        mode='markers', marker=dict(size=4, color='gray', opacity=0.3),
-        text=df_original['State'], name="Datos"
-    ))
-    for i in range(k):
-        fig.add_trace(go.Scatter3d(
-            x=[centroids[i, 0]], y=[centroids[i, 1]], z=[centroids[i, 2]],
-            mode='markers', marker=dict(size=12, color=colors[i], symbol='diamond', line=dict(width=2, color='white')),
-            name=f"Centroide Inicial {i}"
-        ))
-
-elif step == "Cálculo de Distancias":
-    for i in range(k):
-        cluster_points = df_pca[labels == i]
-        # Puntos asignados
-        fig.add_trace(go.Scatter3d(
-            x=cluster_points['PC1'], y=cluster_points['PC2'], z=cluster_points['PC3'],
-            mode='markers', marker=dict(size=6, color=colors[i]),
-            text=df_original['State'][labels == i], name=f"Cluster {i}"
-        ))
-        # Líneas de distancia euclidiana (La hipotenusa [1])
-        for _, row in cluster_points.iterrows():
+    # ENLACE DE DISTANCIA EUCLIDIANA (Visualización de la hipotenusa [11, 14])
+    if fase == "Asignación (Distancia)":
+        puntos_cluster = df_pca[etiquetas == i]
+        for _, fila in puntos_cluster.iterrows():
             fig.add_trace(go.Scatter3d(
-                x=[row['PC1'], centroids[i, 0]], y=[row['PC2'], centroids[i, 1]], z=[row['PC3'], centroids[i, 2]],
-                mode='lines', line=dict(color=colors[i], width=1),
+                x=[fila['PC1'], centroides_iniciales[i, 0]],
+                y=[fila['PC2'], centroides_iniciales[i, 1]],
+                z=[fila['PC3'], centroides_iniciales[i, 2]],
+                mode='lines',
+                line=dict(color=colores[i], width=1),
                 opacity=0.2, showlegend=False
             ))
-        # Centroide actual
+
+    # MOVIMIENTO DE LOS CENTROIDES (Trayectoria al promedio [12, 15])
+    if fase == "Actualización (Movimiento)":
         fig.add_trace(go.Scatter3d(
-            x=[centroids[i, 0]], y=[centroids[i, 1]], z=[centroids[i, 2]],
-            mode='markers', marker=dict(size=10, color=colors[i], symbol='diamond', line=dict(color='black', width=2)),
-            showlegend=False
+            x=[centroides_iniciales[i, 0], centroides_nuevos[i, 0]],
+            y=[centroides_iniciales[i, 1], centroides_nuevos[i, 1]],
+            z=[centroides_iniciales[i, 2], centroides_nuevos[i, 2]],
+            mode='lines+markers',
+            line=dict(color='black', width=3, dash='dot'),
+            marker=dict(size=4, color='black'),
+            name=f"Trayectoria C{i}"
         ))
 
-elif step == "Actualización de Centroides":
-    for i in range(k):
-        cluster_points = df_pca[labels == i]
-        fig.add_trace(go.Scatter3d(
-            x=cluster_points['PC1'], y=cluster_points['PC2'], z=cluster_points['PC3'],
-            mode='markers', marker=dict(size=6, color=colors[i]),
-            text=df_original['State'][labels == i], name=f"Cluster {i}"
-        ))
-        # Mostrar movimiento (Vector de actualización [2])
-        fig.add_trace(go.Scatter3d(
-            x=[centroids[i, 0], new_centroids[i, 0]],
-            y=[centroids[i, 1], new_centroids[i, 1]],
-            z=[centroids[i, 2], new_centroids[i, 2]],
-            mode='lines+markers', line=dict(color='black', width=4, dash='dot'),
-            marker=dict(size=, color='black', symbol='arrow-up'),
-            name=f"Movimiento C{i}"
-        ))
-        # Nuevo Centroide (Promedio de los puntos [2])
-        fig.add_trace(go.Scatter3d(
-            x=[new_centroids[i, 0]], y=[new_centroids[i, 1]], z=[new_centroids[i, 2]],
-            mode='markers', marker=dict(size=14, color=colors[i], symbol='star', line=dict(width=2, color='white')),
-            name=f"Nuevo Centroide {i}"
-        ))
-
-# Estética del gráfico
 fig.update_layout(
     scene=dict(
-        xaxis_title='PC1 (Varianza Principal)',
+        xaxis_title='PC1 (Componente Principal 1)',
         yaxis_title='PC2',
         zaxis_title='PC3',
-        bgcolor="rgb(10, 10, 10)"
+        bgcolor="rgb(20, 20, 20)"
     ),
-    paper_bgcolor="rgb(10, 10, 10)",
+    paper_bgcolor="rgb(20, 20, 20)",
     font=dict(color="white"),
-    margin=dict(l=0, r=0, b=0, t=50),
-    height=800
+    height=800,
+    margin=dict(l=0, r=0, b=0, t=40)
 )
 
 st.plotly_chart(fig, use_container_width=True)
 
-# 4. Explicación basada en fuentes
-st.subheader("Explicación del Proceso Técnico")
-if step == "Cálculo de Distancias":
-    st.info("""
-    **Distancia Euclidiana:** Se mide la distancia lineal de cada estado a todos los centroides [15]. 
-    Cada punto se asigna al centroide donde esta distancia es mínima [1, 16].
-    """)
-elif step == "Actualización de Centroides":
-    st.success("""
-    **Recálculo del Promedio:** Una vez asignados los puntos, el centroide se desplaza al **promedio** de las coordenadas 
-    de todos los estados de su grupo [2, 13]. Este proceso se repite hasta que los centroides dejan de moverse [17].
-    """)
+# Explicaciones teóricas dinámicas
+if fase == "Asignación (Distancia)":
+    st.info("**Mecánica de Asignación:** Se mide la **distancia euclidiana** entre cada estado y los centroides. Visualmente, estas son las líneas que conectan cada punto con el diamante más cercano [11, 14].")
+elif fase == "Actualización (Movimiento)":
+    st.success("**Mecánica de Actualización:** El centroide se desplaza hacia el **promedio** de las coordenadas de todos los estados que tiene asignados [12, 16]. La línea punteada negra muestra este trayecto.")
 
-st.write("### Base de Datos Completa (GitHub)")
-st.dataframe(df_original)
+st.write("### Vista previa de los datos escalados")
+st.dataframe(df_pca.head(10))
