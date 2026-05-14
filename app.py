@@ -3,77 +3,90 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.cluster import KMeans
 
 # Configuración de la página
 st.set_page_config(page_title="K-Means 3D Secuencial", layout="wide")
-st.title("Visualización Secuencial de K-Means en 3D")
+st.title("Simulador Secuencial de K-Means 3D")
+st.write("Basado en el algoritmo de aprendizaje no supervisado para segmentación [4].")
 
-# 1. Generación de Datos Sintéticos (Basado en el contexto de las fuentes [10])
+# 1. Generación de Datos Sintéticos en 3D
 @st.cache_data
 def generate_data():
     np.random.seed(42)
-    # Creamos 3 grupos naturales para visualizar mejor el algoritmo
-    g1 = np.random.normal(loc=[5, 11], scale=[10], size=(20, 3))
-    g2 = np.random.normal(loc=[12], scale=[5, 9], size=(20, 3))
-    g3 = np.random.normal(loc=[4, 13], scale=[5, 14], size=(20, 3))
+    # Creamos 3 grupos con coordenadas (Saldo, Transacciones, Antigüedad)
+    g1 = np.random.normal(loc=[1, 5, 6], scale=[2, 1, 0.5], size=(20, 3))
+    g2 = np.random.normal(loc=[7, 8], scale=[1, 6, 9], size=(20, 3))
+    g3 = np.random.normal(loc=[5, 10], scale=[6, 9, 11], size=(20, 3))
+    
     data = np.vstack([g1, g2, g3])
     df = pd.DataFrame(data, columns=['Saldo', 'Transacciones', 'Antigüedad'])
     return df
 
 df_raw = generate_data()
 
-# 2. Preprocesamiento: Escalamiento (Paso crítico según las fuentes [3, 4])
+# 2. Preprocesamiento: Escalamiento (Paso crítico según las fuentes [3, 8])
+# El algoritmo es susceptible a las escalas, por lo que llevamos todo al rango 0-1.
 scaler = MinMaxScaler()
 df_scaled = pd.DataFrame(scaler.fit_transform(df_raw), columns=df_raw.columns)
 
 # Sidebar para controles
-st.sidebar.header("Configuración del Algoritmo")
-k = st.sidebar.slider("Selecciona el valor de K (Clústeres)", min_value=2, max_value=6, value=3)
-step = st.sidebar.number_input("Paso de la Iteración", min_value=0, value=0, step=1)
+st.sidebar.header("Configuración")
+k_valor = st.sidebar.slider("Selecciona K (Número de clusters)", min_value=2, max_value=6, value=3)
 
-# Lógica del algoritmo paso a paso usando Session State
-if 'centroids' not in st.session_state or st.sidebar.button("Reiniciar Centroides"):
-    # Inicialización aleatoria (Paso 1 del algoritmo [5])
-    st.session_state.centroids = df_scaled.sample(k).values
-    st.session_state.history = []
-    st.session_state.current_step = 0
+# Inicialización de estado para persistir datos entre interacciones de Streamlit
+if 'centroids' not in st.session_state or st.sidebar.button("Reiniciar Algoritmo"):
+    # Inicialización aleatoria de centroides dentro del espacio de datos [1]
+    st.session_state.centroids = df_scaled.sample(k_valor).values
+    st.session_state.iteration = 0
+    st.session_state.labels = np.zeros(len(df_scaled))
+    st.session_state.converged = False
 
-def run_kmeans_step(data, centroids):
-    # Asignación por distancia euclidiana (Paso 2 [6])
-    distances = np.linalg.norm(data[:, np.newaxis] - centroids, axis=2)
-    labels = np.argmin(distances, axis=1)
+def run_step():
+    """Ejecuta una iteración del algoritmo: Asignación y Actualización."""
+    data = df_scaled.values
+    centroids = st.session_state.centroids
     
-    # Actualización de centroides por promedio (Paso 3 [8, 9])
-    new_centroids = np.array([data[labels == i].mean(axis=0) if len(data[labels == i]) > 0 
-                             else centroids[i] for i in range(k)])
-    return labels, new_centroids
+    # PASO A: Asignación por Distancia Euclidiana [12]
+    distances = np.linalg.norm(data[:, np.newaxis] - centroids, axis=2)
+    new_labels = np.argmin(distances, axis=1)
+    
+    # PASO B: Actualización (Promedio de los puntos asignados [2, 13])
+    new_centroids = np.array([
+        data[new_labels == i].mean(axis=0) if len(data[new_labels == i]) > 0 else centroids[i]
+        for i in range(k_valor)
+    ])
+    
+    # Verificar convergencia (si los centroides ya no cambian [14])
+    if np.allclose(centroids, new_centroids):
+        st.session_state.converged = True
+    
+    st.session_state.centroids = new_centroids
+    st.session_state.labels = new_labels
+    st.session_state.iteration += 1
 
-# Ejecutar hasta el paso seleccionado
-current_centroids = st.session_state.centroids
-current_labels = np.zeros(len(df_scaled))
+# Botón para avanzar paso a paso
+if not st.session_state.converged:
+    if st.button(f"Ejecutar Iteración {st.session_state.iteration + 1}"):
+        run_step()
+else:
+    st.success(f"El algoritmo ha convergido en la iteración {st.session_state.iteration}.")
 
-for i in range(step):
-    current_labels, next_centroids = run_kmeans_step(df_scaled.values, current_centroids)
-    if np.all(current_centroids == next_centroids): # Criterio de parada [11]
-        st.sidebar.success(f"El algoritmo ha convergido en el paso {i}")
-        break
-    current_centroids = next_centroids
-
-# 3. Visualización en 3D con Plotly
+# 3. Visualización 3D con Plotly
 fig = go.Figure()
 
-# Dibujar los puntos de datos
+# Dibujar los puntos de datos con sus etiquetas actuales
 fig.add_trace(go.Scatter3d(
     x=df_scaled['Saldo'], y=df_scaled['Transacciones'], z=df_scaled['Antigüedad'],
     mode='markers',
-    marker=dict(size=5, color=current_labels, colorscale='Viridis', opacity=0.8),
-    name="Clientes"
+    marker=dict(size=5, color=st.session_state.labels, colorscale='Viridis', opacity=0.7),
+    name="Clientes (Puntos)"
 ))
 
-# Dibujar los centroides (representados como cruces según la fuente [15])
+# Dibujar los centroides (como cruces rojas según el video [15])
 fig.add_trace(go.Scatter3d(
-    x=current_centroids[:, 0], y=current_centroids[:, 1], z=current_centroids[:, 2],
+    x=st.session_state.centroids[:, 0], 
+    y=st.session_state.centroids[:, 1], 
+    z=st.session_state.centroids[:, 2],
     mode='markers',
     marker=dict(size=10, color='red', symbol='x', line=dict(width=2, color='black')),
     name="Centroides"
@@ -85,13 +98,22 @@ fig.update_layout(
         yaxis_title='Transacciones (Escalado)',
         zaxis_title='Antigüedad (Escalado)'
     ),
-    margin=dict(l=0, r=0, b=0, t=0)
+    height=700
 )
 
 st.plotly_chart(fig, use_container_width=True)
 
-# Explicación del estado actual
-if step == 0:
-    st.info("Paso 0: Centroides inicializados aleatoriamente en el espacio de datos [5].")
-else:
-    st.info(f"Paso {step}: Los puntos se asignaron al centroide más cercano y los centroides se movieron al promedio de sus grupos [8, 9].")
+# Mostrar métrica de Inercia (mencionada en la fuente [16, 17])
+def calculate_inertia():
+    data = df_scaled.values
+    centroids = st.session_state.centroids
+    labels = st.session_state.labels
+    inertia = 0
+    for i in range(len(data)):
+        centroid = centroids[int(labels[i])]
+        inertia += np.sum((data[i] - centroid)**2)
+    return inertia
+
+if st.session_state.iteration > 0:
+    st.write(f"**Inercia actual:** {calculate_inertia():.4f}")
+    st.info("La inercia mide qué tan pegados están los clientes a sus centroides [18].")
