@@ -2,7 +2,7 @@
 
 ## Archivo: `app.py`
 
-```python
+
 # =========================================================
 # APP PROFESIONAL K-MEANS + PCA + VISUALIZACIONES DINÁMICAS
 # Dataset: USArrests
