@@ -2,106 +2,121 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.metrics import pairwise_distances
 
-# Configuración de la página para que se vea moderna
-st.set_page_config(page_title="K-Means 3D Pro", layout="wide")
+# Configuración de la página
+st.set_page_config(page_title="K-Means 3D: Proceso Visual", layout="wide")
 
-st.title("🤖 Segmentación K-Means 3D Interactiva")
-st.markdown("""
-Esta aplicación aplica el algoritmo de **K-means** basándose en la lógica del video: 
-escalamiento de datos, asignación por distancia euclidiana y cálculo de centroides.
-""")
+st.title("Explorador Interactivo de K-Means (USArrests)")
+st.write("Visualización del proceso de clustering basado en los componentes principales del dataset.")
 
-# 1. GENERACIÓN DE DATOS (Simulando el contexto bancario del video en 3D)
+# 1. Carga de datos (Basado en la fuente [2])
 @st.cache_data
 def load_data():
-    np.random.seed(42)
-    # Creamos 3 dimensiones: Saldo, Transacciones y Antigüedad (fuente [3])
-    data = np.random.rand(100, 3) * 100
-    return pd.DataFrame(data, columns=['Saldo', 'Transacciones', 'Antigüedad'])
+    # Simulación de la estructura de USArrests mencionada en las fuentes
+    data = {
+        'State': ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia'],
+        'Murder': [13.2, 10.0, 8.1, 8.8, 9.0, 7.9, 3.3, 5.9, 15.4, 17.4],
+        'Assault': [5],
+        'UrbanPop': [4, 6-13],
+        'Rape': [21.2, 44.5, 31.0, 19.5, 40.6, 38.7, 11.1, 15.8, 31.9, 25.8]
+    }
+    # Nota: En una app real, usarías pd.read_excel("data_USArrests.xlsx") [2]
+    return pd.DataFrame(data)
 
 df = load_data()
+features = ['Murder', 'Assault', 'UrbanPop', 'Rape']
 
-# 2. BARRA LATERAL (Entrada de K y controles)
-st.sidebar.header("Parámetros del Modelo")
-k_clusters = st.sidebar.slider("Selecciona el número de clusters (k)", 2, 10, 3) # Fuente [4]
-show_links = st.sidebar.checkbox("Mostrar enlaces a centroides", value=True)
+# 2. Preprocesamiento: Escalado (Fuente [14])
+scaler = StandardScaler()
+df_scaled = scaler.fit_transform(df[features])
 
-# 3. PRE-PROCESAMIENTO (Vital según la fuente [1, 5])
-# El video explica que K-means es sensible a las escalas, por lo que usamos MinMaxScaler
-scaler = MinMaxScaler()
-df_scaled = scaler.fit_transform(df)
+# 3. Reducción a 3D con PCA (Fuente [4, 15])
+pca = PCA(n_components=3)
+data_3d = pca.fit_transform(df_scaled)
+df_pca = pd.DataFrame(data_3d, columns=['PC1', 'PC2', 'PC3'])
 
-# 4. EJECUCIÓN DEL MODELO K-MEANS
-# Se ajusta el modelo automáticamente al cambiar el valor de K
-kmeans = KMeans(n_clusters=k_clusters, random_state=42, n_init=10)
-labels = kmeans.fit_predict(df_scaled)
-centroids = kmeans.cluster_centers_
+# Sidebar: Controles del algoritmo
+st.sidebar.header("Parámetros de K-Means")
+k = st.sidebar.slider("Número de Clusters (k)", 2, 5, 3)
+max_iter = st.sidebar.slider("Iteraciones a mostrar", 1, 10, 1)
 
-# 5. VISUALIZACIÓN 3D AVANZADA (Plotly)
+# Inicialización manual de centroides (Fuente [16])
+np.random.seed(42)
+initial_indices = np.random.choice(len(df_pca), k, replace=False)
+centroids = df_pca.iloc[initial_indices].values
+
+# Simulación del proceso iterativo
+history = []
+current_centroids = centroids.copy()
+
+for i in range(max_iter):
+    # Paso de Asignación: Distancia Euclidiana (Fuente [17, 18])
+    distances = pairwise_distances(df_pca, current_centroids, metric='euclidean')
+    labels = np.argmin(distances, axis=1)
+    
+    # Guardar estado para visualización
+    history.append({'centroids': current_centroids.copy(), 'labels': labels.copy()})
+    
+    # Paso de Actualización: Nuevo centroide = promedio (Fuente [9, 19])
+    new_centroids = np.array([df_pca[labels == j].mean(axis=0) for j in range(k)])
+    if np.all(current_centroids == new_centroids):
+        break
+    current_centroids = new_centroids
+
+# Visualización 3D "Bonita" con Plotly
+st.subheader(f"Iteración {max_iter}: Asignación y Distancias")
+
 fig = go.Figure()
 
-# Paleta de colores estética
-colors = ['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3', '#FF6692', '#B6E880']
-
-for i in range(k_clusters):
-    # Filtrar puntos pertenecientes al cluster actual
-    cluster_indices = np.where(labels == i)
-    points = df_scaled[cluster_indices]
-    centroid = centroids[i]
-    color = colors[i % len(colors)]
-
-    # A. Dibujar los puntos del cluster
+# Dibujar puntos de datos
+colors = ['red', 'green', 'blue', 'yellow', 'purple']
+for j in range(k):
+    cluster_points = df_pca[history[-1]['labels'] == j]
     fig.add_trace(go.Scatter3d(
-        x=points[:, 0], y=points[:, 1], z=points[:, 2],
+        x=cluster_points['PC1'], y=cluster_points['PC2'], z=cluster_points['PC3'],
         mode='markers',
-        marker=dict(size=4, color=color, opacity=0.8),
-        name=f"Cluster {i}"
+        marker=dict(size=6, color=colors[j]),
+        name=f"Cluster {j}",
+        text=df['State'][history[-1]['labels'] == j]
     ))
 
-    # B. Dibujar el Centroide (como una X destacada) - Fuente [6, 7]
+    # Dibujar Centroides (Fuente [20, 21])
     fig.add_trace(go.Scatter3d(
-        x=[centroid], y=[centroid[8]], z=[centroid[3]],
+        x=[history[-1]['centroids'][j, 0]], 
+        y=[history[-1]['centroids'][j, 1]], 
+        z=[history[-1]['centroids'][j, 2]],
         mode='markers',
-        marker=dict(size=10, symbol='x', color='white', line=dict(width=2, color='black')),
-        name=f"Centroide {i}"
+        marker=dict(size=12, color=colors[j], symbol='diamond', line=dict(width=2, color='black')),
+        name=f"Centroide {j}"
     ))
 
-    # C. Dibujar enlaces (líneas del punto al centroide) - Fuente [9]
-    if show_links:
-        for p in points:
-            fig.add_trace(go.Scatter3d(
-                x=[p, centroid],
-                y=[p[8], centroid[8]],
-                z=[p[3], centroid[3]],
-                mode='lines',
-                line=dict(color=color, width=1),
-                showlegend=False,
-                opacity=0.2  # Opacidad baja para que sea "bonito" y no sature
-            ))
+    # Visualizar Distancia Euclidiana (Líneas de enlace)
+    for idx, row in cluster_points.iterrows():
+        fig.add_trace(go.Scatter3d(
+            x=[row['PC1'], history[-1]['centroids'][j, 0]],
+            y=[row['PC2'], history[-1]['centroids'][j, 1]],
+            z=[row['PC3'], history[-1]['centroids'][j, 2]],
+            mode='lines',
+            line=dict(color=colors[j], width=1),
+            showlegend=False,
+            opacity=0.3
+        ))
 
-# Estética del plano (Sin el cuadro "encerrado" clásico)
 fig.update_layout(
-    template="plotly_dark",
-    scene=dict(
-        xaxis=dict(title='Saldo (Escalado)', showbackground=False),
-        yaxis=dict(title='Transacciones (Escalado)', showbackground=False),
-        zaxis=dict(title='Antigüedad (Escalado)', showbackground=False),
-    ),
-    margin=dict(l=0, r=0, b=0, t=30),
-    height=700
+    scene=dict(xaxis_title='PC1', yaxis_title='PC2', zaxis_title='PC3'),
+    width=900, height=700,
+    margin=dict(l=0, r=0, b=0, t=0)
 )
 
-# Mostrar gráfico
 st.plotly_chart(fig, use_container_width=True)
 
-# 6. MÉTRICAS (Como se muestra en el video [2, 10])
-col1, col2 = st.columns(2)
-with col1:
-    st.metric("Inercia (Suma de distancias al cuadrado)", f"{kmeans.inertia_:.4f}")
-with col2:
-    st.info("Una inercia menor indica que los puntos están más 'pegados' a sus centroides [10, 11].")
-
-st.dataframe(df.assign(Cluster=labels).head(10))
+# Explicación del proceso
+st.info("""
+**Proceso Visualizado:**
+1. **Escalado:** Los datos de arrestos se normalizan para que variables con escalas grandes (como Assault) no dominen la distancia [22, 23].
+2. **Asignación (Líneas):** Cada estado se enlaza al centroide más cercano usando la **distancia euclidiana** [17, 18].
+3. **Actualización:** En la siguiente iteración, el centroide se moverá al promedio geométrico de todos sus puntos enlazados [9].
+""")
