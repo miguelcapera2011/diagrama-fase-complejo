@@ -1,5 +1,4 @@
-
-
+ #librerias
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -15,9 +14,9 @@ from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import euclidean_distances
 from scipy.spatial.distance import pdist, squareform
 
-# =========================================================
+
 # CONFIGURACIÓN GENERAL
-# =========================================================
+
 
 st.set_page_config(
     page_title="K-Means Profesional",
@@ -26,10 +25,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# =========================================================
-# ESTILOS CSS
-# =========================================================
 
+# ESTILOS CSS
 st.markdown("""
 <style>
 .main {
@@ -66,11 +63,8 @@ h3 {
 </style>
 """, unsafe_allow_html=True)
 
-# =========================================================
-# TÍTULO
-# =========================================================
 
-st.title("📊 App Profesional de Clustering K-Means")
+st.title("Clustering K-Means")
 
 st.markdown("""
 Esta aplicación permite explorar paso a paso el algoritmo K-Means usando el dataset USArrests.
@@ -89,9 +83,7 @@ Incluye:
 - Explicaciones matemáticas
 """)
 
-# =========================================================
 # SIDEBAR
-# =========================================================
 
 st.sidebar.title("⚙ Configuración")
 
@@ -109,22 +101,18 @@ iteraciones_animadas = st.sidebar.slider(
     20
 )
 
-# =========================================================
+
 # CARGA DE DATOS
-# =========================================================
+
 
 if uploaded_file:
 
     datos = pd.read_excel(uploaded_file)
 
-    st.header("📁 Dataset")
+    st.header("Dataset")
     st.dataframe(datos)
-
-    # =====================================================
-    # INFORMACIÓN GENERAL
-    # =====================================================
-
-    st.header("📌 Información del Dataset")
+    
+    st.header(" Información del Dataset")
 
     col1, col2, col3 = st.columns(3)
 
@@ -139,17 +127,16 @@ if uploaded_file:
 
     st.write(datos.describe())
 
-    # =====================================================
+
     # LIMPIEZA
-    # =====================================================
+¿
 
     datos = datos.dropna()
 
-    # =====================================================
     # HISTOGRAMAS
-    # =====================================================
 
-    st.header("📈 Histogramas")
+
+    st.header(" Histogramas")
 
     columnas_numericas = ['Murder', 'Assault', 'UrbanPop', 'Rape']
 
@@ -174,9 +161,8 @@ if uploaded_file:
             )
             st.plotly_chart(fig, use_container_width=True)
 
-    # =====================================================
+   
     # ESTANDARIZACIÓN
-    # =====================================================
 
     st.header("⚖ Estandarización")
 
@@ -188,9 +174,8 @@ if uploaded_file:
 
     st.write(datos.head())
 
-    # =====================================================
     # MATRICES DE DISTANCIA
-    # =====================================================
+
 
     st.header("📏 Distancias Euclidianas")
 
@@ -210,9 +195,8 @@ if uploaded_file:
 
     st.plotly_chart(fig_heat, use_container_width=True)
 
-    # =====================================================
     # DISTANCIAS MANHATTAN
-    # =====================================================
+
 
     st.header("📐 Distancias Manhattan")
 
@@ -237,9 +221,9 @@ if uploaded_file:
 
     st.plotly_chart(fig_manhattan, use_container_width=True)
 
-    # =====================================================
+
     # MÉTODO DEL CODO
-    # =====================================================
+  
 
     st.header("🦴 Método del Codo")
 
@@ -277,9 +261,8 @@ if uploaded_file:
 
     st.plotly_chart(fig_elbow, use_container_width=True)
 
-    # =====================================================
     # KMEANS
-    # =====================================================
+
 
     st.header("🤖 Algoritmo K-Means")
 
@@ -302,9 +285,9 @@ if uploaded_file:
 
     datos['Cluster'] = km4_clusters.labels_
 
-    # =====================================================
+  
     # ANIMACIÓN DE CONVERGENCIA
-    # =====================================================
+
 
     st.header("🎬 Animación de Convergencia")
 
