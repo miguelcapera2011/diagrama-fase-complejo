@@ -1,5 +1,5 @@
 # =========================================================
-# APP STREAMLIT — KMEANS 3D CON DISTANCIAS Y MOVIMIENTO
+# APP STREAMLIT — KMEANS 3D REAL PASO A PASO
 # =========================================================
 
 import streamlit as st
@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
 # =========================================================
-# CONFIGURACIÓN
+# CONFIG STREAMLIT
 # =========================================================
 
 st.set_page_config(
@@ -20,32 +20,37 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🎯 Simulación REAL K-Means 3D")
+st.title("🎯 Simulación REAL del algoritmo K-Means")
 
 st.markdown("""
-Esta simulación muestra:
+Esta aplicación muestra visualmente:
 
 - Datos inicialmente del mismo color
-- Centroides aleatorios
+- Aparición de centroides aleatorios
 - Cálculo de distancias
+- Líneas entre puntos y centroides
 - Agrupamiento automático
 - Movimiento de centroides
 - Convergencia del algoritmo
 """)
 
 # =========================================================
-# SUBIR ARCHIVO
+# CARGAR EXCEL
 # =========================================================
 
 archivo = st.file_uploader(
-    "Suba el archivo data_USArrests.xlsx",
+    "Suba data_USArrests.xlsx",
     type=["xlsx"]
 )
+
+# =========================================================
+# SI HAY ARCHIVO
+# =========================================================
 
 if archivo is not None:
 
     # =====================================================
-    # CARGAR DATOS
+    # LEER DATOS
     # =====================================================
 
     datos = pd.read_excel(
@@ -54,7 +59,7 @@ if archivo is not None:
         usecols="A:E"
     )
 
-    st.subheader("Datos originales")
+    st.subheader("Vista previa")
 
     st.dataframe(datos.head())
 
@@ -89,14 +94,14 @@ if archivo is not None:
     st.sidebar.header("⚙ Configuración")
 
     k = st.sidebar.slider(
-        "Número de clusters",
+        "Número de Clusters",
         2,
         8,
         4
     )
 
-    iteraciones_animadas = st.sidebar.slider(
-        "Máximo iteraciones",
+    max_iter = st.sidebar.slider(
+        "Iteraciones máximas",
         2,
         20,
         10
@@ -116,7 +121,7 @@ if archivo is not None:
     # COLORES
     # =====================================================
 
-    colores_k = [
+    colores = [
         'red',
         'green',
         'blue',
@@ -128,7 +133,7 @@ if archivo is not None:
     ]
 
     # =====================================================
-    # CENTROIDES INICIALES
+    # CENTROIDES ALEATORIOS
     # =====================================================
 
     np.random.seed(42)
@@ -149,91 +154,95 @@ if archivo is not None:
 
     # =====================================================
     # FRAME 1
-    # DATOS INICIALES
+    # DATOS SOLOS
     # =====================================================
 
-    frame_1 = go.Frame(
+    frames.append(
 
-        data=[
+        go.Frame(
 
-            go.Scatter3d(
+            data=[
 
-                x=X3D[:,0],
-                y=X3D[:,1],
-                z=X3D[:,2],
+                go.Scatter3d(
 
-                mode='markers+text',
+                    x=X3D[:,0],
+                    y=X3D[:,1],
+                    z=X3D[:,2],
 
-                text=datos['State'],
-                textposition='top center',
+                    mode='markers+text',
 
-                marker=dict(
-                    size=5,
-                    color='lightblue'
-                ),
+                    text=datos['State'],
+                    textposition='top center',
 
-                name='Datos'
-            )
-        ],
+                    marker=dict(
+                        size=5,
+                        color='lightblue'
+                    ),
 
-        name='1. Datos'
+                    name='Datos'
+                )
+
+            ],
+
+            name='1. Datos Iniciales'
+        )
     )
-
-    frames.append(frame_1)
 
     # =====================================================
     # FRAME 2
-    # CENTROIDES ALEATORIOS
+    # CENTROIDES
     # =====================================================
 
-    frame_2 = go.Frame(
+    frames.append(
 
-        data=[
+        go.Frame(
 
-            go.Scatter3d(
+            data=[
 
-                x=X3D[:,0],
-                y=X3D[:,1],
-                z=X3D[:,2],
+                go.Scatter3d(
 
-                mode='markers',
+                    x=X3D[:,0],
+                    y=X3D[:,1],
+                    z=X3D[:,2],
 
-                marker=dict(
-                    size=5,
-                    color='lightblue'
+                    mode='markers',
+
+                    marker=dict(
+                        size=5,
+                        color='lightblue'
+                    ),
+
+                    name='Datos'
                 ),
 
-                name='Datos'
-            ),
+                go.Scatter3d(
 
-            go.Scatter3d(
+                    x=centroides[:,0],
+                    y=centroides[:,1],
+                    z=centroides[:,2],
 
-                x=centroides[:,0],
-                y=centroides[:,1],
-                z=centroides[:,2],
+                    mode='markers',
 
-                mode='markers',
+                    marker=dict(
+                        size=20,
+                        color='white',
+                        symbol='diamond'
+                    ),
 
-                marker=dict(
-                    size=20,
-                    color='white',
-                    symbol='diamond'
-                ),
+                    name='Centroides'
+                )
 
-                name='Centroides'
-            )
-        ],
+            ],
 
-        name='2. Centroides'
+            name='2. Centroides Aleatorios'
+        )
     )
-
-    frames.append(frame_2)
 
     # =====================================================
     # ITERACIONES KMEANS
     # =====================================================
 
-    for iteracion in range(iteraciones_animadas):
+    for iteracion in range(max_iter):
 
         # =================================================
         # DISTANCIAS
@@ -245,7 +254,7 @@ if archivo is not None:
         )
 
         # =================================================
-        # CENTROIDE MÁS CERCANO
+        # CLUSTER MÁS CERCANO
         # =================================================
 
         labels = np.argmin(
@@ -257,10 +266,10 @@ if archivo is not None:
         # FRAME DISTANCIAS
         # =================================================
 
-        traces_distancias = []
+        traces = []
 
         # =============================================
-        # PUNTOS COLOREADOS
+        # DATOS COLOREADOS
         # =============================================
 
         for cluster_id in range(k):
@@ -273,7 +282,7 @@ if archivo is not None:
                 labels == cluster_id
             ]
 
-            traces_distancias.append(
+            traces.append(
 
                 go.Scatter3d(
 
@@ -288,7 +297,7 @@ if archivo is not None:
 
                     marker=dict(
                         size=5,
-                        color=colores_k[cluster_id]
+                        color=colores[cluster_id]
                     ),
 
                     name=f'Cluster {cluster_id}'
@@ -296,7 +305,7 @@ if archivo is not None:
             )
 
         # =============================================
-        # LÍNEAS DE DISTANCIA
+        # LÍNEAS DISTANCIA
         # =============================================
 
         for punto_id in range(len(X3D)):
@@ -305,11 +314,11 @@ if archivo is not None:
 
                 color_linea = 'rgba(255,255,255,0.05)'
 
-                # resaltar centroide más cercano
+                # centroide más cercano
                 if labels[punto_id] == centroide_id:
-                    color_linea = colores_k[centroide_id]
+                    color_linea = colores[centroide_id]
 
-                traces_distancias.append(
+                traces.append(
 
                     go.Scatter3d(
 
@@ -343,7 +352,7 @@ if archivo is not None:
         # CENTROIDES ACTUALES
         # =============================================
 
-        traces_distancias.append(
+        traces.append(
 
             go.Scatter3d(
 
@@ -366,7 +375,9 @@ if archivo is not None:
         frames.append(
 
             go.Frame(
-                data=traces_distancias,
+
+                data=traces,
+
                 name=f'3. Distancias {iteracion+1}'
             )
         )
@@ -382,6 +393,8 @@ if archivo is not None:
             puntos_cluster = X3D[
                 labels == cluster_id
             ]
+
+            # promedio del cluster
 
             if len(puntos_cluster) > 0:
 
@@ -401,10 +414,10 @@ if archivo is not None:
         # FRAME MOVIMIENTO
         # =================================================
 
-        traces_movimiento = []
+        traces_mov = []
 
         # =============================================
-        # DATOS COLOREADOS
+        # DATOS
         # =============================================
 
         for cluster_id in range(k):
@@ -417,7 +430,7 @@ if archivo is not None:
                 labels == cluster_id
             ]
 
-            traces_movimiento.append(
+            traces_mov.append(
 
                 go.Scatter3d(
 
@@ -432,7 +445,7 @@ if archivo is not None:
 
                     marker=dict(
                         size=5,
-                        color=colores_k[cluster_id]
+                        color=colores[cluster_id]
                     ),
 
                     name=f'Cluster {cluster_id}'
@@ -440,12 +453,12 @@ if archivo is not None:
             )
 
         # =============================================
-        # LÍNEAS MOVIMIENTO CENTROIDES
+        # MOVIMIENTO CENTROIDES
         # =============================================
 
         for centroide_id in range(k):
 
-            traces_movimiento.append(
+            traces_mov.append(
 
                 go.Scatter3d(
 
@@ -475,11 +488,9 @@ if archivo is not None:
                 )
             )
 
-        # =============================================
-        # CENTROIDES VIEJOS
-        # =============================================
+        # centroides viejos
 
-        traces_movimiento.append(
+        traces_mov.append(
 
             go.Scatter3d(
 
@@ -499,11 +510,9 @@ if archivo is not None:
             )
         )
 
-        # =============================================
-        # NUEVOS CENTROIDES
-        # =============================================
+        # nuevos centroides
 
-        traces_movimiento.append(
+        traces_mov.append(
 
             go.Scatter3d(
 
@@ -526,7 +535,9 @@ if archivo is not None:
         frames.append(
 
             go.Frame(
-                data=traces_movimiento,
+
+                data=traces_mov,
+
                 name=f'4. Movimiento {iteracion+1}'
             )
         )
@@ -543,19 +554,20 @@ if archivo is not None:
 
         if movimiento < 0.0001:
 
-            frame_final = go.Frame(
+            frames.append(
 
-                data=traces_movimiento,
+                go.Frame(
 
-                name='5. Convergencia'
+                    data=traces_mov,
+
+                    name='5. Convergencia'
+                )
             )
-
-            frames.append(frame_final)
 
             break
 
     # =====================================================
-    # FIGURA PRINCIPAL
+    # FIGURA
     # =====================================================
 
     fig = go.Figure(
@@ -569,45 +581,9 @@ if archivo is not None:
     # BOTONES
     # =====================================================
 
-    botones = []
-
-    for frame in frames:
-
-        botones.append(
-
-            dict(
-
-                label=frame.name,
-
-                method='animate',
-
-                args=[
-
-                    [frame.name],
-
-                    {
-                        'mode': 'immediate',
-
-                        'frame': {
-                            'duration': 1800,
-                            'redraw': True
-                        },
-
-                        'transition': {
-                            'duration': 700
-                        }
-                    }
-                ]
-            )
-        )
-
-    # =====================================================
-    # LAYOUT
-    # =====================================================
-
     fig.update_layout(
 
-        title='Simulación REAL del algoritmo K-Means',
+        title='Simulación REAL K-Means 3D',
 
         width=1700,
         height=950,
@@ -634,7 +610,7 @@ if archivo is not None:
 
                 type='buttons',
 
-                direction='right',
+                direction='left',
 
                 x=0.02,
                 y=1.15,
@@ -651,18 +627,19 @@ if archivo is not None:
 
                             None,
 
-                            {
-                                'frame': {
-                                    'duration': 1800,
-                                    'redraw': True
-                                },
+                            dict(
 
-                                'transition': {
-                                    'duration': 700
-                                },
+                                frame=dict(
+                                    duration=1800,
+                                    redraw=True
+                                ),
 
-                                'fromcurrent': True
-                            }
+                                transition=dict(
+                                    duration=700
+                                ),
+
+                                fromcurrent=True
+                            )
                         ]
                     ),
 
@@ -676,31 +653,18 @@ if archivo is not None:
 
                             [None],
 
-                            {
-                                'mode': 'immediate',
+                            dict(
 
-                                'frame': {
-                                    'duration': 0,
-                                    'redraw': False
-                                }
-                            }
+                                frame=dict(
+                                    duration=0,
+                                    redraw=False
+                                ),
+
+                                mode='immediate'
+                            )
                         ]
                     )
                 ]
-            ),
-
-            dict(
-
-                type='dropdown',
-
-                direction='down',
-
-                buttons=botones,
-
-                x=0.35,
-                y=1.15,
-
-                showactive=True
             )
         ]
     )
@@ -717,5 +681,5 @@ if archivo is not None:
 else:
 
     st.warning(
-        "Suba el archivo Excel para iniciar."
+        "Suba el archivo Excel para comenzar."
     )
