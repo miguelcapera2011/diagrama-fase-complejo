@@ -129,7 +129,7 @@ if uploaded_file:
 
 
     # LIMPIEZA
-¿
+
 
     datos = datos.dropna()
 
