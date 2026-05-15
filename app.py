@@ -20,7 +20,6 @@ from scipy.spatial.distance import pdist, squareform
 
 st.set_page_config(
     page_title="K-Means Profesional",
-    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -394,9 +393,8 @@ if uploaded_file:
 
     st.plotly_chart(fig_anim, use_container_width=True)
 
-    # =====================================================
     # PCA
-    # =====================================================
+
 
     st.header("🧠 PCA")
 
@@ -412,9 +410,8 @@ if uploaded_file:
     pca_df['Cluster'] = km4_clusters.labels_.astype(str)
     pca_df['Etiqueta'] = datos['State']
 
-    # =====================================================
     # PCA 2D
-    # =====================================================
+  
 
     st.subheader("PCA Interactivo 2D")
 
@@ -433,9 +430,9 @@ if uploaded_file:
 
     st.plotly_chart(fig_2d, use_container_width=True)
 
-    # =====================================================
+
     # SIMULACIÓN PEDAGÓGICA REAL K-MEANS (CONTROL POR ITERACIONES)
-    # =====================================================
+   
 
     st.subheader("🎥 Simulación paso a paso REAL de K-Means (Controlable)")
 
@@ -447,24 +444,22 @@ if uploaded_file:
     - Iteraciones siguientes: asignación + actualización
     """)
 
-    # =====================================================
+
     # DATOS 3D
-    # =====================================================
+
 
     X3D = pca_df[['PC1', 'PC2', 'PC3']].values
     labels_names = datos['State'].values
 
     np.random.seed(42)
 
-    # =====================================================
     # INICIALIZACIÓN CENTROIDES
-    # =====================================================
+
 
     centroides_init = X3D[np.random.choice(len(X3D), k, replace=False)]
 
-    # =====================================================
     # GUARDAR HISTORIAL
-    # =====================================================
+
 
     centroides_hist = [centroides_init]
     labels_hist = []
@@ -502,9 +497,9 @@ if uploaded_file:
 
     total_iter = len(labels_hist)
 
-    # =====================================================
+
     # SLIDER ITERACIÓN
-    # =====================================================
+  
 
     iter_sel = st.slider("Selecciona iteración", 0, total_iter-1, 0)
 
@@ -515,9 +510,9 @@ if uploaded_file:
 
     fig_k = go.Figure()
 
-    # =====================================================
+    
     # PUNTOS
-    # =====================================================
+   
 
     for i in range(k):
 
@@ -535,9 +530,9 @@ if uploaded_file:
             name=f'Cluster {i}'
         ))
 
-    # =====================================================
+
     # CENTROIDES
-    # =====================================================
+    
 
     fig_k.add_trace(go.Scatter3d(
         x=centroids_sel[:,0],
@@ -548,9 +543,8 @@ if uploaded_file:
         name='Centroides'
     ))
 
-    # =====================================================
     # LÍNEAS DISTANCIA
-    # =====================================================
+
 
     for i in range(len(X3D)):
         c = labels_sel[i]
@@ -565,9 +559,7 @@ if uploaded_file:
             showlegend=False
         ))
 
-    # =====================================================
-    # LAYOUT
-    # =====================================================
+   
 
     fig_k.update_layout(
         title=f"K-Means Paso a Paso - Iteración {iter_sel}",
@@ -585,11 +577,9 @@ if uploaded_file:
 
     st.plotly_chart(fig_k, use_container_width=True)
 
-    # =====================================================
-    # BOXPLOT
-    # =====================================================
+ 
 
-    st.header("📦 Boxplot Interactivo")
+    st.header("Boxplot Interactivo")
 
     fig_box = px.box(
         datos,
@@ -602,11 +592,11 @@ if uploaded_file:
 
     st.plotly_chart(fig_box, use_container_width=True)
 
-    # =====================================================
+ 
     # TABLA DE CLUSTERS
-    # =====================================================
+    
 
-    st.header("📋 Estados por Cluster")
+    st.header("Estados por Cluster")
 
     grupos = pd.DataFrame()
 
@@ -618,11 +608,10 @@ if uploaded_file:
         use_container_width=True
     )
 
-    # =====================================================
     # CANTIDAD POR CLUSTER
-    # =====================================================
+    
 
-    st.header("📊 Cantidad de individuos por Cluster")
+    st.header(" Cantidad de individuos por Cluster")
 
     conteo = grupos.groupby('Cluster').size().reset_index()
 
@@ -638,11 +627,11 @@ if uploaded_file:
 
     st.plotly_chart(fig_count, use_container_width=True)
 
-    # =====================================================
+    
     # VISUALIZACIÓN MURDER VS URBANPOP
-    # =====================================================
 
-    st.header("🎯 Murder vs UrbanPop")
+
+    st.header("Murder vs UrbanPop")
 
     fig_mu = px.scatter(
         datos,
@@ -655,11 +644,11 @@ if uploaded_file:
 
     st.plotly_chart(fig_mu, use_container_width=True)
 
-    # =====================================================
-    # VISUALIZACIÓN RAPE VS ASSAULT
-    # =====================================================
 
-    st.header("🎯 Rape vs Assault")
+    # VISUALIZACIÓN RAPE VS ASSAULT
+
+
+    st.header("Rape vs Assault")
 
     fig_ra = px.scatter(
         datos,
@@ -672,11 +661,10 @@ if uploaded_file:
 
     st.plotly_chart(fig_ra, use_container_width=True)
 
-    # =====================================================
     # EXPLICACIÓN MATEMÁTICA
-    # =====================================================
+ 
 
-    st.header("📘 Explicación Matemática")
+    st.header("Explicación Matemática")
 
     st.markdown("""
     ## ¿Cómo funciona K-Means?
@@ -704,7 +692,7 @@ if uploaded_file:
     Menor inercia = mejores agrupaciones.
     """)
 
-    st.success("✅ Aplicación cargada correctamente")
+    st.success("Aplicación cargada correctamente")
 
 else:
 
