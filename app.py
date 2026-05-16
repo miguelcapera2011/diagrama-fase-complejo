@@ -146,22 +146,7 @@ h2, h3 {
 
 st.markdown("""
 
-<div class="topbar">
 
-    <img class="logo"
-    src="https://cdn-icons-png.flaticon.com/512/4149/4149670.png">
-
-    <div>
-        <p class="titulo-principal">
-            Minería de Datos - KMeans
-        </p>
-
-        <p class="subtitulo">
-            Análisis interactivo y visualización avanzada de clustering
-        </p>
-    </div>
-
-</div>
 Esta aplicación permite explorar paso a paso el algoritmo K-Means usando el dataset USArrests.
 
 Incluye:
@@ -178,7 +163,28 @@ Incluye:
 - Explicaciones matemáticas
 """)
 
+# =========================
+# HEADER PERSONALIZADO
+# =========================
 
+st.markdown("""
+<div class="topbar">
+
+    <img class="logo"
+    src="https://cdn-icons-png.flaticon.com/512/4149/4149670.png">
+
+    <div>
+        <p class="titulo-principal">
+            Minería de Datos - KMeans
+        </p>
+
+        <p class="subtitulo">
+            Análisis interactivo y visualización avanzada de clustering
+        </p>
+    </div>
+
+</div>
+""", unsafe_allow_html=True)
 # =========================
 # SIDEBAR
 # =========================
