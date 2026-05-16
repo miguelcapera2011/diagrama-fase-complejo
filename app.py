@@ -294,7 +294,7 @@ if uploaded_file:
     # ESTANDARIZACIÓN
  
 
-    st.header("⚖ Estandarización")
+    st.header("Estandarización")
 
     scaler = StandardScaler()
 
@@ -454,7 +454,7 @@ if uploaded_file:
         st.session_state.historial_tiempos
     ).sort_values(by="Clusters")
 
-    if st.button("Mostrar comparación de tiempos"):
+    if st.button("comparación de tiempos"):
 
         st.subheader(
             "Comparación de tiempos por número de clusters"
@@ -519,7 +519,7 @@ if uploaded_file:
 
         - 🟠 Los demás fueron intermedios.
 
-        ### Explicación
+        ### Interpretacion
 
         Cuando aumenta K:
 
@@ -560,10 +560,10 @@ if uploaded_file:
 
     # BOTON MOSTRAR COMPARACION
  
-    if st.button("📊 Mostrar comparación de inercias"):
+    if st.button(" comparación de inercias"):
 
         st.subheader(
-            "📉 Comparación de Inercia según número de clusters"
+            "Comparación de Inercia según número de clusters"
         )
 
         mejor = historial_df["Inercia"].min()
