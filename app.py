@@ -1,243 +1,551 @@
-# =====================================================
-# TIEMPO DE EJECUCIÓN POR CANTIDAD DE CLUSTERS
-# =====================================================
+# =========================================================
+# LIBRERÍAS
+# =========================================================
 
-st.header("⏱ Comparación de Tiempo de Ejecución por Clusters")
+import streamlit as st
+import pandas as pd
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+import seaborn as sns
+import time
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.metrics.pairwise import euclidean_distances
+from scipy.spatial.distance import pdist, squareform
+
+# =========================================================
+# CONFIGURACIÓN GENERAL
+# =========================================================
+
+st.set_page_config(
+    page_title="K-Means Profesional",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# =========================================================
+# ESTILOS CSS
+# =========================================================
 
 st.markdown("""
-Este análisis permite comparar cuánto tarda el algoritmo K-Means
-para diferentes cantidades de clusters (k).
+<style>
 
-Así podemos observar:
+.main {
+    background-color: #0e1117;
+}
 
-- Rendimiento del algoritmo
-- Coste computacional
-- Relación entre tiempo y cantidad de clusters
+h1 {
+    color: #00ffd5;
+    text-align: center;
+    font-size: 50px;
+}
+
+h2 {
+    color: #00c3ff;
+}
+
+h3 {
+    color: white;
+}
+
+.block-container {
+    padding-top: 2rem;
+}
+
+.stMetric {
+    background-color: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================================================
+# TÍTULO
+# =========================================================
+
+st.title("Clustering K-Means")
+
+st.markdown("""
+Aplicación profesional e interactiva para explorar el algoritmo K-Means paso a paso.
 """)
 
-# Lista para guardar tiempos
-tiempos_kmeans = []
+# =========================================================
+# SIDEBAR
+# =========================================================
 
-# Lista para guardar inercias
-inercias_kmeans = []
+st.sidebar.title("⚙ Configuración")
 
-# Rango de clusters a evaluar
-rangos_k = range(2, 11)
+uploaded_file = st.sidebar.file_uploader(
+    "Suba el archivo data_USArrests.xlsx",
+    type=["xlsx"]
+)
 
-# Barra de progreso
-progress_bar = st.progress(0)
+k = st.sidebar.slider(
+    "Número de Clusters",
+    2,
+    10,
+    4
+)
 
-# Texto de estado
-status_text = st.empty()
+iteraciones_animadas = st.sidebar.slider(
+    "Frames Animación",
+    5,
+    50,
+    20
+)
 
-# =====================================================
-# CÁLCULO DE TIEMPOS
-# =====================================================
+# =========================================================
+# MEMORIA DE HISTORIAL
+# =========================================================
 
-for idx, k_test in enumerate(rangos_k):
+if 'historial_tiempos' not in st.session_state:
 
-    status_text.text(f"Calculando K-Means con k = {k_test}...")
+    st.session_state.historial_tiempos = pd.DataFrame(
+        columns=['k', 'Tiempo_ms']
+    )
 
-    # Tiempo inicio
-    inicio_k = time.time()
+# =========================================================
+# CARGA DE DATOS
+# =========================================================
 
-    # Modelo KMeans
-    modelo_k = KMeans(
-        n_clusters=k_test,
+if uploaded_file:
+
+    datos = pd.read_excel(uploaded_file)
+
+    # =====================================================
+    # DATASET
+    # =====================================================
+
+    st.header("📊 Dataset")
+
+    st.dataframe(datos)
+
+    st.header("📌 Información del Dataset")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("Filas", datos.shape[0])
+
+    with col2:
+        st.metric("Columnas", datos.shape[1])
+
+    with col3:
+        st.metric(
+            "Valores faltantes",
+            datos.isnull().sum().sum()
+        )
+
+    st.write(datos.describe())
+
+    # =====================================================
+    # LIMPIEZA
+    # =====================================================
+
+    datos = datos.dropna()
+
+    # =====================================================
+    # HISTOGRAMAS
+    # =====================================================
+
+    st.header("📈 Histogramas")
+
+    columnas_numericas = [
+        'Murder',
+        'Assault',
+        'UrbanPop',
+        'Rape'
+    ]
+
+    tabs = st.tabs(columnas_numericas)
+
+    for i, col in enumerate(columnas_numericas):
+
+        with tabs[i]:
+
+            fig = px.histogram(
+                datos,
+                x=col,
+                marginal='box',
+                color_discrete_sequence=['cyan']
+            )
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+    # =====================================================
+    # ESTANDARIZACIÓN
+    # =====================================================
+
+    st.header("⚖ Estandarización")
+
+    scaler = StandardScaler()
+
+    numericas = datos.select_dtypes(
+        include=['float64', 'int64']
+    ).columns
+
+    datos[numericas] = scaler.fit_transform(
+        datos[numericas]
+    )
+
+    st.write(datos.head())
+
+    # =====================================================
+    # DISTANCIAS EUCLIDIANAS
+    # =====================================================
+
+    st.header("📏 Distancias Euclidianas")
+
+    distancias = euclidean_distances(
+        datos.drop(columns=['State'])
+    )
+
+    dist_matrix = pd.DataFrame(
+        distancias,
+        index=datos['State'],
+        columns=datos['State']
+    )
+
+    fig_heat = px.imshow(
+        dist_matrix,
+        color_continuous_scale='RdBu',
+        title='Mapa de calor Distancias Euclidianas'
+    )
+
+    st.plotly_chart(
+        fig_heat,
+        use_container_width=True
+    )
+
+    # =====================================================
+    # DISTANCIAS MANHATTAN
+    # =====================================================
+
+    st.header("📐 Distancias Manhattan")
+
+    manhattan = pdist(
+        datos.drop(columns=['State']),
+        metric='cityblock'
+    )
+
+    manhattan_square = squareform(manhattan)
+
+    manhattan_df = pd.DataFrame(
+        manhattan_square,
+        index=datos['State'],
+        columns=datos['State']
+    )
+
+    fig_manhattan = px.imshow(
+        manhattan_df,
+        color_continuous_scale='Viridis',
+        title='Mapa Distancias Manhattan'
+    )
+
+    st.plotly_chart(
+        fig_manhattan,
+        use_container_width=True
+    )
+
+    # =====================================================
+    # MÉTODO DEL CODO
+    # =====================================================
+
+    st.header("🦴 Método del Codo")
+
+    wss = []
+
+    for i in range(1, 11):
+
+        modelo = KMeans(
+            n_clusters=i,
+            n_init=50,
+            random_state=42
+        )
+
+        modelo.fit(
+            datos.drop(columns=['State'])
+        )
+
+        wss.append(modelo.inertia_)
+
+    elbow_df = pd.DataFrame({
+        'Clusters': range(1, 11),
+        'WSS': wss
+    })
+
+    fig_elbow = px.line(
+        elbow_df,
+        x='Clusters',
+        y='WSS',
+        markers=True,
+        title='Método del Codo'
+    )
+
+    fig_elbow.add_vline(
+        x=k,
+        line_dash='dash',
+        line_color='red'
+    )
+
+    st.plotly_chart(
+        fig_elbow,
+        use_container_width=True
+    )
+
+    # =====================================================
+    # KMEANS
+    # =====================================================
+
+    st.header("🤖 Algoritmo K-Means")
+
+    kmeans = KMeans(
+        n_clusters=k,
         n_init=50,
         random_state=42
     )
 
-    # Entrenamiento
-    modelo_k.fit(datos.drop(columns=['State']))
+    inicio = time.time()
 
-    # Tiempo final
-    fin_k = time.time()
-
-    # Tiempo en milisegundos
-    tiempo_ms = (fin_k - inicio_k) * 1000
-
-    # Guardar resultados
-    tiempos_kmeans.append(tiempo_ms)
-    inercias_kmeans.append(modelo_k.inertia_)
-
-    # Actualizar barra progreso
-    progreso = (idx + 1) / len(rangos_k)
-    progress_bar.progress(progreso)
-
-# Limpiar texto
-status_text.empty()
-
-# =====================================================
-# DATAFRAME RESULTADOS
-# =====================================================
-
-tiempos_df = pd.DataFrame({
-    'Clusters': list(rangos_k),
-    'Tiempo_ms': tiempos_kmeans,
-    'Inercia': inercias_kmeans
-})
-
-# =====================================================
-# MÉTRICAS
-# =====================================================
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.metric(
-        "⚡ Tiempo mínimo",
-        f"{tiempos_df['Tiempo_ms'].min():.2f} ms"
+    km4_clusters = kmeans.fit(
+        datos.drop(columns=['State'])
     )
 
-with col2:
-    mejor_k = tiempos_df.loc[
-        tiempos_df['Tiempo_ms'].idxmin(),
-        'Clusters'
+    fin = time.time()
+
+    tiempo_actual = (fin - inicio) * 1000
+
+    st.success(
+        f"Tiempo ejecución: {tiempo_actual:.2f} ms"
+    )
+
+    # =====================================================
+    # GUARDAR HISTORIAL
+    # =====================================================
+
+    nueva_fila = pd.DataFrame({
+        'k': [k],
+        'Tiempo_ms': [tiempo_actual]
+    })
+
+    st.session_state.historial_tiempos = pd.concat(
+        [
+            st.session_state.historial_tiempos,
+            nueva_fila
+        ],
+        ignore_index=True
+    )
+
+    historial = (
+        st.session_state.historial_tiempos
+        .drop_duplicates(
+            subset=['k'],
+            keep='last'
+        )
+        .sort_values(by='k')
+    )
+
+    st.session_state.historial_tiempos = historial
+
+    # =====================================================
+    # MEJOR Y PEOR TIEMPO
+    # =====================================================
+
+    mejor_tiempo = historial['Tiempo_ms'].min()
+
+    peor_tiempo = historial['Tiempo_ms'].max()
+
+    mejor_k = historial.loc[
+        historial['Tiempo_ms'].idxmin(),
+        'k'
     ]
 
-    st.metric(
-        "🏆 Mejor rendimiento",
-        f"k = {mejor_k}"
+    peor_k = historial.loc[
+        historial['Tiempo_ms'].idxmax(),
+        'k'
+    ]
+
+    # =====================================================
+    # MÉTRICAS
+    # =====================================================
+
+    st.header("⏱ Comparación de Rendimiento")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(
+            "🟢 Mejor K",
+            f"k = {mejor_k}"
+        )
+
+    with col2:
+        st.metric(
+            "⚡ Mejor Tiempo",
+            f"{mejor_tiempo:.2f} ms"
+        )
+
+    with col3:
+        st.metric(
+            "🔴 Peor K",
+            f"k = {peor_k}"
+        )
+
+    # =====================================================
+    # FUNCIÓN COLORES
+    # =====================================================
+
+    def colorear_filas(row):
+
+        if row['Tiempo_ms'] == mejor_tiempo:
+
+            return [
+                'background-color: green; color: white'
+            ] * len(row)
+
+        elif row['Tiempo_ms'] == peor_tiempo:
+
+            return [
+                'background-color: red; color: white'
+            ] * len(row)
+
+        else:
+
+            return [
+                'background-color: orange; color: black'
+            ] * len(row)
+
+    # =====================================================
+    # TABLA HISTORIAL
+    # =====================================================
+
+    st.subheader("📋 Historial Acumulado")
+
+    st.dataframe(
+        historial.style
+        .apply(colorear_filas, axis=1)
+        .format({
+            'Tiempo_ms': '{:.2f} ms'
+        }),
+        use_container_width=True
     )
 
-with col3:
-    st.metric(
-        "📈 Tiempo promedio",
-        f"{tiempos_df['Tiempo_ms'].mean():.2f} ms"
+    # =====================================================
+    # GRÁFICA TIEMPOS
+    # =====================================================
+
+    colores_barras = []
+
+    for valor in historial['Tiempo_ms']:
+
+        if valor == mejor_tiempo:
+
+            colores_barras.append('green')
+
+        elif valor == peor_tiempo:
+
+            colores_barras.append('red')
+
+        else:
+
+            colores_barras.append('orange')
+
+    fig_tiempos = go.Figure()
+
+    fig_tiempos.add_trace(go.Bar(
+        x=historial['k'],
+        y=historial['Tiempo_ms'],
+        marker_color=colores_barras,
+        text=np.round(
+            historial['Tiempo_ms'],
+            2
+        ),
+        textposition='outside'
+    ))
+
+    fig_tiempos.update_layout(
+        title='Tiempo de Ejecución por Número de Clusters',
+        xaxis_title='Número de Clusters',
+        yaxis_title='Tiempo (ms)',
+        template='plotly_dark',
+        height=500
     )
 
-# =====================================================
-# TABLA INTERACTIVA
-# =====================================================
+    st.plotly_chart(
+        fig_tiempos,
+        use_container_width=True
+    )
 
-st.subheader("📋 Tabla de tiempos")
+    # =====================================================
+    # CENTROIDES
+    # =====================================================
 
-st.dataframe(
-    tiempos_df.style.format({
-        'Tiempo_ms': '{:.2f}',
-        'Inercia': '{:.2f}'
-    }),
-    use_container_width=True
-)
+    st.subheader("Centroides")
 
-# =====================================================
-# GRÁFICO TIEMPOS
-# =====================================================
+    st.write(kmeans.cluster_centers_)
 
-fig_tiempos = px.line(
-    tiempos_df,
-    x='Clusters',
-    y='Tiempo_ms',
-    markers=True,
-    title='Tiempo de ejecución vs Número de Clusters',
-    text='Tiempo_ms'
-)
+    datos['Cluster'] = km4_clusters.labels_
 
-fig_tiempos.update_traces(
-    line=dict(width=4),
-    marker=dict(size=12),
-    texttemplate='%{text:.2f} ms',
-    textposition='top center'
-)
+    # =====================================================
+    # PCA
+    # =====================================================
 
-fig_tiempos.update_layout(
-    height=650,
-    xaxis_title='Número de Clusters (k)',
-    yaxis_title='Tiempo de ejecución (ms)',
-    template='plotly_dark'
-)
+    st.header("🧠 PCA")
 
-st.plotly_chart(fig_tiempos, use_container_width=True)
+    pca = PCA(n_components=4)
 
-# =====================================================
-# GRÁFICO INERCIA
-# =====================================================
+    pca_scores = pca.fit_transform(
+        datos[numericas]
+    )
 
-fig_inercia = px.bar(
-    tiempos_df,
-    x='Clusters',
-    y='Inercia',
-    color='Clusters',
-    title='Inercia por número de clusters'
-)
+    pca_df = pd.DataFrame(
+        pca_scores,
+        columns=['PC1', 'PC2', 'PC3', 'PC4']
+    )
 
-fig_inercia.update_layout(
-    height=650,
-    template='plotly_dark'
-)
+    pca_df['Cluster'] = (
+        km4_clusters.labels_.astype(str)
+    )
 
-st.plotly_chart(fig_inercia, use_container_width=True)
+    pca_df['Etiqueta'] = datos['State']
 
-# =====================================================
-# COMPARACIÓN TIEMPO VS INERCIA
-# =====================================================
+    # =====================================================
+    # PCA 2D
+    # =====================================================
 
-fig_compare = px.scatter(
-    tiempos_df,
-    x='Tiempo_ms',
-    y='Inercia',
-    size='Clusters',
-    color='Clusters',
-    hover_data=['Clusters'],
-    title='Relación entre Tiempo e Inercia'
-)
+    st.subheader("PCA Interactivo 2D")
 
-fig_compare.update_layout(
-    height=650,
-    template='plotly_dark'
-)
+    fig_2d = px.scatter(
+        pca_df,
+        x='PC1',
+        y='PC2',
+        color='Cluster',
+        text='Etiqueta',
+        title='PCA 2D'
+    )
 
-st.plotly_chart(fig_compare, use_container_width=True)
+    fig_2d.update_traces(
+        textposition='top center'
+    )
 
-# =====================================================
-# EXPORTAR RESULTADOS
-# =====================================================
+    st.plotly_chart(
+        fig_2d,
+        use_container_width=True
+    )
 
-csv_tiempos = tiempos_df.to_csv(index=False).encode('utf-8')
+    st.success("Aplicación cargada correctamente")
 
-st.download_button(
-    label="⬇ Descargar resultados tiempos KMeans",
-    data=csv_tiempos,
-    file_name='tiempos_kmeans.csv',
-    mime='text/csv'
-)
+else:
 
-# =====================================================
-# EXPLICACIÓN
-# =====================================================
-
-with st.expander("📘 Interpretación del análisis de tiempos"):
-
-    st.markdown("""
-    ### ¿Qué significa este análisis?
-
-    El algoritmo K-Means debe:
-
-    1. Calcular distancias
-    2. Asignar puntos a clusters
-    3. Recalcular centroides
-    4. Repetir hasta converger
-
-    Cuando aumenta el número de clusters:
-
-    - aumentan los cálculos,
-    - aumenta el movimiento de centroides,
-    - puede aumentar el tiempo computacional.
-
-    ### Inercia
-
-    La inercia mide qué tan compactos son los clusters.
-
-    Menor inercia:
-    - clusters más compactos,
-    - mejor agrupamiento.
-
-    ### Objetivo
-
-    Encontrar un equilibrio entre:
-
-    - bajo tiempo,
-    - baja inercia,
-    - buena separación de clusters.
-    """)
+    st.warning(
+        "⚠ Suba el archivo data_USArrests.xlsx para iniciar"
+    )
