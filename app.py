@@ -199,7 +199,7 @@ Incluye:
 # SIDEBAR
 # =========================
 
-st.sidebar.title("⚙ Configuración")
+st.sidebar.title("Configuración")
 
 st.sidebar.markdown("""
 <div style='text-align:center; margin-bottom:25px;'>
@@ -208,11 +208,11 @@ st.sidebar.markdown("""
 width='120'>
 
 <h2 style='color:#00ffd5; margin-top:10px;'>
-Data Mining
+MINERIA DE DATOS
 </h2>
 
 <p style='color:gray; font-size:13px;'>
-Machine Learning & Clustering
+APRENDIZAJE NO SUPERVISADO
 </p>
 
 </div>
