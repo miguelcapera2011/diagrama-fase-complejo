@@ -420,7 +420,7 @@ line-height:1.8;
 
 nota: la app inicia con 4 cluster debes selecionar otro numero de cluster moviendo la barrada de numero de cluster para ver la comparaciones.
 
-</p>
+</p>")
 
 
     
