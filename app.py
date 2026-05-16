@@ -35,37 +35,103 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-.main {
-    background-color: #0e1117;
+
+/* FONDO GENERAL */
+.stApp {
+    background: linear-gradient(135deg, #0b1120, #111827);
+    color: white;
 }
 
-h1 {
+/* CONTENEDOR */
+.block-container {
+    padding-top: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+/* SIDEBAR */
+section[data-testid="stSidebar"] {
+    background-color: #111827;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+/* TITULO PRINCIPAL */
+.titulo-principal {
+    font-size: 38px;
+    font-weight: 700;
     color: #00ffd5;
-    text-align: center;
-    font-size: 50px;
+    margin-bottom: 0px;
 }
 
-h2 {
+/* SUBTITULO */
+.subtitulo {
+    color: #9ca3af;
+    font-size: 16px;
+    margin-top: 0px;
+}
+
+/* CONTENEDOR SUPERIOR */
+.topbar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+/* LOGO */
+.logo {
+    width: 70px;
+}
+
+/* CONFIGURACION SIDEBAR */
+.sidebar-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #00ffd5;
+    margin-bottom: 10px;
+}
+
+/* TARJETAS */
+.stMetric {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 15px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+/* BOTONES */
+.stButton>button {
+    background: linear-gradient(90deg, #00ffd5, #00c3ff);
+    color: black;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.stButton>button:hover {
+    transform: scale(1.03);
+    background: linear-gradient(90deg, #00c3ff, #00ffd5);
+}
+
+/* SLIDERS */
+.stSlider > div > div {
+    color: #00ffd5;
+}
+
+/* HEADERS */
+h2, h3 {
     color: #00c3ff;
 }
 
-h3 {
-    color: #ffffff;
-}
-
-.stMetric {
-    background-color: rgba(255,255,255,0.05);
-    padding: 10px;
+/* DATAFRAMES */
+[data-testid="stDataFrame"] {
     border-radius: 10px;
+    overflow: hidden;
 }
 
-.block-container {
-    padding-top: 2rem;
-}
-
-.css-1d391kg {
-    background-color: #111827;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -74,7 +140,28 @@ h3 {
 # TITULO
 # =========================
 
-st.title("Clustering K-Means")
+# =========================
+# HEADER PERSONALIZADO
+# =========================
+
+st.markdown("""
+<div class="topbar">
+
+    <img class="logo"
+    src="https://cdn-icons-png.flaticon.com/512/4149/4149670.png">
+
+    <div>
+        <p class="titulo-principal">
+            Minería de Datos - KMeans
+        </p>
+
+        <p class="subtitulo">
+            Análisis interactivo y visualización avanzada de clustering
+        </p>
+    </div>
+
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("""
 Esta aplicación permite explorar paso a paso el algoritmo K-Means usando el dataset USArrests.
@@ -97,7 +184,11 @@ Incluye:
 # =========================
 # SIDEBAR
 # =========================
-
+st.sidebar.markdown("""
+<p class="sidebar-title">
+⚙ Configuración
+</p>
+""", unsafe_allow_html=True)
 
 
 uploaded_file = st.sidebar.file_uploader(
@@ -114,7 +205,6 @@ iteraciones_animadas = st.sidebar.slider(
     20
 )
 
-st.sidebar.title("⚙ Configuración")
 # =========================
 # CARGA DE DATOS
 # =========================
