@@ -75,7 +75,7 @@ p, li, div {
     background: linear-gradient(
         180deg,
         #111827 0%,
-        #0f172a 100%
+        #0f172a 800%
     );
     border-right: 1px solid rgba(255,255,255,0.08);
 }
@@ -204,7 +204,7 @@ st.sidebar.markdown("""
 <div style='text-align:center; margin-bottom:25px;'>
 
 <img src='https://cdn-icons-png.flaticon.com/512/2103/2103633.png'
-width='100'>
+width='60'>
 
 <h2 style='color:#00ffd5; margin-top:10px;'>
 MINERIA DE DATOS
