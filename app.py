@@ -260,243 +260,6 @@ if uploaded_file:
 
     st.plotly_chart(fig_elbow, use_container_width=True)
 
-    # =========================================================
-    # COMPARACIÓN DE CLUSTERS Y TIEMPOS
-    # =========================================================
-
-    st.header("⏱ Comparación de Clusters y Tiempo de Ejecución")
-
-    comparacion = []
-
-    X_cluster = datos.drop(columns=['State'])
-
-    for n_clusters in range(2, 11):
-
-        inicio_comp = time.time()
-
-        modelo_comp = KMeans(
-            n_clusters=n_clusters,
-            n_init=50,
-            random_state=42
-        )
-
-        modelo_comp.fit(X_cluster)
-
-        fin_comp = time.time()
-
-        tiempo_ms = (fin_comp - inicio_comp) * 1000
-
-        inercia = modelo_comp.inertia_
-
-        comparacion.append({
-            "Clusters": n_clusters,
-            "Tiempo_ms": tiempo_ms,
-            "Inercia": inercia
-        })
-
-    comparacion_df = pd.DataFrame(comparacion)
-
-    # NORMALIZACIÓN
-
-    comparacion_df["Tiempo_norm"] = (
-        comparacion_df["Tiempo_ms"] /
-        comparacion_df["Tiempo_ms"].max()
-    )
-
-    comparacion_df["Inercia_norm"] = (
-        comparacion_df["Inercia"] /
-        comparacion_df["Inercia"].max()
-    )
-
-    # SCORE FINAL
-
-    comparacion_df["Score"] = (
-        comparacion_df["Tiempo_norm"] * 0.3 +
-        comparacion_df["Inercia_norm"] * 0.7
-    )
-
-    mejor_idx = comparacion_df["Score"].idxmin()
-    peor_idx = comparacion_df["Score"].idxmax()
-
-    colores_modelo = []
-
-    for idx in comparacion_df.index:
-
-        if idx == mejor_idx:
-            colores_modelo.append("green")
-
-        elif idx == peor_idx:
-            colores_modelo.append("red")
-
-        else:
-            colores_modelo.append("orange")
-
-    comparacion_df["Color"] = colores_modelo
-
-    # TABLA
-
-    st.subheader("📋 Tabla Comparativa")
-
-    st.dataframe(
-        comparacion_df[
-            [
-                "Clusters",
-                "Tiempo_ms",
-                "Inercia",
-                "Score"
-            ]
-        ].style.format({
-            "Tiempo_ms": "{:.2f}",
-            "Inercia": "{:.2f}",
-            "Score": "{:.4f}"
-        }),
-        use_container_width=True
-    )
-
-    # GRÁFICA TIEMPOS
-
-    st.subheader("⚡ Tiempo de Ejecución por Número de Clusters")
-
-    fig_tiempo = px.bar(
-        comparacion_df,
-        x="Clusters",
-        y="Tiempo_ms",
-        color="Color",
-        color_discrete_map={
-            "green": "green",
-            "red": "red",
-            "orange": "orange"
-        },
-        text="Tiempo_ms",
-        title="Comparación de Tiempo de Ejecución"
-    )
-
-    fig_tiempo.update_traces(
-        texttemplate='%{text:.2f} ms',
-        textposition='outside'
-    )
-
-    st.plotly_chart(fig_tiempo, use_container_width=True)
-
-    # GRÁFICA SCORE
-
-    st.subheader("🎯 Calidad General del Modelo")
-
-    fig_score = px.bar(
-        comparacion_df,
-        x="Clusters",
-        y="Score",
-        color="Color",
-        color_discrete_map={
-            "green": "green",
-            "red": "red",
-            "orange": "orange"
-        },
-        text="Score",
-        title="Evaluación Global de Clusters"
-    )
-
-    fig_score.update_traces(
-        texttemplate='%{text:.4f}',
-        textposition='outside'
-    )
-
-    st.plotly_chart(fig_score, use_container_width=True)
-
-    # DATOS MEJOR Y PEOR
-
-    mejor_cluster = comparacion_df.loc[mejor_idx, "Clusters"]
-    peor_cluster = comparacion_df.loc[peor_idx, "Clusters"]
-
-    mejor_tiempo = comparacion_df.loc[mejor_idx, "Tiempo_ms"]
-    peor_tiempo = comparacion_df.loc[peor_idx, "Tiempo_ms"]
-
-    mejor_inercia = comparacion_df.loc[mejor_idx, "Inercia"]
-    peor_inercia = comparacion_df.loc[peor_idx, "Inercia"]
-
-    # ANÁLISIS AUTOMÁTICO
-
-    st.subheader("🧠 Análisis Automático")
-
-    st.success(
-        f"""
-        🟢 MEJOR MODELO DETECTADO
-
-        Número de clusters: {mejor_cluster}
-
-        Tiempo de ejecución: {mejor_tiempo:.2f} ms
-
-        Inercia: {mejor_inercia:.2f}
-
-        Este modelo tiene el mejor equilibrio entre:
-
-        ✔ velocidad computacional
-
-        ✔ compactación de grupos
-
-        ✔ estabilidad del agrupamiento
-
-        ✔ eficiencia matemática
-
-        Una menor inercia significa que los puntos están
-        más cerca de sus centroides.
-        """
-    )
-
-    st.error(
-        f"""
-        🔴 PEOR MODELO DETECTADO
-
-        Número de clusters: {peor_cluster}
-
-        Tiempo de ejecución: {peor_tiempo:.2f} ms
-
-        Inercia: {peor_inercia:.2f}
-
-        Este modelo presenta el peor rendimiento general,
-        debido a:
-
-        ✖ exceso de dispersión
-
-        ✖ peor compactación
-
-        ✖ menor eficiencia computacional
-
-        ✖ agrupamientos menos óptimos
-        """
-    )
-
-    st.warning("""
-    🟠 CLUSTERS INTERMEDIOS
-
-    Los modelos naranjas representan soluciones balanceadas.
-
-    Dependiendo del análisis pueden ser útiles para:
-
-    • segmentación más detallada
-
-    • exploración de patrones
-
-    • reducción de complejidad
-
-    • interpretabilidad del modelo
-
-    En Machine Learning no siempre el modelo más rápido
-    es el mejor.
-
-    Tampoco el de menor inercia absoluta.
-
-    El objetivo es encontrar equilibrio entre:
-
-    ✔ precisión
-
-    ✔ estabilidad
-
-    ✔ interpretación
-
-    ✔ costo computacional
-    """)
-
     # KMEANS
 
 
@@ -666,6 +429,268 @@ if uploaded_file:
     )
 
     st.plotly_chart(fig_2d, use_container_width=True)
+
+
+    # SIMULACIÓN PEDAGÓGICA REAL K-MEANS (CONTROL POR ITERACIONES)
+   
+
+    st.subheader("🎥 Simulación paso a paso REAL de K-Means (Controlable)")
+
+    st.markdown("""
+    Controla cada iteración del algoritmo:
+
+    - Iteración 0: todos los puntos sin cluster
+    - Iteración 1: centroides iniciales
+    - Iteraciones siguientes: asignación + actualización
+    """)
+
+
+    # DATOS 3D
+
+
+    X3D = pca_df[['PC1', 'PC2', 'PC3']].values
+    labels_names = datos['State'].values
+
+    np.random.seed(42)
+
+    # INICIALIZACIÓN CENTROIDES
+
+
+    centroides_init = X3D[np.random.choice(len(X3D), k, replace=False)]
+
+    # GUARDAR HISTORIAL
+
+
+    centroides_hist = [centroides_init]
+    labels_hist = []
+
+    centroides = centroides_init.copy()
+
+    max_iter = iteraciones_animadas
+
+    for _ in range(max_iter):
+
+        # DISTANCIAS
+        distancias = np.linalg.norm(X3D[:, None] - centroides, axis=2)
+        labels = np.argmin(distancias, axis=1)
+
+        labels_hist.append(labels)
+
+        # NUEVOS CENTROIDES
+        nuevos_centroides = []
+
+        for i in range(k):
+            puntos = X3D[labels == i]
+            if len(puntos) > 0:
+                nuevos_centroides.append(puntos.mean(axis=0))
+            else:
+                nuevos_centroides.append(centroides[i])
+
+        nuevos_centroides = np.array(nuevos_centroides)
+        centroides_hist.append(nuevos_centroides)
+
+        # CONVERGENCIA
+        if np.linalg.norm(nuevos_centroides - centroides) < 1e-4:
+            break
+
+        centroides = nuevos_centroides
+
+    total_iter = len(labels_hist)
+
+
+    # SLIDER ITERACIÓN
+  
+
+    iter_sel = st.slider("Selecciona iteración", 0, total_iter-1, 0)
+
+    labels_sel = labels_hist[iter_sel]
+    centroids_sel = centroides_hist[iter_sel]
+
+    colores_k = ['red','green','blue','yellow','purple','orange','cyan','magenta']
+
+    fig_k = go.Figure()
+
+    
+    # PUNTOS
+   
+
+    for i in range(k):
+
+        puntos = X3D[labels_sel == i]
+        nombres = labels_names[labels_sel == i]
+
+        fig_k.add_trace(go.Scatter3d(
+            x=puntos[:,0],
+            y=puntos[:,1],
+            z=puntos[:,2],
+            mode='markers+text',
+            text=nombres,
+            textposition='top center',
+            marker=dict(size=5, color=colores_k[i]),
+            name=f'Cluster {i}'
+        ))
+
+
+    # CENTROIDES
+    
+
+    fig_k.add_trace(go.Scatter3d(
+        x=centroids_sel[:,0],
+        y=centroids_sel[:,1],
+        z=centroids_sel[:,2],
+        mode='markers',
+        marker=dict(size=18, color='white', symbol='diamond'),
+        name='Centroides'
+    ))
+
+    # LÍNEAS DISTANCIA
+
+
+    for i in range(len(X3D)):
+        c = labels_sel[i]
+        centroide = centroids_sel[c]
+
+        fig_k.add_trace(go.Scatter3d(
+            x=[X3D[i,0], centroide[0]],
+            y=[X3D[i,1], centroide[1]],
+            z=[X3D[i,2], centroide[2]],
+            mode='lines',
+            line=dict(color=colores_k[c], width=2),
+            showlegend=False
+        ))
+
+   
+
+    fig_k.update_layout(
+        title=f"K-Means Paso a Paso - Iteración {iter_sel}",
+        width=1700,
+        height=900,
+        paper_bgcolor='#0e1117',
+        plot_bgcolor='#0e1117',
+        font=dict(color='white'),
+        scene=dict(
+            xaxis_title='PC1',
+            yaxis_title='PC2',
+            zaxis_title='PC3'
+        )
+    )
+
+    st.plotly_chart(fig_k, use_container_width=True)
+
+ 
+
+    st.header("Boxplot Interactivo")
+
+    fig_box = px.box(
+        datos,
+        x='Cluster',
+        y='Rape',
+        color='Cluster',
+        points='all',
+        hover_data=['State']
+    )
+
+    st.plotly_chart(fig_box, use_container_width=True)
+
+ 
+    # TABLA DE CLUSTERS
+    
+
+    st.header("Estados por Cluster")
+
+    grupos = pd.DataFrame()
+
+    grupos['State'] = datos['State']
+    grupos['Cluster'] = km4_clusters.labels_
+
+    st.dataframe(
+        grupos.sort_values(by='Cluster'),
+        use_container_width=True
+    )
+
+    # CANTIDAD POR CLUSTER
+    
+
+    st.header(" Cantidad de individuos por Cluster")
+
+    conteo = grupos.groupby('Cluster').size().reset_index()
+
+    conteo.columns = ['Cluster', 'Cantidad']
+
+    fig_count = px.bar(
+        conteo,
+        x='Cluster',
+        y='Cantidad',
+        color='Cluster',
+        text='Cantidad'
+    )
+
+    st.plotly_chart(fig_count, use_container_width=True)
+
+    
+    # VISUALIZACIÓN MURDER VS URBANPOP
+
+
+    st.header("Murder vs UrbanPop")
+
+    fig_mu = px.scatter(
+        datos,
+        x='Murder',
+        y='UrbanPop',
+        color='Cluster',
+        hover_data=['State'],
+        title='Murder vs UrbanPop'
+    )
+
+    st.plotly_chart(fig_mu, use_container_width=True)
+
+
+    # VISUALIZACIÓN RAPE VS ASSAULT
+
+
+    st.header("Rape vs Assault")
+
+    fig_ra = px.scatter(
+        datos,
+        x='Rape',
+        y='Assault',
+        color='Cluster',
+        hover_data=['State'],
+        title='Rape vs Assault'
+    )
+
+    st.plotly_chart(fig_ra, use_container_width=True)
+
+    # EXPLICACIÓN MATEMÁTICA
+ 
+
+    st.header("Explicación Matemática")
+
+    st.markdown("""
+    ## ¿Cómo funciona K-Means?
+
+    1. Se eligen centroides aleatorios.
+
+    2. Cada punto calcula su distancia al centroide más cercano.
+
+    3. Los puntos se asignan al cluster más cercano.
+
+    4. Los centroides se recalculan usando el promedio de los puntos.
+
+    5. El proceso se repite hasta converger.
+
+    ## Distancia Euclidiana
+
+    La distancia usada normalmente es:
+
+    d(x,y)=√((x1-y1)^2+(x2-y2)^2+...)
+
+    ## Inercia
+
+    La inercia mide qué tan compactos son los clusters.
+
+    Menor inercia = mejores agrupaciones.
+    """)
 
     st.success("Aplicación cargada correctamente")
 
