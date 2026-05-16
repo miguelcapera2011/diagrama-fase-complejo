@@ -431,7 +431,7 @@ if uploaded_file:
     line-height:1.7;
     ">
 
-    si deseas comparar el tiempo de ejecucion de los cluster y la inercia,la app inicia con 4 cluster,deslice la barra de numero de cluster para slecionar otro numero y puedes ver la comparacion.
+    si deseas comparar el tiempo de ejecucion de los cluster y la inercia,la app inicia con 4 cluster,deslice la barra de numero de cluster para selecionar otro numero y podras  ver la comparacion.
 
     </p>
 
@@ -1070,11 +1070,18 @@ if uploaded_file:
 
     5. El proceso se repite hasta converger.
 
-    ## Distancia Euclidiana
+   
 
-    La distancia usada normalmente es:
+    st.markdown("""
+    ### 5. Distancia Euclidiana
 
-    d(x,y)=√((x1-y1)^2+(x2-y2)^2+...)
+    La distancia euclidiana mide qué tan lejos están dos puntos
+    en el espacio.
+    """)
+
+    st.latex(r'''
+    d(x,y)=\sqrt{(x_1-y_1)^2+(x_2-y_2)^2+\cdots+(x_n-y_n)^2}
+    ''')
 
     ## Inercia
 
