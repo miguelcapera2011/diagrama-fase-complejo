@@ -35,41 +35,142 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-.main {
-    background-color: #0e1117;
+
+/* FONDO GENERAL */
+.stApp {
+    background-color: #0b1120;
 }
 
+/* CONTENEDOR PRINCIPAL */
+.main {
+    background-color: #0b1120;
+}
+
+/* TITULO PRINCIPAL */
 h1 {
     color: #00ffd5;
     text-align: center;
-    font-size: 50px;
+    font-size: 52px;
+    font-weight: 800;
+    letter-spacing: 1px;
 }
 
+/* SUBTITULOS */
 h2 {
-    color: #00c3ff;
+    color: #38bdf8;
+    font-weight: 700;
 }
 
 h3 {
-    color: #ffffff;
+    color: white;
 }
 
-.stMetric {
-    background-color: rgba(255,255,255,0.05);
-    padding: 10px;
-    border-radius: 10px;
+/* TEXTO */
+p, li, div {
+    color: #d1d5db;
 }
 
-.block-container {
-    padding-top: 2rem;
+/* SIDEBAR */
+[data-testid="stSidebar"] {
+    background: linear-gradient(
+        180deg,
+        #111827 0%,
+        #0f172a 100%
+    );
+    border-right: 1px solid rgba(255,255,255,0.08);
 }
 
-.css-1d391kg {
+/* OCULTAR BORDE FEO */
+section[data-testid="stSidebar"] > div {
+    border: none;
+}
+
+/* BOTONES */
+.stButton > button {
+    width: 100%;
+    border-radius: 12px;
+    height: 3em;
+    border: none;
+    background: linear-gradient(
+        90deg,
+        #06b6d4,
+        #3b82f6
+    );
+    color: white;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.stButton > button:hover {
+    transform: scale(1.02);
+    box-shadow: 0px 0px 15px rgba(59,130,246,0.5);
+}
+
+/* METRICAS */
+[data-testid="metric-container"] {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 15px;
+    border-radius: 15px;
+}
+
+/* DATAFRAME */
+[data-testid="stDataFrame"] {
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* SLIDERS */
+.stSlider {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* TABS */
+.stTabs [data-baseweb="tab"] {
     background-color: #111827;
+    border-radius: 10px;
+    color: white;
+    padding: 10px 18px;
 }
+
+.stTabs [aria-selected="true"] {
+    background-color: #06b6d4 !important;
+    color: white !important;
+}
+
+/* GRAFICAS */
+.plot-container {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+/* OCULTAR MENU STREAMLIT */
+#MainMenu {
+    visibility: hidden;
+}
+
+/* OCULTAR FOOTER */
+footer {
+    visibility: hidden;
+}
+
+/* OCULTAR HEADER */
+header {
+    visibility: hidden;
+}
+
+/* ESPACIADO */
+.block-container {
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
 </style>
 """, unsafe_allow_html=True)
-
-
 # =========================
 # TITULO
 # =========================
@@ -99,6 +200,23 @@ Incluye:
 # =========================
 
 st.sidebar.title("⚙ Configuración")
+
+st.sidebar.markdown("""
+<div style='text-align:center; margin-bottom:25px;'>
+
+<img src='https://cdn-icons-png.flaticon.com/512/2103/2103633.png'
+width='120'>
+
+<h2 style='color:#00ffd5; margin-top:10px;'>
+Data Mining
+</h2>
+
+<p style='color:gray; font-size:13px;'>
+Machine Learning & Clustering
+</p>
+
+</div>
+""", unsafe_allow_html=True)
 
 uploaded_file = st.sidebar.file_uploader(
     "Suba el archivo data_USArrests.xlsx",
