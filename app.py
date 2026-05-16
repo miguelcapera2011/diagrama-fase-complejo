@@ -1,3 +1,5 @@
+# Código completo actualizado de la app Streamlit K-Means
+
 
 # =========================================================
 # LIBRERÍAS
@@ -93,6 +95,16 @@ iteraciones_animadas = st.sidebar.slider(
     50,
     20
 )
+
+# =========================================================
+# HISTORIAL GLOBAL DE TIEMPOS
+# =========================================================
+
+if 'historial_kmeans' not in st.session_state:
+
+    st.session_state.historial_kmeans = pd.DataFrame(
+        columns=['Clusters', 'Tiempo_ms', 'Inercia']
+    )
 
 # =========================================================
 # CARGA DE DATOS
@@ -196,7 +208,6 @@ if uploaded_file:
     # =====================================================
     # KMEANS
     # =====================================================
-    # =====================================================
 
     st.header("Algoritmo K-Means")
 
@@ -212,7 +223,147 @@ if uploaded_file:
 
     fin = time.time()
 
-    st.success(f"Tiempo ejecución: {(fin - inicio)*1000:.2f} ms")
+    tiempo_actual = (fin - inicio) * 1000
+
+    st.success(f"Tiempo ejecución: {tiempo_actual:.2f} ms")
+
+    # =====================================================
+    # GUARDAR HISTORIAL DE TIEMPOS
+    # =====================================================
+
+    nueva_fila = pd.DataFrame({
+        'Clusters': [k],
+        'Tiempo_ms': [tiempo_actual],
+        'Inercia': [km4_clusters.inertia_]
+    })
+
+    st.session_state.historial_kmeans = pd.concat(
+        [st.session_state.historial_kmeans, nueva_fila],
+        ignore_index=True
+    )
+
+    historial = st.session_state.historial_kmeans.copy()
+
+    # =====================================================
+    # ELIMINAR DUPLICADOS CONSERVANDO EL ÚLTIMO
+    # =====================================================
+
+    historial = historial.drop_duplicates(
+        subset=['Clusters'],
+        keep='last'
+    )
+
+    st.session_state.historial_kmeans = historial
+
+    # =====================================================
+    # MEJOR Y PEOR TIEMPO
+    # =====================================================
+
+    mejor_tiempo = historial['Tiempo_ms'].min()
+    peor_tiempo = historial['Tiempo_ms'].max()
+
+    # =====================================================
+    # FUNCIÓN COLORES TABLA
+    # =====================================================
+
+    def colorear_filas(row):
+
+        if row['Tiempo_ms'] == mejor_tiempo:
+            return ['background-color: green; color: white'] * len(row)
+
+        elif row['Tiempo_ms'] == peor_tiempo:
+            return ['background-color: red; color: white'] * len(row)
+
+        else:
+            return ['background-color: orange; color: black'] * len(row)
+
+    # =====================================================
+    # HISTORIAL VISUAL
+    # =====================================================
+
+    st.header("Historial de Rendimiento K-Means")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+
+        mejor_k = historial.loc[
+            historial['Tiempo_ms'].idxmin(),
+            'Clusters'
+        ]
+
+        st.metric(
+            "Mejor k",
+            f"k = {mejor_k}"
+        )
+
+    with col2:
+
+        st.metric(
+            "Mejor tiempo",
+            f"{mejor_tiempo:.2f} ms"
+        )
+
+    with col3:
+
+        peor_k = historial.loc[
+            historial['Tiempo_ms'].idxmax(),
+            'Clusters'
+        ]
+
+        st.metric(
+            "Peor k",
+            f"k = {peor_k}"
+        )
+
+    st.subheader("Tabla acumulada de pruebas")
+
+    st.dataframe(
+        historial.style
+        .apply(colorear_filas, axis=1)
+        .format({
+            'Tiempo_ms': '{:.2f} ms',
+            'Inercia': '{:.2f}'
+        }),
+        use_container_width=True
+    )
+
+    # =====================================================
+    # GRÁFICO COMPARACIÓN
+    # =====================================================
+
+    colores_barras = []
+
+    for valor in historial['Tiempo_ms']:
+
+        if valor == mejor_tiempo:
+            colores_barras.append('green')
+
+        elif valor == peor_tiempo:
+            colores_barras.append('red')
+
+        else:
+            colores_barras.append('orange')
+
+    fig_historial = go.Figure()
+
+    fig_historial.add_trace(go.Bar(
+        x=historial['Clusters'],
+        y=historial['Tiempo_ms'],
+        marker_color=colores_barras,
+        text=np.round(historial['Tiempo_ms'], 2),
+        textposition='outside'
+    ))
+
+    fig_historial.update_layout(
+        title='Comparación de tiempos por número de clusters',
+        xaxis_title='Número de Clusters (k)',
+        yaxis_title='Tiempo de ejecución (ms)',
+        height=600,
+        template='plotly_dark'
+    )
+
+    st.plotly_chart(fig_historial, use_container_width=True)
 
     st.subheader("Centroides")
     st.write(kmeans.cluster_centers_)
@@ -488,4 +639,5 @@ if uploaded_file:
 else:
 
     st.warning("Suba el archivo data_USArrests.xlsx para iniciar")
+
 
