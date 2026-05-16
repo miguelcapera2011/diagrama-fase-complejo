@@ -1,4 +1,10 @@
- #librerias
+# Código completo actualizado de la app Streamlit K-Means
+
+
+# =========================================================
+# LIBRERÍAS
+# =========================================================
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -14,9 +20,9 @@ from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import euclidean_distances
 from scipy.spatial.distance import pdist, squareform
 
-
+# =========================================================
 # CONFIGURACIÓN GENERAL
-
+# =========================================================
 
 st.set_page_config(
     page_title="K-Means Profesional",
@@ -24,8 +30,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
+# =========================================================
 # ESTILOS CSS
+# =========================================================
+
 st.markdown("""
 <style>
 .main {
@@ -55,34 +63,22 @@ h3 {
 .block-container {
     padding-top: 2rem;
 }
-
-.css-1d391kg {
-    background-color: #111827;
-}
 </style>
 """, unsafe_allow_html=True)
 
+# =========================================================
+# TÍTULO
+# =========================================================
 
 st.title("Clustering K-Means")
 
 st.markdown("""
 Esta aplicación permite explorar paso a paso el algoritmo K-Means usando el dataset USArrests.
-
-Incluye:
-
-- Exploración de datos
-- Estandarización
-- Distancias Euclidianas y Manhattan
-- Método del codo
-- Animación de convergencia de K-Means
-- PCA 2D y 3D
-- Boxplots interactivos
-- Visualizaciones dinámicas
-- Movimiento de centroides
-- Explicaciones matemáticas
 """)
 
+# =========================================================
 # SIDEBAR
+# =========================================================
 
 st.sidebar.title("⚙ Configuración")
 
@@ -100,9 +96,9 @@ iteraciones_animadas = st.sidebar.slider(
     20
 )
 
-
+# =========================================================
 # CARGA DE DATOS
-
+# =========================================================
 
 if uploaded_file:
 
@@ -110,8 +106,12 @@ if uploaded_file:
 
     st.header("Dataset")
     st.dataframe(datos)
-    
-    st.header(" Información del Dataset")
+
+    # =====================================================
+    # INFORMACIÓN DATASET
+    # =====================================================
+
+    st.header("Información del Dataset")
 
     col1, col2, col3 = st.columns(3)
 
@@ -126,27 +126,19 @@ if uploaded_file:
 
     st.write(datos.describe())
 
-
+    # =====================================================
     # LIMPIEZA
-
+    # =====================================================
 
     datos = datos.dropna()
 
+    # =====================================================
     # HISTOGRAMAS
+    # =====================================================
 
-
-    st.header(" Histogramas")
+    st.header("Histogramas")
 
     columnas_numericas = ['Murder', 'Assault', 'UrbanPop', 'Rape']
-
-    fig_hist = px.histogram(
-        datos,
-        x='Murder',
-        nbins=10,
-        title='Distribución Murder'
-    )
-
-    st.plotly_chart(fig_hist, use_container_width=True)
 
     tabs = st.tabs(columnas_numericas)
 
@@ -160,10 +152,11 @@ if uploaded_file:
             )
             st.plotly_chart(fig, use_container_width=True)
 
-   
+    # =====================================================
     # ESTANDARIZACIÓN
+    # =====================================================
 
-    st.header("⚖ Estandarización")
+    st.header("Estandarización")
 
     scaler = StandardScaler()
 
@@ -173,10 +166,11 @@ if uploaded_file:
 
     st.write(datos.head())
 
-    # MATRICES DE DISTANCIA
+    # =====================================================
+    # DISTANCIAS EUCLIDIANAS
+    # =====================================================
 
-
-    st.header("📏 Distancias Euclidianas")
+    st.header("Distancias Euclidianas")
 
     distancias = euclidean_distances(datos.drop(columns=['State']))
 
@@ -194,10 +188,11 @@ if uploaded_file:
 
     st.plotly_chart(fig_heat, use_container_width=True)
 
+    # =====================================================
     # DISTANCIAS MANHATTAN
+    # =====================================================
 
-
-    st.header("📐 Distancias Manhattan")
+    st.header("Distancias Manhattan")
 
     manhattan = pdist(
         datos.drop(columns=['State']),
@@ -220,15 +215,16 @@ if uploaded_file:
 
     st.plotly_chart(fig_manhattan, use_container_width=True)
 
-
+    # =====================================================
     # MÉTODO DEL CODO
-  
+    # =====================================================
 
-    st.header("🦴 Método del Codo")
+    st.header("Método del Codo")
 
     wss = []
 
     for i in range(1, 11):
+
         modelo = KMeans(
             n_clusters=i,
             n_init=50,
@@ -260,10 +256,101 @@ if uploaded_file:
 
     st.plotly_chart(fig_elbow, use_container_width=True)
 
+    # =====================================================
+    # TIEMPOS KMEANS
+    # =====================================================
+
+    st.header("Comparación de Tiempo de Ejecución por Clusters")
+
+    tiempos_kmeans = []
+    inercias_kmeans = []
+
+    rangos_k = range(2, 11)
+
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+
+    for idx, k_test in enumerate(rangos_k):
+
+        status_text.text(f"Calculando K-Means con k = {k_test}...")
+
+        inicio_k = time.time()
+
+        modelo_k = KMeans(
+            n_clusters=k_test,
+            n_init=50,
+            random_state=42
+        )
+
+        modelo_k.fit(datos.drop(columns=['State']))
+
+        fin_k = time.time()
+
+        tiempo_ms = (fin_k - inicio_k) * 1000
+
+        tiempos_kmeans.append(tiempo_ms)
+        inercias_kmeans.append(modelo_k.inertia_)
+
+        progreso = (idx + 1) / len(rangos_k)
+        progress_bar.progress(progreso)
+
+    status_text.empty()
+
+    tiempos_df = pd.DataFrame({
+        'Clusters': list(rangos_k),
+        'Tiempo_ms': tiempos_kmeans,
+        'Inercia': inercias_kmeans
+    })
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(
+            "Tiempo mínimo",
+            f"{tiempos_df['Tiempo_ms'].min():.2f} ms"
+        )
+
+    with col2:
+
+        mejor_k = tiempos_df.loc[
+            tiempos_df['Tiempo_ms'].idxmin(),
+            'Clusters'
+        ]
+
+        st.metric(
+            "Mejor rendimiento",
+            f"k = {mejor_k}"
+        )
+
+    with col3:
+        st.metric(
+            "Tiempo promedio",
+            f"{tiempos_df['Tiempo_ms'].mean():.2f} ms"
+        )
+
+    st.dataframe(tiempos_df, use_container_width=True)
+
+    fig_tiempos = px.line(
+        tiempos_df,
+        x='Clusters',
+        y='Tiempo_ms',
+        markers=True,
+        title='Tiempo de ejecución vs Número de Clusters',
+        text='Tiempo_ms'
+    )
+
+    fig_tiempos.update_traces(
+        texttemplate='%{text:.2f} ms',
+        textposition='top center'
+    )
+
+    st.plotly_chart(fig_tiempos, use_container_width=True)
+
+    # =====================================================
     # KMEANS
+    # =====================================================
 
-
-    st.header("🤖 Algoritmo K-Means")
+    st.header("Algoritmo K-Means")
 
     kmeans = KMeans(
         n_clusters=k,
@@ -284,119 +371,11 @@ if uploaded_file:
 
     datos['Cluster'] = km4_clusters.labels_
 
-  
-    # ANIMACIÓN DE CONVERGENCIA
-
-
-    st.header("🎬 Animación de Convergencia")
-
-    pca_anim = PCA(n_components=2)
-
-    X_pca = pca_anim.fit_transform(datos[numericas])
-
-    fig_anim = go.Figure()
-
-    colores = ['red', 'green', 'blue', 'yellow', 'purple', 'orange', 'cyan', 'pink', 'lime', 'white']
-
-    centroides = X_pca[np.random.choice(len(X_pca), k, replace=False)]
-
-    frames = []
-
-    for frame_num in range(iteraciones_animadas):
-
-        distancias = np.linalg.norm(
-            X_pca[:, np.newaxis] - centroides,
-            axis=2
-        )
-
-        labels = np.argmin(distancias, axis=1)
-
-        nuevos_centroides = np.array([
-            X_pca[labels == i].mean(axis=0)
-            for i in range(k)
-        ])
-
-        scatter_data = []
-
-        for i in range(k):
-
-            puntos = X_pca[labels == i]
-
-            scatter_data.append(
-                go.Scatter(
-                    x=puntos[:,0],
-                    y=puntos[:,1],
-                    mode='markers+text',
-                    text=datos['State'],
-                    textposition='top center',
-                    marker=dict(size=10, color=colores[i]),
-                    name=f'Cluster {i}'
-                )
-            )
-
-        scatter_data.append(
-            go.Scatter(
-                x=nuevos_centroides[:,0],
-                y=nuevos_centroides[:,1],
-                mode='markers',
-                marker=dict(
-                    size=25,
-                    color='black',
-                    symbol='star'
-                ),
-                name='Centroides'
-            )
-        )
-
-        # líneas distancia
-
-        for i in range(len(X_pca)):
-            centroide = nuevos_centroides[labels[i]]
-
-            scatter_data.append(
-                go.Scatter(
-                    x=[X_pca[i,0], centroide[0]],
-                    y=[X_pca[i,1], centroide[1]],
-                    mode='lines',
-                    line=dict(color='gray', width=1),
-                    showlegend=False
-                )
-            )
-
-        frames.append(go.Frame(data=scatter_data, name=str(frame_num)))
-
-        centroides = nuevos_centroides
-
-    fig_anim.frames = frames
-
-    fig_anim.add_trace(
-        go.Scatter(x=[], y=[])
-    )
-
-    fig_anim.update_layout(
-        title='Movimiento de centroides y convergencia K-Means',
-        width=1200,
-        height=800,
-        updatemenus=[
-            {
-                'type': 'buttons',
-                'buttons': [
-                    {
-                        'label': '▶ Iniciar',
-                        'method': 'animate',
-                        'args': [None]
-                    }
-                ]
-            }
-        ]
-    )
-
-    st.plotly_chart(fig_anim, use_container_width=True)
-
+    # =====================================================
     # PCA
+    # =====================================================
 
-
-    st.header("🧠 PCA")
+    st.header("PCA")
 
     pca = PCA(n_components=4)
 
@@ -410,8 +389,9 @@ if uploaded_file:
     pca_df['Cluster'] = km4_clusters.labels_.astype(str)
     pca_df['Etiqueta'] = datos['State']
 
+    # =====================================================
     # PCA 2D
-  
+    # =====================================================
 
     st.subheader("PCA Interactivo 2D")
 
@@ -430,36 +410,18 @@ if uploaded_file:
 
     st.plotly_chart(fig_2d, use_container_width=True)
 
+    # =====================================================
+    # SIMULACIÓN KMEANS 3D
+    # =====================================================
 
-    # SIMULACIÓN PEDAGÓGICA REAL K-MEANS (CONTROL POR ITERACIONES)
-   
-
-    st.subheader("🎥 Simulación paso a paso REAL de K-Means (Controlable)")
-
-    st.markdown("""
-    Controla cada iteración del algoritmo:
-
-    - Iteración 0: todos los puntos sin cluster
-    - Iteración 1: centroides iniciales
-    - Iteraciones siguientes: asignación + actualización
-    """)
-
-
-    # DATOS 3D
-
+    st.subheader("Simulación paso a paso REAL de K-Means")
 
     X3D = pca_df[['PC1', 'PC2', 'PC3']].values
     labels_names = datos['State'].values
 
     np.random.seed(42)
 
-    # INICIALIZACIÓN CENTROIDES
-
-
     centroides_init = X3D[np.random.choice(len(X3D), k, replace=False)]
-
-    # GUARDAR HISTORIAL
-
 
     centroides_hist = [centroides_init]
     labels_hist = []
@@ -470,26 +432,26 @@ if uploaded_file:
 
     for _ in range(max_iter):
 
-        # DISTANCIAS
         distancias = np.linalg.norm(X3D[:, None] - centroides, axis=2)
         labels = np.argmin(distancias, axis=1)
 
         labels_hist.append(labels)
 
-        # NUEVOS CENTROIDES
         nuevos_centroides = []
 
         for i in range(k):
+
             puntos = X3D[labels == i]
+
             if len(puntos) > 0:
                 nuevos_centroides.append(puntos.mean(axis=0))
             else:
                 nuevos_centroides.append(centroides[i])
 
         nuevos_centroides = np.array(nuevos_centroides)
+
         centroides_hist.append(nuevos_centroides)
 
-        # CONVERGENCIA
         if np.linalg.norm(nuevos_centroides - centroides) < 1e-4:
             break
 
@@ -497,11 +459,12 @@ if uploaded_file:
 
     total_iter = len(labels_hist)
 
-
-    # SLIDER ITERACIÓN
-  
-
-    iter_sel = st.slider("Selecciona iteración", 0, total_iter-1, 0)
+    iter_sel = st.slider(
+        "Selecciona iteración",
+        0,
+        total_iter - 1,
+        0
+    )
 
     labels_sel = labels_hist[iter_sel]
     centroids_sel = centroides_hist[iter_sel]
@@ -509,10 +472,6 @@ if uploaded_file:
     colores_k = ['red','green','blue','yellow','purple','orange','cyan','magenta']
 
     fig_k = go.Figure()
-
-    
-    # PUNTOS
-   
 
     for i in range(k):
 
@@ -530,10 +489,6 @@ if uploaded_file:
             name=f'Cluster {i}'
         ))
 
-
-    # CENTROIDES
-    
-
     fig_k.add_trace(go.Scatter3d(
         x=centroids_sel[:,0],
         y=centroids_sel[:,1],
@@ -543,10 +498,8 @@ if uploaded_file:
         name='Centroides'
     ))
 
-    # LÍNEAS DISTANCIA
-
-
     for i in range(len(X3D)):
+
         c = labels_sel[i]
         centroide = centroids_sel[c]
 
@@ -558,8 +511,6 @@ if uploaded_file:
             line=dict(color=colores_k[c], width=2),
             showlegend=False
         ))
-
-   
 
     fig_k.update_layout(
         title=f"K-Means Paso a Paso - Iteración {iter_sel}",
@@ -577,7 +528,9 @@ if uploaded_file:
 
     st.plotly_chart(fig_k, use_container_width=True)
 
- 
+    # =====================================================
+    # BOXPLOT
+    # =====================================================
 
     st.header("Boxplot Interactivo")
 
@@ -592,9 +545,9 @@ if uploaded_file:
 
     st.plotly_chart(fig_box, use_container_width=True)
 
- 
-    # TABLA DE CLUSTERS
-    
+    # =====================================================
+    # TABLA CLUSTERS
+    # =====================================================
 
     st.header("Estados por Cluster")
 
@@ -608,10 +561,11 @@ if uploaded_file:
         use_container_width=True
     )
 
-    # CANTIDAD POR CLUSTER
-    
+    # =====================================================
+    # CANTIDAD CLUSTERS
+    # =====================================================
 
-    st.header(" Cantidad de individuos por Cluster")
+    st.header("Cantidad de individuos por Cluster")
 
     conteo = grupos.groupby('Cluster').size().reset_index()
 
@@ -627,9 +581,9 @@ if uploaded_file:
 
     st.plotly_chart(fig_count, use_container_width=True)
 
-    
-    # VISUALIZACIÓN MURDER VS URBANPOP
-
+    # =====================================================
+    # MURDER VS URBANPOP
+    # =====================================================
 
     st.header("Murder vs UrbanPop")
 
@@ -644,9 +598,9 @@ if uploaded_file:
 
     st.plotly_chart(fig_mu, use_container_width=True)
 
-
-    # VISUALIZACIÓN RAPE VS ASSAULT
-
+    # =====================================================
+    # RAPE VS ASSAULT
+    # =====================================================
 
     st.header("Rape vs Assault")
 
@@ -661,8 +615,9 @@ if uploaded_file:
 
     st.plotly_chart(fig_ra, use_container_width=True)
 
+    # =====================================================
     # EXPLICACIÓN MATEMÁTICA
- 
+    # =====================================================
 
     st.header("Explicación Matemática")
 
@@ -678,23 +633,11 @@ if uploaded_file:
     4. Los centroides se recalculan usando el promedio de los puntos.
 
     5. El proceso se repite hasta converger.
-
-    ## Distancia Euclidiana
-
-    La distancia usada normalmente es:
-
-    d(x,y)=√((x1-y1)^2+(x2-y2)^2+...)
-
-    ## Inercia
-
-    La inercia mide qué tan compactos son los clusters.
-
-    Menor inercia = mejores agrupaciones.
     """)
 
     st.success("Aplicación cargada correctamente")
 
 else:
 
-    st.warning("⚠ Suba el archivo data_USArrests.xlsx para iniciar")
+    st.warning("Suba el archivo data_USArrests.xlsx para iniciar")
 
