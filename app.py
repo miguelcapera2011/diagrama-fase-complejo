@@ -302,10 +302,10 @@ st.session_state.historial_tiempos.append({
     "Tiempo": tiempo_actual
 })
 
-    st.subheader("Centroides")
-    st.write(kmeans.cluster_centers_)
+st.subheader("Centroides")
+st.write(kmeans.cluster_centers_)
 
-    datos['Cluster'] = km4_clusters.labels_
+datos['Cluster'] = km4_clusters.labels_
 
   # BOTÓN PARA COMPARAR TIEMPOS
 
