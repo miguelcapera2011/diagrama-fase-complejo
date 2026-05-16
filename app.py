@@ -199,24 +199,25 @@ Incluye:
 # SIDEBAR
 # =========================
 
-st.sidebar.title("Configuración")
 
 st.sidebar.markdown("""
 <div style='text-align:center; margin-bottom:25px;'>
 
 <img src='https://cdn-icons-png.flaticon.com/512/2103/2103633.png'
-width='120'>
+width='100'>
 
 <h2 style='color:#00ffd5; margin-top:10px;'>
 MINERIA DE DATOS
 </h2>
 
 <p style='color:gray; font-size:13px;'>
-APRENDIZAJE NO SUPERVISADO
+Aprendizaje no supervisado
 </p>
 
 </div>
 """, unsafe_allow_html=True)
+
+st.sidebar.title("Configuración")
 
 uploaded_file = st.sidebar.file_uploader(
     "Suba el archivo data_USArrests.xlsx",
