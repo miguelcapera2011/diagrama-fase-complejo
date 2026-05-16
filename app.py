@@ -412,31 +412,31 @@ if uploaded_file:
 
     st.header("Algoritmo K-Means ")
     
-st.markdown("""
-<div style="
-background: rgba(0,255,213,0.08);
-padding:18px;
-border-radius:12px;
-border-left:5px solid #00ffd5;
-margin-bottom:20px;
-">
+    st.markdown("""
+    <div style="
+    background: rgba(0,255,213,0.08);
+    padding:18px;
+    border-radius:12px;
+    border-left:5px solid #00ffd5;
+    margin-bottom:20px;
+    ">
 
-<h4 style="color:#00ffd5;">
-📌 Nota
-</h4>
+    <h4 style="color:#00ffd5;">
+    Nota:
+    </h4>
 
-<p style="
-color:white;
-font-size:16px;
-line-height:1.7;
-">
+    <p style="
+    color:white;
+    font-size:16px;
+    line-height:1.7;
+    ">
 
-si deseas comparar el tiempo de ejecucion de los cluster y la inercia,la app inicia con 4 cluster,deslice la barra de numero de cluster para slecionar otro numero y puedes ver la comparacion.
+    si deseas comparar el tiempo de ejecucion de los cluster y la inercia,la app inicia con 4 cluster,deslice la barra de numero de cluster para slecionar otro numero y puedes ver la comparacion.
 
-</p>
+    </p>
 
-</div>
-""", unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
 
     
     kmeans = KMeans(
