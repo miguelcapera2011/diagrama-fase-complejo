@@ -7,8 +7,6 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import matplotlib.pyplot as plt
-import seaborn as sns
 import time
 
 from sklearn.preprocessing import StandardScaler
@@ -16,6 +14,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import euclidean_distances
 from scipy.spatial.distance import pdist, squareform
+
 
 # =========================================================
 # CONFIGURACIÓN GENERAL
@@ -28,7 +27,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# ESTILOS CSS
+# CSS
 # =========================================================
 
 st.markdown("""
@@ -72,7 +71,7 @@ h3 {
 st.title("Clustering K-Means")
 
 st.markdown("""
-Aplicación profesional e interactiva para explorar el algoritmo K-Means paso a paso.
+Aplicación profesional e interactiva para explorar K-Means paso a paso.
 """)
 
 # =========================================================
@@ -101,7 +100,7 @@ iteraciones_animadas = st.sidebar.slider(
 )
 
 # =========================================================
-# MEMORIA HISTORIAL
+# HISTORIAL
 # =========================================================
 
 if 'historial_tiempos' not in st.session_state:
@@ -111,22 +110,22 @@ if 'historial_tiempos' not in st.session_state:
     )
 
 # =========================================================
-# CARGA DE DATOS
+# APP
 # =========================================================
 
 if uploaded_file:
 
-    datos = pd.read_excel(uploaded_file)
+    # =====================================================
+    # CARGA
+    # =====================================================
 
-    # =====================================================
-    # DATASET
-    # =====================================================
+    datos = pd.read_excel(uploaded_file)
 
     st.header("📊 Dataset")
 
     st.dataframe(datos)
 
-    st.header("📌 Información del Dataset")
+    st.header("📌 Información")
 
     col1, col2, col3 = st.columns(3)
 
@@ -200,7 +199,7 @@ if uploaded_file:
     st.write(datos.head())
 
     # =====================================================
-    # DISTANCIAS EUCLIDIANAS
+    # DISTANCIA EUCLIDIANA
     # =====================================================
 
     st.header("📏 Distancias Euclidianas")
@@ -218,7 +217,7 @@ if uploaded_file:
     fig_heat = px.imshow(
         dist_matrix,
         color_continuous_scale='RdBu',
-        title='Mapa de calor Distancias Euclidianas'
+        title='Mapa Distancias Euclidianas'
     )
 
     st.plotly_chart(
@@ -227,7 +226,7 @@ if uploaded_file:
     )
 
     # =====================================================
-    # DISTANCIAS MANHATTAN
+    # DISTANCIA MANHATTAN
     # =====================================================
 
     st.header("📐 Distancias Manhattan")
@@ -329,7 +328,7 @@ if uploaded_file:
     )
 
     # =====================================================
-    # HISTORIAL DE TIEMPOS
+    # HISTORIAL
     # =====================================================
 
     nueva_fila = pd.DataFrame({
@@ -397,7 +396,7 @@ if uploaded_file:
         )
 
     # =====================================================
-    # COLORES TABLA
+    # TABLA COLORES
     # =====================================================
 
     def colorear_filas(row):
@@ -420,11 +419,7 @@ if uploaded_file:
                 'background-color: orange; color: black'
             ] * len(row)
 
-    # =====================================================
-    # TABLA HISTORIAL
-    # =====================================================
-
-    st.subheader("📋 Historial Acumulado")
+    st.subheader("📋 Historial de Tiempos")
 
     st.dataframe(
         historial.style
@@ -469,11 +464,10 @@ if uploaded_file:
     ))
 
     fig_tiempos.update_layout(
-        title='Tiempo de Ejecución por Número de Clusters',
-        xaxis_title='Número de Clusters',
+        title='Tiempo por Número de Clusters',
+        xaxis_title='Clusters',
         yaxis_title='Tiempo (ms)',
-        template='plotly_dark',
-        height=500
+        template='plotly_dark'
     )
 
     st.plotly_chart(
@@ -485,21 +479,23 @@ if uploaded_file:
     # CENTROIDES
     # =====================================================
 
-    st.subheader("Centroides")
+    st.subheader("📍 Centroides")
 
     st.write(kmeans.cluster_centers_)
 
     datos['Cluster'] = km4_clusters.labels_
 
     # =====================================================
-    # ANIMACIÓN CONVERGENCIA
+    # ANIMACIÓN
     # =====================================================
 
     st.header("🎬 Animación de Convergencia")
 
     pca_anim = PCA(n_components=2)
 
-    X_pca = pca_anim.fit_transform(datos[numericas])
+    X_pca = pca_anim.fit_transform(
+        datos[numericas]
+    )
 
     fig_anim = go.Figure()
 
@@ -533,7 +529,10 @@ if uploaded_file:
             axis=2
         )
 
-        labels = np.argmin(distancias, axis=1)
+        labels = np.argmin(
+            distancias,
+            axis=1
+        )
 
         nuevos_centroides = np.array([
             X_pca[labels == i].mean(axis=0)
@@ -577,7 +576,9 @@ if uploaded_file:
 
         for i in range(len(X_pca)):
 
-            centroide = nuevos_centroides[labels[i]]
+            centroide = nuevos_centroides[
+                labels[i]
+            ]
 
             scatter_data.append(
                 go.Scatter(
@@ -608,7 +609,7 @@ if uploaded_file:
     )
 
     fig_anim.update_layout(
-        title='Movimiento de centroides y convergencia K-Means',
+        title='Movimiento de centroides',
         width=1200,
         height=800,
         updatemenus=[
@@ -678,14 +679,14 @@ if uploaded_file:
     )
 
     # =====================================================
-    # SIMULACIÓN 3D REAL
+    # PCA 3D
     # =====================================================
 
-    st.subheader(
-        "🎥 Simulación paso a paso REAL de K-Means"
-    )
+    st.subheader("🎥 Simulación 3D")
 
-    X3D = pca_df[['PC1', 'PC2', 'PC3']].values
+    X3D = pca_df[
+        ['PC1', 'PC2', 'PC3']
+    ].values
 
     labels_names = datos['State'].values
 
@@ -750,7 +751,6 @@ if uploaded_file:
         if np.linalg.norm(
             nuevos_centroides - centroides
         ) < 1e-4:
-
             break
 
         centroides = nuevos_centroides
@@ -785,7 +785,9 @@ if uploaded_file:
 
         puntos = X3D[labels_sel == i]
 
-        nombres = labels_names[labels_sel == i]
+        nombres = labels_names[
+            labels_sel == i
+        ]
 
         fig_k.add_trace(go.Scatter3d(
             x=puntos[:,0],
@@ -833,7 +835,7 @@ if uploaded_file:
         ))
 
     fig_k.update_layout(
-        title=f"K-Means Paso a Paso - Iteración {iter_sel}",
+        title=f"K-Means Iteración {iter_sel}",
         width=1700,
         height=900,
         paper_bgcolor='#0e1117',
@@ -889,7 +891,7 @@ if uploaded_file:
     )
 
     # =====================================================
-    # CANTIDAD CLUSTER
+    # CANTIDAD
     # =====================================================
 
     st.header("📊 Cantidad por Cluster")
@@ -917,10 +919,10 @@ if uploaded_file:
     )
 
     # =====================================================
-    # SCATTER 1
+    # SCATTERS
     # =====================================================
 
-    st.header("🔍 Murder vs UrbanPop")
+    st.header("Murder vs UrbanPop")
 
     fig_mu = px.scatter(
         datos,
@@ -935,11 +937,7 @@ if uploaded_file:
         use_container_width=True
     )
 
-    # =====================================================
-    # SCATTER 2
-    # =====================================================
-
-    st.header("🔍 Rape vs Assault")
+    st.header("Rape vs Assault")
 
     fig_ra = px.scatter(
         datos,
@@ -958,39 +956,28 @@ if uploaded_file:
     # EXPLICACIÓN
     # =====================================================
 
-    st.header("📘 Explicación Matemática")
+    st.header("📚 Explicación Matemática")
 
     st.markdown("""
     ## ¿Cómo funciona K-Means?
 
     1. Se eligen centroides aleatorios.
 
-    2. Cada punto calcula su distancia al centroide más cercano.
+    2. Cada punto calcula la distancia al centroide.
 
-    3. Los puntos se asignan al cluster más cercano.
+    3. Se asigna al cluster más cercano.
 
-    4. Los centroides se recalculan usando el promedio de los puntos.
+    4. Los centroides se recalculan.
 
     5. El proceso se repite hasta converger.
-
-    ## Distancia Euclidiana
-
     """)
 
-    :contentReference[oaicite:0]{index=0}
-
-    st.markdown("""
-    ## Inercia
-
-    La inercia mide qué tan compactos son los clusters.
-
-    Menor inercia = mejores agrupaciones.
-    """)
-
-    st.success("✅ Aplicación cargada correctamente")
+    st.success(
+        "Aplicación cargada correctamente"
+    )
 
 else:
 
     st.warning(
-        "⚠ Suba el archivo data_USArrests.xlsx para iniciar"
+        "⚠ Suba el archivo data_USArrests.xlsx"
     )
