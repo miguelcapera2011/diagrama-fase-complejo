@@ -30,290 +30,46 @@ st.set_page_config(
 
 
 # =========================
-# ESTILOS CSS PROFESIONALES
+# ESTILOS CSS
 # =========================
 
 st.markdown("""
 <style>
-
-/* =========================
-   FONDO GENERAL
-========================= */
-
-.stApp {
-    background-color: #0b1120;
-}
-
 .main {
-    background-color: #0b1120;
+    background-color: #0e1117;
 }
-
-
-/* =========================
-   CONTENEDOR PRINCIPAL
-========================= */
-
-.block-container {
-
-    padding-top: 1rem;
-
-    padding-bottom: 2rem;
-
-    padding-left: 2rem;
-
-    padding-right: 2rem;
-}
-
-
-/* =========================
-   TITULO PRINCIPAL
-========================= */
 
 h1 {
-
     color: #00ffd5;
-
     text-align: center;
-
-    font-size: 52px;
-
-    font-weight: 800;
-
-    letter-spacing: 1px;
+    font-size: 50px;
 }
 
-
-/* =========================
-   SUBTITULOS
-========================= */
-
 h2 {
-
-    color: #38bdf8;
-
-    font-weight: 700;
+    color: #00c3ff;
 }
 
 h3 {
-
-    color: white;
+    color: #ffffff;
 }
 
-
-/* =========================
-   TEXTO GENERAL
-========================= */
-
-p, li, div {
-
-    color: #d1d5db;
-}
-
-
-/* =========================
-   SIDEBAR PROFESIONAL
-========================= */
-
-[data-testid="stSidebar"] {
-
-    background: linear-gradient(
-        180deg,
-        #111827 0%,
-        #0f172a 100%
-    );
-
-    border-right: 1px solid rgba(255,255,255,0.06);
-}
-
-
-/* =========================
-   OCULTAR FRAME FEO SIDEBAR
-========================= */
-
-section[data-testid="stSidebar"] > div {
-
-    border: none !important;
-
-    box-shadow: none !important;
-
-    padding-top: 0rem !important;
-}
-
-
-/* =========================
-   TITULO CONFIGURACION
-========================= */
-
-[data-testid="stSidebar"] h1 {
-
-    font-size: 20px !important;
-
-    text-align: left !important;
-
-    margin-left: -10px !important;
-
-    margin-top: -10px !important;
-
-    padding-top: 0px !important;
-
-    color: #00ffd5 !important;
-
-    font-weight: 700 !important;
-}
-
-
-/* =========================
-   LOGO SIDEBAR
-========================= */
-
-[data-testid="stSidebar"] img {
-
-    display: block;
-
-    margin-left: auto;
-
-    margin-right: auto;
-
-    margin-top: -10px;
-
-    margin-bottom: 10px;
-}
-
-
-/* =========================
-   BOTONES
-========================= */
-
-.stButton > button {
-
-    width: 100%;
-
-    border-radius: 12px;
-
-    height: 3em;
-
-    border: none;
-
-    background: linear-gradient(
-        90deg,
-        #06b6d4,
-        #3b82f6
-    );
-
-    color: white;
-
-    font-weight: bold;
-
-    transition: 0.3s;
-}
-
-.stButton > button:hover {
-
-    transform: scale(1.02);
-
-    box-shadow: 0px 0px 15px rgba(59,130,246,0.5);
-}
-
-
-/* =========================
-   METRICAS
-========================= */
-
-[data-testid="metric-container"] {
-
-    background: rgba(255,255,255,0.05);
-
-    border: 1px solid rgba(255,255,255,0.08);
-
-    padding: 15px;
-
-    border-radius: 15px;
-
-    box-shadow: 0px 5px 15px rgba(0,0,0,0.25);
-}
-
-
-/* =========================
-   DATAFRAME
-========================= */
-
-[data-testid="stDataFrame"] {
-
-    border-radius: 15px;
-
-    overflow: hidden;
-
-    border: 1px solid rgba(255,255,255,0.05);
-}
-
-
-/* =========================
-   SLIDERS
-========================= */
-
-.stSlider {
-
-    padding-top: 10px;
-
-    padding-bottom: 10px;
-}
-
-
-/* =========================
-   TABS
-========================= */
-
-.stTabs [data-baseweb="tab"] {
-
-    background-color: #111827;
-
+.stMetric {
+    background-color: rgba(255,255,255,0.05);
+    padding: 10px;
     border-radius: 10px;
-
-    color: white;
-
-    padding: 10px 18px;
 }
 
-.stTabs [aria-selected="true"] {
-
-    background-color: #06b6d4 !important;
-
-    color: white !important;
+.block-container {
+    padding-top: 2rem;
 }
 
-
-/* =========================
-   GRAFICAS
-========================= */
-
-.plot-container {
-
-    border-radius: 20px;
-
-    overflow: hidden;
-
-    box-shadow: 0px 5px 20px rgba(0,0,0,0.30);
+.css-1d391kg {
+    background-color: #111827;
 }
-
-
-/* =========================
-   OCULTAR ELEMENTOS STREAMLIT
-========================= */
-
-#MainMenu {
-    visibility: hidden;
-}
-
-footer {
-    visibility: hidden;
-}
-
-header {
-    visibility: hidden;
-}
-
 </style>
 """, unsafe_allow_html=True)
+
+
 # =========================
 # TITULO
 # =========================
@@ -343,37 +99,6 @@ Incluye:
 # =========================
 
 
-st.sidebar.markdown("""
-<div style='text-align:center; margin-bottom:25px;'>
-
-<img src='https://cdn-icons-png.flaticon.com/512/2103/2103633.png'
-width='60'>
-
-<h2 style='color:#00ffd5; margin-top:10px;'>
-MINERIA DE DATOS
-</h2>
-
-<p style='color:gray; font-size:13px;'>
-Aprendizaje no supervisado
-</p>
-
-</div>
-""", unsafe_allow_html=True)
-# =========================
-# LOGO PNG SIDEBAR
-# =========================
-
-st.sidebar.image(
-    "logo.png",
-    width=120
-)
-
-st.sidebar.markdown(
-    "<h1>⚙ Configuración</h1>",
-    unsafe_allow_html=True
-)
-
-
 
 uploaded_file = st.sidebar.file_uploader(
     "Suba el archivo data_USArrests.xlsx",
@@ -389,7 +114,7 @@ iteraciones_animadas = st.sidebar.slider(
     20
 )
 
-
+st.sidebar.title("⚙ Configuración")
 # =========================
 # CARGA DE DATOS
 # =========================
