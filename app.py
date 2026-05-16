@@ -1071,18 +1071,6 @@ if uploaded_file:
     5. El proceso se repite hasta converger.
 
    
-
-    st.markdown("""
-    ### 5. Distancia Euclidiana
-
-    La distancia euclidiana mide qué tan lejos están dos puntos
-    en el espacio.
-    """)
-
-    st.latex(r'''
-    d(x,y)=\sqrt{(x_1-y_1)^2+(x_2-y_2)^2+\cdots+(x_n-y_n)^2}
-    ''')
-
     ## Inercia
 
     La inercia mide qué tan compactos son los clusters.
