@@ -136,33 +136,70 @@ h2, h3 {
 """, unsafe_allow_html=True)
 
 
-# =========================
-# TITULO
-# =========================
 
 # =========================
 # HEADER PERSONALIZADO
 # =========================
 
 st.markdown("""
+<div style="text-align: center;">
 
+<h1 style="
+color:#00ffd5;
+font-size:42px;
+margin-bottom:10px;
+">
+Clustering K-Means
+</h1>
+
+<p style="
+color:#cbd5e1;
+font-size:18px;
+max-width:900px;
+margin:auto;
+line-height:1.8;
+">
 
 Esta aplicación permite explorar paso a paso el algoritmo K-Means usando el dataset USArrests.
 
-Incluye:
+</p>
 
-- Exploración de datos
-- Estandarización
-- Distancias Euclidianas y Manhattan
-- Método del codo
-- Animación de convergencia de K-Means
-- PCA 2D y 3D
-- Boxplots interactivos
-- Visualizaciones dinámicas
-- Movimiento de centroides
-- Explicaciones matemáticas
-""")
+</div>
 
+<br>
+
+<div style="
+background: rgba(255,255,255,0.04);
+padding:25px;
+border-radius:15px;
+border:1px solid rgba(255,255,255,0.08);
+">
+
+<h3 style="color:#00c3ff;">
+📌 Incluye:
+</h3>
+
+<ul style="
+font-size:17px;
+line-height:2;
+color:white;
+">
+
+<li>Exploración de datos</li>
+<li>Estandarización</li>
+<li>Distancias Euclidianas y Manhattan</li>
+<li>Método del codo</li>
+<li>Animación de convergencia de K-Means</li>
+<li>PCA 2D y 3D</li>
+<li>Boxplots interactivos</li>
+<li>Visualizaciones dinámicas</li>
+<li>Movimiento de centroides</li>
+<li>Explicaciones matemáticas</li>
+
+</ul>
+
+</div>
+""", unsafe_allow_html=True)
 
 
 
