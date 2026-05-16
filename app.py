@@ -59,28 +59,6 @@ h3 {
 .css-1d391kg {
     background-color: #111827;
 }
-
-/* TABLAS */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #111827;
-    color: white;
-}
-
-th {
-    background-color: #00c3ff;
-    color: black;
-    padding: 10px;
-    border: 1px solid white;
-    text-align: center;
-}
-
-td {
-    padding: 8px;
-    border: 1px solid #333;
-    text-align: center;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -282,6 +260,243 @@ if uploaded_file:
 
     st.plotly_chart(fig_elbow, use_container_width=True)
 
+    # =========================================================
+    # COMPARACIÓN DE CLUSTERS Y TIEMPOS
+    # =========================================================
+
+    st.header("⏱ Comparación de Clusters y Tiempo de Ejecución")
+
+    comparacion = []
+
+    X_cluster = datos.drop(columns=['State'])
+
+    for n_clusters in range(2, 11):
+
+        inicio_comp = time.time()
+
+        modelo_comp = KMeans(
+            n_clusters=n_clusters,
+            n_init=50,
+            random_state=42
+        )
+
+        modelo_comp.fit(X_cluster)
+
+        fin_comp = time.time()
+
+        tiempo_ms = (fin_comp - inicio_comp) * 1000
+
+        inercia = modelo_comp.inertia_
+
+        comparacion.append({
+            "Clusters": n_clusters,
+            "Tiempo_ms": tiempo_ms,
+            "Inercia": inercia
+        })
+
+    comparacion_df = pd.DataFrame(comparacion)
+
+    # NORMALIZACIÓN
+
+    comparacion_df["Tiempo_norm"] = (
+        comparacion_df["Tiempo_ms"] /
+        comparacion_df["Tiempo_ms"].max()
+    )
+
+    comparacion_df["Inercia_norm"] = (
+        comparacion_df["Inercia"] /
+        comparacion_df["Inercia"].max()
+    )
+
+    # SCORE FINAL
+
+    comparacion_df["Score"] = (
+        comparacion_df["Tiempo_norm"] * 0.3 +
+        comparacion_df["Inercia_norm"] * 0.7
+    )
+
+    mejor_idx = comparacion_df["Score"].idxmin()
+    peor_idx = comparacion_df["Score"].idxmax()
+
+    colores_modelo = []
+
+    for idx in comparacion_df.index:
+
+        if idx == mejor_idx:
+            colores_modelo.append("green")
+
+        elif idx == peor_idx:
+            colores_modelo.append("red")
+
+        else:
+            colores_modelo.append("orange")
+
+    comparacion_df["Color"] = colores_modelo
+
+    # TABLA
+
+    st.subheader("📋 Tabla Comparativa")
+
+    st.dataframe(
+        comparacion_df[
+            [
+                "Clusters",
+                "Tiempo_ms",
+                "Inercia",
+                "Score"
+            ]
+        ].style.format({
+            "Tiempo_ms": "{:.2f}",
+            "Inercia": "{:.2f}",
+            "Score": "{:.4f}"
+        }),
+        use_container_width=True
+    )
+
+    # GRÁFICA TIEMPOS
+
+    st.subheader("⚡ Tiempo de Ejecución por Número de Clusters")
+
+    fig_tiempo = px.bar(
+        comparacion_df,
+        x="Clusters",
+        y="Tiempo_ms",
+        color="Color",
+        color_discrete_map={
+            "green": "green",
+            "red": "red",
+            "orange": "orange"
+        },
+        text="Tiempo_ms",
+        title="Comparación de Tiempo de Ejecución"
+    )
+
+    fig_tiempo.update_traces(
+        texttemplate='%{text:.2f} ms',
+        textposition='outside'
+    )
+
+    st.plotly_chart(fig_tiempo, use_container_width=True)
+
+    # GRÁFICA SCORE
+
+    st.subheader("🎯 Calidad General del Modelo")
+
+    fig_score = px.bar(
+        comparacion_df,
+        x="Clusters",
+        y="Score",
+        color="Color",
+        color_discrete_map={
+            "green": "green",
+            "red": "red",
+            "orange": "orange"
+        },
+        text="Score",
+        title="Evaluación Global de Clusters"
+    )
+
+    fig_score.update_traces(
+        texttemplate='%{text:.4f}',
+        textposition='outside'
+    )
+
+    st.plotly_chart(fig_score, use_container_width=True)
+
+    # DATOS MEJOR Y PEOR
+
+    mejor_cluster = comparacion_df.loc[mejor_idx, "Clusters"]
+    peor_cluster = comparacion_df.loc[peor_idx, "Clusters"]
+
+    mejor_tiempo = comparacion_df.loc[mejor_idx, "Tiempo_ms"]
+    peor_tiempo = comparacion_df.loc[peor_idx, "Tiempo_ms"]
+
+    mejor_inercia = comparacion_df.loc[mejor_idx, "Inercia"]
+    peor_inercia = comparacion_df.loc[peor_idx, "Inercia"]
+
+    # ANÁLISIS AUTOMÁTICO
+
+    st.subheader("🧠 Análisis Automático")
+
+    st.success(
+        f"""
+        🟢 MEJOR MODELO DETECTADO
+
+        Número de clusters: {mejor_cluster}
+
+        Tiempo de ejecución: {mejor_tiempo:.2f} ms
+
+        Inercia: {mejor_inercia:.2f}
+
+        Este modelo tiene el mejor equilibrio entre:
+
+        ✔ velocidad computacional
+
+        ✔ compactación de grupos
+
+        ✔ estabilidad del agrupamiento
+
+        ✔ eficiencia matemática
+
+        Una menor inercia significa que los puntos están
+        más cerca de sus centroides.
+        """
+    )
+
+    st.error(
+        f"""
+        🔴 PEOR MODELO DETECTADO
+
+        Número de clusters: {peor_cluster}
+
+        Tiempo de ejecución: {peor_tiempo:.2f} ms
+
+        Inercia: {peor_inercia:.2f}
+
+        Este modelo presenta el peor rendimiento general,
+        debido a:
+
+        ✖ exceso de dispersión
+
+        ✖ peor compactación
+
+        ✖ menor eficiencia computacional
+
+        ✖ agrupamientos menos óptimos
+        """
+    )
+
+    st.warning("""
+    🟠 CLUSTERS INTERMEDIOS
+
+    Los modelos naranjas representan soluciones balanceadas.
+
+    Dependiendo del análisis pueden ser útiles para:
+
+    • segmentación más detallada
+
+    • exploración de patrones
+
+    • reducción de complejidad
+
+    • interpretabilidad del modelo
+
+    En Machine Learning no siempre el modelo más rápido
+    es el mejor.
+
+    Tampoco el de menor inercia absoluta.
+
+    El objetivo es encontrar equilibrio entre:
+
+    ✔ precisión
+
+    ✔ estabilidad
+
+    ✔ interpretación
+
+    ✔ costo computacional
+    """)
+
     # KMEANS
 
 
@@ -307,30 +522,6 @@ if uploaded_file:
     datos['Cluster'] = km4_clusters.labels_
 
   
-    # TABLA NUEVA AGREGADA
-    # SOLO SE AGREGÓ ESTA PARTE
-
-
-    st.header("📋 Tabla Completa de Datos con Clusters")
-
-    tabla_clusters = datos.copy()
-
-    tabla_clusters['Cluster'] = tabla_clusters['Cluster'].astype(str)
-
-    st.dataframe(
-        tabla_clusters,
-        use_container_width=True
-    )
-
-    st.subheader("Resumen Estadístico por Cluster")
-
-    resumen = tabla_clusters.groupby('Cluster')[['Murder', 'Assault', 'UrbanPop', 'Rape']].mean()
-
-    st.table(
-        resumen.style.format("{:.2f}")
-    )
-
-
     # ANIMACIÓN DE CONVERGENCIA
 
 
