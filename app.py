@@ -410,7 +410,7 @@ if uploaded_file:
     # KMEANS
 
 
-    st.header("Algoritmo K-Means")
+    st.header("Algoritmo K-Means (nota: la app inicia con 4 cluster debes selecionar otro numero de cliatero moviendo la barrada de numero de cluster para ver la comparaciones.")
 
     kmeans = KMeans(
         n_clusters=k,
