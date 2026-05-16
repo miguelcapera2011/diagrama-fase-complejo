@@ -423,6 +423,120 @@ if uploaded_file:
         tardan más que otros.
         """)
 
+    #    MIGUE INICIO
+        # =========================
+    # NUEVO BLOQUE AGREGADO
+    # COMPARACIÓN DE INERCIAS
+    # =========================
+
+    inercia_actual = kmeans.inertia_
+
+    if "historial_inercias" not in st.session_state:
+        st.session_state.historial_inercias = []
+
+    # eliminar K repetido
+    st.session_state.historial_inercias = [
+        x for x in st.session_state.historial_inercias
+        if x["Clusters"] != k
+    ]
+
+    # guardar nueva inercia
+    st.session_state.historial_inercias.append({
+        "Clusters": k,
+        "Inercia": inercia_actual
+    })
+
+    historial_df = pd.DataFrame(
+        st.session_state.historial_inercias
+    ).sort_values(by="Clusters")
+
+    # =========================
+    # BOTON MOSTRAR COMPARACION
+    # =========================
+
+    if st.button("📊 Mostrar comparación de inercias"):
+
+        st.subheader(
+            "📉 Comparación de Inercia según número de clusters"
+        )
+
+        mejor = historial_df["Inercia"].min()
+        peor = historial_df["Inercia"].max()
+
+        colores_barras = []
+
+        for valor in historial_df["Inercia"]:
+
+            if valor == mejor:
+                colores_barras.append("green")
+
+            elif valor == peor:
+                colores_barras.append("red")
+
+            else:
+                colores_barras.append("orange")
+
+        fig_inercia = go.Figure()
+
+        fig_inercia.add_trace(
+            go.Bar(
+                x=historial_df["Clusters"],
+                y=historial_df["Inercia"],
+                marker_color=colores_barras,
+                text=np.round(
+                    historial_df["Inercia"], 2
+                ),
+                textposition='outside'
+            )
+        )
+
+        fig_inercia.update_layout(
+            title="Comparación de Inercia según K",
+            xaxis_title="Número de Clusters",
+            yaxis_title="Inercia (WSS)",
+            height=500
+        )
+
+        st.plotly_chart(
+            fig_inercia,
+            use_container_width=True
+        )
+
+        mejor_k = historial_df.loc[
+            historial_df["Inercia"].idxmin(),
+            "Clusters"
+        ]
+
+        peor_k = historial_df.loc[
+            historial_df["Inercia"].idxmax(),
+            "Clusters"
+        ]
+
+        st.markdown(f"""
+        ## 📌 Interpretación Automática
+
+        - 🟢 La menor inercia fue con K = {mejor_k}
+
+        - 🔴 La mayor inercia fue con K = {peor_k}
+
+        - 🟠 Los demás valores son intermedios.
+
+        ### ¿Qué significa?
+
+        La inercia mide qué tan compactos
+        son los clusters.
+
+        - Menor inercia =
+          clusters más compactos.
+
+        - Mayor inercia =
+          agrupaciones menos precisas.
+
+        Normalmente al aumentar K,
+        la inercia disminuye.
+        """)
+    #fin miguel
+
     st.subheader("Centroides")
     st.write(kmeans.cluster_centers_)
 
