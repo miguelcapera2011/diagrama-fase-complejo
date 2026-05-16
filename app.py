@@ -1,6 +1,6 @@
-# =========================
+
 # LIBRERIAS
-# =========================
+
 
 import streamlit as st
 import pandas as pd
@@ -18,9 +18,9 @@ from sklearn.metrics.pairwise import euclidean_distances
 from scipy.spatial.distance import pdist, squareform
 
 
-# =========================
+
 # CONFIGURACIÓN GENERAL
-# =========================
+
 
 st.set_page_config(
     page_title="K-Means Profesional",
@@ -29,9 +29,9 @@ st.set_page_config(
 )
 
 
-# =========================
+
 # ESTILOS CSS
-# =========================
+
 
 st.markdown("""
 <style>
@@ -137,9 +137,9 @@ h2, h3 {
 
 
 
-# =========================
+
 # HEADER PERSONALIZADO
-# =========================
+
 
 st.markdown("""
 <div style="text-align: center;">
@@ -175,10 +175,6 @@ border-radius:15px;
 border:1px solid rgba(255,255,255,0.08);
 ">
 
-<h3 style="color:#00c3ff;">
-📌 Incluye:
-</h3>
-
 <ul style="
 font-size:17px;
 line-height:2;
@@ -203,9 +199,9 @@ color:white;
 
 
 
-# =========================
+
 # SIDEBAR
-# =========================
+
 st.sidebar.markdown("""
 <p class="sidebar-title">
 ⚙ Configuración
@@ -227,9 +223,9 @@ iteraciones_animadas = st.sidebar.slider(
     20
 )
 
-# =========================
+
 # CARGA DE DATOS
-# =========================
+
 
 if uploaded_file:
 
@@ -254,16 +250,16 @@ if uploaded_file:
     st.write(datos.describe())
 
 
-    # =========================
+
     # LIMPIEZA
-    # =========================
+   
 
     datos = datos.dropna()
 
 
-    # =========================
+  
     # HISTOGRAMAS
-    # =========================
+
 
     st.header(" Histogramas")
 
@@ -294,9 +290,9 @@ if uploaded_file:
             st.plotly_chart(fig, use_container_width=True)
 
 
-    # =========================
+ 
     # ESTANDARIZACIÓN
-    # =========================
+ 
 
     st.header("⚖ Estandarización")
 
@@ -313,11 +309,11 @@ if uploaded_file:
     st.write(datos.head())
 
 
-    # =========================
-    # MATRIZ DISTANCIAS
-    # =========================
 
-    st.header("📏 Distancias Euclidianas")
+    # MATRIZ DISTANCIAS
+   
+
+    st.header("Distancias Euclidianas")
 
     distancias = euclidean_distances(
         datos.drop(columns=['State'])
@@ -338,11 +334,11 @@ if uploaded_file:
     st.plotly_chart(fig_heat, use_container_width=True)
 
 
-    # =========================
-    # DISTANCIAS MANHATTAN
-    # =========================
 
-    st.header("📐 Distancias Manhattan")
+    # DISTANCIAS MANHATTAN
+   
+
+    st.header("Distancias Manhattan")
 
     manhattan = pdist(
         datos.drop(columns=['State']),
@@ -366,11 +362,11 @@ if uploaded_file:
     st.plotly_chart(fig_manhattan, use_container_width=True)
 
 
-    # =========================
+   
     # METODO DEL CODO
-    # =========================
+ 
 
-    st.header("🦴 Método del Codo")
+    st.header(" Método del Codo")
 
     wss = []
 
@@ -410,11 +406,11 @@ if uploaded_file:
     st.plotly_chart(fig_elbow, use_container_width=True)
 
 
-    # =========================
+ 
     # KMEANS
-    # =========================
 
-    st.header("🤖 Algoritmo K-Means")
+
+    st.header("Algoritmo K-Means")
 
     kmeans = KMeans(
         n_clusters=k,
@@ -435,9 +431,9 @@ if uploaded_file:
     )
 
 
-    # =========================
+  
     # NUEVO BLOQUE AGREGADO
-    # =========================
+
 
     tiempo_actual = (fin - inicio) * 1000
 
@@ -458,10 +454,10 @@ if uploaded_file:
         st.session_state.historial_tiempos
     ).sort_values(by="Clusters")
 
-    if st.button("📊 Mostrar comparación de tiempos"):
+    if st.button("Mostrar comparación de tiempos"):
 
         st.subheader(
-            "⏱ Comparación de tiempos por número de clusters"
+            "Comparación de tiempos por número de clusters"
         )
 
         mejor = historial_df["Tiempo"].min()
@@ -515,7 +511,7 @@ if uploaded_file:
         ]
 
         st.markdown(f"""
-        ## 📌 Análisis Automático
+        ## Análisis Automático
 
         - 🟢 El mejor rendimiento fue con K = {mejor_k}
 
@@ -536,10 +532,9 @@ if uploaded_file:
         """)
 
     #    MIGUE INICIO
-        # =========================
-    # NUEVO BLOQUE AGREGADO
+    
     # COMPARACIÓN DE INERCIAS
-    # =========================
+   
 
     inercia_actual = kmeans.inertia_
 
@@ -562,10 +557,9 @@ if uploaded_file:
         st.session_state.historial_inercias
     ).sort_values(by="Clusters")
 
-    # =========================
-    # BOTON MOSTRAR COMPARACION
-    # =========================
 
+    # BOTON MOSTRAR COMPARACION
+ 
     if st.button("📊 Mostrar comparación de inercias"):
 
         st.subheader(
@@ -625,7 +619,7 @@ if uploaded_file:
         ]
 
         st.markdown(f"""
-        ## 📌 Interpretación Automática
+        ##  Interpretación Automática
 
         - 🟢 La menor inercia fue con K = {mejor_k}
 
@@ -752,7 +746,7 @@ if uploaded_file:
                 'type': 'buttons',
                 'buttons': [
                     {
-                        'label': '▶️ Iniciar',
+                        'label': 'Iniciar',
                         'method': 'animate',
                         'args': [None]
                     }
@@ -766,7 +760,7 @@ if uploaded_file:
     # PCA
 
 
-    st.header("🧠 PCA")
+    st.header("PCA")
 
     pca = PCA(n_components=4)
 
@@ -804,7 +798,7 @@ if uploaded_file:
     # SIMULACIÓN PEDAGÓGICA REAL K-MEANS (CONTROL POR ITERACIONES)
    
 
-    st.subheader("🎥 Simulación paso a paso REAL de K-Means (Controlable)")
+    st.subheader("Simulación paso a paso REAL de K-Means (Controlable)")
 
     st.markdown("""
     Controla cada iteración del algoritmo:
@@ -1066,7 +1060,5 @@ if uploaded_file:
 
 else:
 
-    st.warning("⚠️ Suba el archivo data_USArrests.xlsx para iniciar")
+    st.warning("Suba el archivo data_USArrests.xlsx para iniciar")
 
-    # EL RESTO DEL CÓDIGO ORIGINAL CONTINÚA IGUAL
-    # NO SE ELIMINÓ NADA
