@@ -1,5 +1,3 @@
-# Código completo actualizado de la app Streamlit K-Means
-
 
 # =========================================================
 # LIBRERÍAS
@@ -257,97 +255,193 @@ if uploaded_file:
     st.plotly_chart(fig_elbow, use_container_width=True)
 
     # =====================================================
-    # TIEMPOS KMEANS
+    # HISTORIAL TIEMPOS KMEANS
     # =====================================================
 
-    st.header("Comparación de Tiempo de Ejecución por Clusters")
+    st.header("⏱ Historial de Tiempo de Ejecución")
 
-    tiempos_kmeans = []
-    inercias_kmeans = []
+    st.markdown("""
+    Cada vez que cambias el número de clusters (k),
+    la aplicación guarda automáticamente:
 
-    rangos_k = range(2, 11)
+    - número de clusters,
+    - tiempo de ejecución,
+    - inercia.
 
-    progress_bar = st.progress(0)
-    status_text = st.empty()
+    Luego compara todos los resultados.
+    """)
 
-    for idx, k_test in enumerate(rangos_k):
+    # =====================================================
+    # SESSION STATE
+    # =====================================================
 
-        status_text.text(f"Calculando K-Means con k = {k_test}...")
+    if 'historial_kmeans' not in st.session_state:
 
-        inicio_k = time.time()
-
-        modelo_k = KMeans(
-            n_clusters=k_test,
-            n_init=50,
-            random_state=42
+        st.session_state.historial_kmeans = pd.DataFrame(
+            columns=['Clusters', 'Tiempo_ms', 'Inercia']
         )
 
-        modelo_k.fit(datos.drop(columns=['State']))
+    # =====================================================
+    # KMEANS ACTUAL
+    # =====================================================
 
-        fin_k = time.time()
+    inicio_actual = time.time()
 
-        tiempo_ms = (fin_k - inicio_k) * 1000
+    modelo_actual = KMeans(
+        n_clusters=k,
+        n_init=50,
+        random_state=42
+    )
 
-        tiempos_kmeans.append(tiempo_ms)
-        inercias_kmeans.append(modelo_k.inertia_)
+    modelo_actual.fit(datos.drop(columns=['State']))
 
-        progreso = (idx + 1) / len(rangos_k)
-        progress_bar.progress(progreso)
+    fin_actual = time.time()
 
-    status_text.empty()
+    tiempo_actual = (fin_actual - inicio_actual) * 1000
 
-    tiempos_df = pd.DataFrame({
-        'Clusters': list(rangos_k),
-        'Tiempo_ms': tiempos_kmeans,
-        'Inercia': inercias_kmeans
+    inercia_actual = modelo_actual.inertia_
+
+    # =====================================================
+    # NUEVO REGISTRO
+    # =====================================================
+
+    nuevo_registro = pd.DataFrame({
+        'Clusters': [k],
+        'Tiempo_ms': [tiempo_actual],
+        'Inercia': [inercia_actual]
     })
+
+    # =====================================================
+    # EVITAR DUPLICADOS
+    # =====================================================
+
+    historial = st.session_state.historial_kmeans
+
+    historial = historial[historial['Clusters'] != k]
+
+    historial = pd.concat(
+        [historial, nuevo_registro],
+        ignore_index=True
+    )
+
+    historial = historial.sort_values(by='Clusters')
+
+    st.session_state.historial_kmeans = historial
+
+    # =====================================================
+    # MEJOR Y PEOR TIEMPO
+    # =====================================================
+
+    mejor_tiempo = historial['Tiempo_ms'].min()
+    peor_tiempo = historial['Tiempo_ms'].max()
+
+    # =====================================================
+    # FUNCIÓN COLORES
+    # =====================================================
+
+    def colorear_filas(row):
+
+        if row['Tiempo_ms'] == mejor_tiempo:
+            return ['background-color: green; color: white'] * len(row)
+
+        elif row['Tiempo_ms'] == peor_tiempo:
+            return ['background-color: red; color: white'] * len(row)
+
+        else:
+            return ['background-color: orange; color: black'] * len(row)
+
+    # =====================================================
+    # MÉTRICAS
+    # =====================================================
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
         st.metric(
-            "Tiempo mínimo",
-            f"{tiempos_df['Tiempo_ms'].min():.2f} ms"
+            "⚡ Tiempo actual",
+            f"{tiempo_actual:.2f} ms"
         )
 
     with col2:
 
-        mejor_k = tiempos_df.loc[
-            tiempos_df['Tiempo_ms'].idxmin(),
+        mejor_k = historial.loc[
+            historial['Tiempo_ms'].idxmin(),
             'Clusters'
         ]
 
         st.metric(
-            "Mejor rendimiento",
+            "🏆 Mejor k",
             f"k = {mejor_k}"
         )
 
     with col3:
+
+        peor_k = historial.loc[
+            historial['Tiempo_ms'].idxmax(),
+            'Clusters'
+        ]
+
         st.metric(
-            "Tiempo promedio",
-            f"{tiempos_df['Tiempo_ms'].mean():.2f} ms"
+            "🐢 Peor k",
+            f"k = {peor_k}"
         )
 
-    st.dataframe(tiempos_df, use_container_width=True)
+    # =====================================================
+    # TABLA COLOREADA
+    # =====================================================
 
-    fig_tiempos = px.line(
-        tiempos_df,
-        x='Clusters',
-        y='Tiempo_ms',
-        markers=True,
-        title='Tiempo de ejecución vs Número de Clusters',
-        text='Tiempo_ms'
+    st.subheader("📋 Historial acumulado")
+
+    st.dataframe(
+        historial.style
+        .apply(colorear_filas, axis=1)
+        .format({
+            'Tiempo_ms': '{:.2f} ms',
+            'Inercia': '{:.2f}'
+        }),
+        use_container_width=True
     )
 
-    fig_tiempos.update_traces(
-        texttemplate='%{text:.2f} ms',
-        textposition='top center'
+    # =====================================================
+    # GRÁFICO TIEMPOS
+    # =====================================================
+
+    colores_barras = []
+
+    for valor in historial['Tiempo_ms']:
+
+        if valor == mejor_tiempo:
+            colores_barras.append('green')
+
+        elif valor == peor_tiempo:
+            colores_barras.append('red')
+
+        else:
+            colores_barras.append('orange')
+
+    fig_historial = go.Figure()
+
+    fig_historial.add_trace(go.Bar(
+        x=historial['Clusters'],
+        y=historial['Tiempo_ms'],
+        marker_color=colores_barras,
+        text=np.round(historial['Tiempo_ms'], 2),
+        textposition='outside'
+    ))
+
+    fig_historial.update_layout(
+        title='Comparación de tiempos por número de clusters',
+        xaxis_title='Número de Clusters (k)',
+        yaxis_title='Tiempo de ejecución (ms)',
+        height=600,
+        template='plotly_dark'
     )
 
-    st.plotly_chart(fig_tiempos, use_container_width=True)
+    st.plotly_chart(fig_historial, use_container_width=True)
 
     # =====================================================
     # KMEANS
+    # =====================================================
     # =====================================================
 
     st.header("Algoritmo K-Means")
