@@ -1,6 +1,6 @@
-# ================================
+ # =========================================================
 # LIBRERÍAS
-# ================================
+# =========================================================
 
 import streamlit as st
 import pandas as pd
@@ -17,10 +17,9 @@ from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import euclidean_distances
 from scipy.spatial.distance import pdist, squareform
 
-
-# ================================
+# =========================================================
 # CONFIGURACIÓN GENERAL
-# ================================
+# =========================================================
 
 st.set_page_config(
     page_title="K-Means Profesional",
@@ -28,9 +27,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ================================
+# =========================================================
 # ESTILOS CSS
-# ================================
+# =========================================================
 
 st.markdown("""
 <style>
@@ -66,27 +65,19 @@ h3 {
 </style>
 """, unsafe_allow_html=True)
 
-# ================================
+# =========================================================
 # TÍTULO
-# ================================
+# =========================================================
 
-st.title("🚀 Clustering K-Means Profesional")
+st.title("Clustering K-Means")
 
 st.markdown("""
-Aplicación interactiva profesional para explorar:
-
-- K-Means paso a paso
-- Movimiento de centroides
-- Distancias
-- PCA 2D y 3D
-- Método del codo
-- Comparación de tiempos
-- Convergencia del algoritmo
+Aplicación profesional e interactiva para explorar el algoritmo K-Means paso a paso.
 """)
 
-# ================================
+# =========================================================
 # SIDEBAR
-# ================================
+# =========================================================
 
 st.sidebar.title("⚙ Configuración")
 
@@ -109,30 +100,33 @@ iteraciones_animadas = st.sidebar.slider(
     20
 )
 
-# ================================
-# SESSION STATE
-# ================================
+# =========================================================
+# MEMORIA DE HISTORIAL
+# =========================================================
 
-if "historial_tiempos" not in st.session_state:
-    st.session_state.historial_tiempos = []
+if 'historial_tiempos' not in st.session_state:
 
-# ================================
+    st.session_state.historial_tiempos = pd.DataFrame(
+        columns=['k', 'Tiempo_ms']
+    )
+
+# =========================================================
 # CARGA DE DATOS
-# ================================
+# =========================================================
 
 if uploaded_file:
 
     datos = pd.read_excel(uploaded_file)
 
-    st.header("📋 Dataset")
+    # =====================================================
+    # DATASET
+    # =====================================================
+
+    st.header("📊 Dataset")
 
     st.dataframe(datos)
 
-    # ================================
-    # INFORMACIÓN
-    # ================================
-
-    st.header("📊 Información del Dataset")
+    st.header("📌 Información del Dataset")
 
     col1, col2, col3 = st.columns(3)
 
@@ -150,15 +144,15 @@ if uploaded_file:
 
     st.write(datos.describe())
 
-    # ================================
+    # =====================================================
     # LIMPIEZA
-    # ================================
+    # =====================================================
 
     datos = datos.dropna()
 
-    # ================================
+    # =====================================================
     # HISTOGRAMAS
-    # ================================
+    # =====================================================
 
     st.header("📈 Histogramas")
 
@@ -187,9 +181,9 @@ if uploaded_file:
                 use_container_width=True
             )
 
-    # ================================
+    # =====================================================
     # ESTANDARIZACIÓN
-    # ================================
+    # =====================================================
 
     st.header("⚖ Estandarización")
 
@@ -205,9 +199,9 @@ if uploaded_file:
 
     st.write(datos.head())
 
-    # ================================
+    # =====================================================
     # DISTANCIAS EUCLIDIANAS
-    # ================================
+    # =====================================================
 
     st.header("📏 Distancias Euclidianas")
 
@@ -232,9 +226,9 @@ if uploaded_file:
         use_container_width=True
     )
 
-    # ================================
+    # =====================================================
     # DISTANCIAS MANHATTAN
-    # ================================
+    # =====================================================
 
     st.header("📐 Distancias Manhattan")
 
@@ -262,9 +256,9 @@ if uploaded_file:
         use_container_width=True
     )
 
-    # ================================
+    # =====================================================
     # MÉTODO DEL CODO
-    # ================================
+    # =====================================================
 
     st.header("🦴 Método del Codo")
 
@@ -308,9 +302,9 @@ if uploaded_file:
         use_container_width=True
     )
 
-    # ================================
+    # =====================================================
     # KMEANS
-    # ================================
+    # =====================================================
 
     st.header("🤖 Algoritmo K-Means")
 
@@ -328,81 +322,172 @@ if uploaded_file:
 
     fin = time.time()
 
-    tiempo_ms = (fin - inicio) * 1000
+    tiempo_actual = (fin - inicio) * 1000
 
     st.success(
-        f"Tiempo ejecución actual: {tiempo_ms:.2f} ms"
+        f"Tiempo ejecución: {tiempo_actual:.2f} ms"
     )
 
-    # ================================
+    # =====================================================
     # GUARDAR HISTORIAL
-    # ================================
+    # =====================================================
 
-    nuevo = pd.DataFrame({
-        "K": [k],
-        "Tiempo_ms": [tiempo_ms]
+    nueva_fila = pd.DataFrame({
+        'k': [k],
+        'Tiempo_ms': [tiempo_actual]
     })
 
-    historial = pd.DataFrame(
-        st.session_state.historial_tiempos
+    st.session_state.historial_tiempos = pd.concat(
+        [
+            st.session_state.historial_tiempos,
+            nueva_fila
+        ],
+        ignore_index=True
     )
 
-    if historial.empty:
-
-        st.session_state.historial_tiempos = nuevo.to_dict(
-            orient='records'
-        )
-
-    else:
-
-        if k not in historial["K"].values:
-
-            historial = pd.concat(
-                [historial, nuevo],
-                ignore_index=True
-            )
-
-            st.session_state.historial_tiempos = historial.to_dict(
-                orient='records'
-            )
-
-    # ================================
-    # MOSTRAR TABLA
-    # ================================
-
-    st.header("⏱ Historial de tiempos")
-
-    historial_df = pd.DataFrame(
+    historial = (
         st.session_state.historial_tiempos
+        .drop_duplicates(
+            subset=['k'],
+            keep='last'
+        )
+        .sort_values(by='k')
     )
 
-    if not historial_df.empty:
+    st.session_state.historial_tiempos = historial
 
-        mejor = historial_df["Tiempo_ms"].min()
-        peor = historial_df["Tiempo_ms"].max()
+    # =====================================================
+    # MEJOR Y PEOR TIEMPO
+    # =====================================================
 
-        def colorear(val):
+    mejor_tiempo = historial['Tiempo_ms'].min()
 
-            if val == mejor:
-                return "background-color: green; color:white"
+    peor_tiempo = historial['Tiempo_ms'].max()
 
-            elif val == peor:
-                return "background-color: red; color:white"
+    mejor_k = historial.loc[
+        historial['Tiempo_ms'].idxmin(),
+        'k'
+    ]
 
-            else:
-                return "background-color: orange; color:black"
+    peor_k = historial.loc[
+        historial['Tiempo_ms'].idxmax(),
+        'k'
+    ]
 
-        st.dataframe(
-            historial_df.style.map(
-                colorear,
-                subset=["Tiempo_ms"]
-            ),
-            use_container_width=True
+    # =====================================================
+    # MÉTRICAS
+    # =====================================================
+
+    st.header("⏱ Comparación de Rendimiento")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(
+            "🟢 Mejor K",
+            f"k = {mejor_k}"
         )
 
-    # ================================
+    with col2:
+        st.metric(
+            "⚡ Mejor Tiempo",
+            f"{mejor_tiempo:.2f} ms"
+        )
+
+    with col3:
+        st.metric(
+            "🔴 Peor K",
+            f"k = {peor_k}"
+        )
+
+    # =====================================================
+    # FUNCIÓN COLORES
+    # =====================================================
+
+    def colorear_filas(row):
+
+        if row['Tiempo_ms'] == mejor_tiempo:
+
+            return [
+                'background-color: green; color: white'
+            ] * len(row)
+
+        elif row['Tiempo_ms'] == peor_tiempo:
+
+            return [
+                'background-color: red; color: white'
+            ] * len(row)
+
+        else:
+
+            return [
+                'background-color: orange; color: black'
+            ] * len(row)
+
+    # =====================================================
+    # TABLA HISTORIAL
+    # =====================================================
+
+    st.subheader("📋 Historial Acumulado")
+
+    st.dataframe(
+        historial.style
+        .apply(colorear_filas, axis=1)
+        .format({
+            'Tiempo_ms': '{:.2f} ms'
+        }),
+        use_container_width=True
+    )
+
+    # =====================================================
+    # GRÁFICA TIEMPOS
+    # =====================================================
+
+    colores_barras = []
+
+    for valor in historial['Tiempo_ms']:
+
+        if valor == mejor_tiempo:
+
+            colores_barras.append('green')
+
+        elif valor == peor_tiempo:
+
+            colores_barras.append('red')
+
+        else:
+
+            colores_barras.append('orange')
+
+    fig_tiempos = go.Figure()
+
+    fig_tiempos.add_trace(go.Bar(
+        x=historial['k'],
+        y=historial['Tiempo_ms'],
+        marker_color=colores_barras,
+        text=np.round(
+            historial['Tiempo_ms'],
+            2
+        ),
+        textposition='outside'
+    ))
+
+    fig_tiempos.update_layout(
+        title='Tiempo de Ejecución por Número de Clusters',
+        xaxis_title='Número de Clusters',
+        yaxis_title='Tiempo (ms)',
+        template='plotly_dark',
+        height=500
+    )
+
+    st.plotly_chart(
+        fig_tiempos,
+        use_container_width=True
+    )
+
+    # =====================================================
     # CENTROIDES
-    # ================================
+    # =====================================================
 
     st.subheader("Centroides")
 
@@ -410,157 +495,9 @@ if uploaded_file:
 
     datos['Cluster'] = km4_clusters.labels_
 
-    # ================================
-    # ANIMACIÓN 2D
-    # ================================
-
-    st.header("🎬 Animación de Convergencia")
-
-    pca_anim = PCA(n_components=2)
-
-    X_pca = pca_anim.fit_transform(
-        datos[numericas]
-    )
-
-    fig_anim = go.Figure()
-
-    colores = [
-        'red',
-        'green',
-        'blue',
-        'yellow',
-        'purple',
-        'orange',
-        'cyan',
-        'pink',
-        'lime',
-        'white'
-    ]
-
-    centroides = X_pca[
-        np.random.choice(
-            len(X_pca),
-            k,
-            replace=False
-        )
-    ]
-
-    frames = []
-
-    for frame_num in range(iteraciones_animadas):
-
-        distancias = np.linalg.norm(
-            X_pca[:, np.newaxis] - centroides,
-            axis=2
-        )
-
-        labels = np.argmin(
-            distancias,
-            axis=1
-        )
-
-        nuevos_centroides = np.array([
-            X_pca[labels == i].mean(axis=0)
-            for i in range(k)
-        ])
-
-        scatter_data = []
-
-        for i in range(k):
-
-            puntos = X_pca[labels == i]
-
-            scatter_data.append(
-                go.Scatter(
-                    x=puntos[:,0],
-                    y=puntos[:,1],
-                    mode='markers+text',
-                    text=datos['State'],
-                    textposition='top center',
-                    marker=dict(
-                        size=10,
-                        color=colores[i]
-                    ),
-                    name=f'Cluster {i}'
-                )
-            )
-
-        scatter_data.append(
-            go.Scatter(
-                x=nuevos_centroides[:,0],
-                y=nuevos_centroides[:,1],
-                mode='markers',
-                marker=dict(
-                    size=25,
-                    color='black',
-                    symbol='star'
-                ),
-                name='Centroides'
-            )
-        )
-
-        # LÍNEAS
-
-        for i in range(len(X_pca)):
-
-            centroide = nuevos_centroides[
-                labels[i]
-            ]
-
-            scatter_data.append(
-                go.Scatter(
-                    x=[X_pca[i,0], centroide[0]],
-                    y=[X_pca[i,1], centroide[1]],
-                    mode='lines',
-                    line=dict(
-                        color='gray',
-                        width=1
-                    ),
-                    showlegend=False
-                )
-            )
-
-        frames.append(
-            go.Frame(
-                data=scatter_data,
-                name=str(frame_num)
-            )
-        )
-
-        centroides = nuevos_centroides
-
-    fig_anim.frames = frames
-
-    fig_anim.add_trace(
-        go.Scatter(x=[], y=[])
-    )
-
-    fig_anim.update_layout(
-        title='Movimiento de centroides',
-        width=1200,
-        height=800,
-        updatemenus=[
-            {
-                'type': 'buttons',
-                'buttons': [
-                    {
-                        'label': '▶ Iniciar',
-                        'method': 'animate',
-                        'args': [None]
-                    }
-                ]
-            }
-        ]
-    )
-
-    st.plotly_chart(
-        fig_anim,
-        use_container_width=True
-    )
-
-    # ================================
+    # =====================================================
     # PCA
-    # ================================
+    # =====================================================
 
     st.header("🧠 PCA")
 
@@ -575,14 +512,17 @@ if uploaded_file:
         columns=['PC1', 'PC2', 'PC3', 'PC4']
     )
 
-    pca_df['Cluster'] = km4_clusters.labels_.astype(str)
+    pca_df['Cluster'] = (
+        km4_clusters.labels_.astype(str)
+    )
+
     pca_df['Etiqueta'] = datos['State']
 
-    # ================================
+    # =====================================================
     # PCA 2D
-    # ================================
+    # =====================================================
 
-    st.subheader("PCA 2D")
+    st.subheader("PCA Interactivo 2D")
 
     fig_2d = px.scatter(
         pca_df,
@@ -602,359 +542,7 @@ if uploaded_file:
         use_container_width=True
     )
 
-    # ================================
-    # PCA 3D
-    # ================================
-
-    st.subheader("🌌 PCA 3D")
-
-    fig_3d = px.scatter_3d(
-        pca_df,
-        x='PC1',
-        y='PC2',
-        z='PC3',
-        color='Cluster',
-        text='Etiqueta',
-        title='Visualización 3D'
-    )
-
-    centroids_pca = pca.transform(
-        kmeans.cluster_centers_
-    )
-
-    fig_3d.add_trace(
-        go.Scatter3d(
-            x=centroids_pca[:,0],
-            y=centroids_pca[:,1],
-            z=centroids_pca[:,2],
-            mode='markers',
-            marker=dict(
-                size=10,
-                color='yellow',
-                symbol='diamond'
-            ),
-            name='Centroides'
-        )
-    )
-
-    fig_3d.update_layout(
-        width=1500,
-        height=900
-    )
-
-    st.plotly_chart(
-        fig_3d,
-        use_container_width=True
-    )
-
-    # ================================
-    # SIMULACIÓN 3D REAL
-    # ================================
-
-    st.header("🎥 Simulación 3D REAL")
-
-    X3D = pca_df[['PC1','PC2','PC3']].values
-
-    labels_names = datos['State'].values
-
-    np.random.seed(42)
-
-    centroides_init = X3D[
-        np.random.choice(
-            len(X3D),
-            k,
-            replace=False
-        )
-    ]
-
-    centroides_hist = [centroides_init]
-
-    labels_hist = []
-
-    centroides = centroides_init.copy()
-
-    for _ in range(iteraciones_animadas):
-
-        distancias = np.linalg.norm(
-            X3D[:,None] - centroides,
-            axis=2
-        )
-
-        labels = np.argmin(
-            distancias,
-            axis=1
-        )
-
-        labels_hist.append(labels)
-
-        nuevos_centroides = []
-
-        for i in range(k):
-
-            puntos = X3D[labels == i]
-
-            if len(puntos) > 0:
-
-                nuevos_centroides.append(
-                    puntos.mean(axis=0)
-                )
-
-            else:
-
-                nuevos_centroides.append(
-                    centroides[i]
-                )
-
-        nuevos_centroides = np.array(
-            nuevos_centroides
-        )
-
-        centroides_hist.append(
-            nuevos_centroides
-        )
-
-        if np.linalg.norm(
-            nuevos_centroides - centroides
-        ) < 1e-4:
-            break
-
-        centroides = nuevos_centroides
-
-    total_iter = len(labels_hist)
-
-    iter_sel = st.slider(
-        "Selecciona iteración",
-        0,
-        total_iter - 1,
-        0
-    )
-
-    labels_sel = labels_hist[iter_sel]
-
-    centroids_sel = centroides_hist[iter_sel]
-
-    colores_k = [
-        'red',
-        'green',
-        'blue',
-        'yellow',
-        'purple',
-        'orange',
-        'cyan',
-        'magenta'
-    ]
-
-    fig_k = go.Figure()
-
-    for i in range(k):
-
-        puntos = X3D[labels_sel == i]
-
-        nombres = labels_names[labels_sel == i]
-
-        fig_k.add_trace(
-            go.Scatter3d(
-                x=puntos[:,0],
-                y=puntos[:,1],
-                z=puntos[:,2],
-                mode='markers+text',
-                text=nombres,
-                textposition='top center',
-                marker=dict(
-                    size=5,
-                    color=colores_k[i]
-                ),
-                name=f'Cluster {i}'
-            )
-        )
-
-    # CENTROIDES
-
-    fig_k.add_trace(
-        go.Scatter3d(
-            x=centroids_sel[:,0],
-            y=centroids_sel[:,1],
-            z=centroids_sel[:,2],
-            mode='markers',
-            marker=dict(
-                size=18,
-                color='white',
-                symbol='diamond'
-            ),
-            name='Centroides'
-        )
-    )
-
-    # LÍNEAS
-
-    for i in range(len(X3D)):
-
-        c = labels_sel[i]
-
-        centroide = centroids_sel[c]
-
-        fig_k.add_trace(
-            go.Scatter3d(
-                x=[X3D[i,0], centroide[0]],
-                y=[X3D[i,1], centroide[1]],
-                z=[X3D[i,2], centroide[2]],
-                mode='lines',
-                line=dict(
-                    color=colores_k[c],
-                    width=2
-                ),
-                showlegend=False
-            )
-        )
-
-    fig_k.update_layout(
-        title=f"Iteración {iter_sel}",
-        width=1700,
-        height=900,
-        paper_bgcolor='#0e1117',
-        plot_bgcolor='#0e1117',
-        font=dict(color='white')
-    )
-
-    st.plotly_chart(
-        fig_k,
-        use_container_width=True
-    )
-
-    # ================================
-    # BOXPLOT
-    # ================================
-
-    st.header("📦 Boxplot Interactivo")
-
-    fig_box = px.box(
-        datos,
-        x='Cluster',
-        y='Rape',
-        color='Cluster',
-        points='all',
-        hover_data=['State']
-    )
-
-    st.plotly_chart(
-        fig_box,
-        use_container_width=True
-    )
-
-    # ================================
-    # ESTADOS POR CLUSTER
-    # ================================
-
-    st.header("📍 Estados por Cluster")
-
-    grupos = pd.DataFrame()
-
-    grupos['State'] = datos['State']
-
-    grupos['Cluster'] = km4_clusters.labels_
-
-    st.dataframe(
-        grupos.sort_values(by='Cluster'),
-        use_container_width=True
-    )
-
-    # ================================
-    # CANTIDAD POR CLUSTER
-    # ================================
-
-    st.header("📊 Cantidad por Cluster")
-
-    conteo = grupos.groupby(
-        'Cluster'
-    ).size().reset_index()
-
-    conteo.columns = [
-        'Cluster',
-        'Cantidad'
-    ]
-
-    fig_count = px.bar(
-        conteo,
-        x='Cluster',
-        y='Cantidad',
-        color='Cluster',
-        text='Cantidad'
-    )
-
-    st.plotly_chart(
-        fig_count,
-        use_container_width=True
-    )
-
-    # ================================
-    # MURDER VS URBANPOP
-    # ================================
-
-    st.header("🔴 Murder vs UrbanPop")
-
-    fig_mu = px.scatter(
-        datos,
-        x='Murder',
-        y='UrbanPop',
-        color='Cluster',
-        hover_data=['State']
-    )
-
-    st.plotly_chart(
-        fig_mu,
-        use_container_width=True
-    )
-
-    # ================================
-    # RAPE VS ASSAULT
-    # ================================
-
-    st.header("🟣 Rape vs Assault")
-
-    fig_ra = px.scatter(
-        datos,
-        x='Rape',
-        y='Assault',
-        color='Cluster',
-        hover_data=['State']
-    )
-
-    st.plotly_chart(
-        fig_ra,
-        use_container_width=True
-    )
-
-    # ================================
-    # EXPLICACIÓN
-    # ================================
-
-    st.header("📘 Explicación Matemática")
-
-    st.markdown("""
-    ## ¿Cómo funciona K-Means?
-
-    1. Se eligen centroides aleatorios.
-
-    2. Cada punto calcula su distancia al centroide más cercano.
-
-    3. Los puntos se asignan al cluster más cercano.
-
-    4. Los centroides se recalculan usando el promedio de los puntos.
-
-    5. El proceso se repite hasta converger.
-
-    ## Distancia Euclidiana
-    """)
-
-    :contentReference[oaicite:0]{index=0}
-
-    st.markdown("""
-    ## Inercia
-    """)
-
-    :contentReference[oaicite:1]{index=1}
-
-    st.success("✅ Aplicación cargada correctamente")
+    st.success("Aplicación cargada correctamente")
 
 else:
 
