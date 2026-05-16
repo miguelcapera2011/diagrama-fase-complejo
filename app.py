@@ -1,4 +1,4 @@
- # =========================================================
+# =========================================================
 # LIBRERÍAS
 # =========================================================
 
@@ -101,7 +101,7 @@ iteraciones_animadas = st.sidebar.slider(
 )
 
 # =========================================================
-# MEMORIA DE HISTORIAL
+# MEMORIA HISTORIAL
 # =========================================================
 
 if 'historial_tiempos' not in st.session_state:
@@ -329,7 +329,7 @@ if uploaded_file:
     )
 
     # =====================================================
-    # GUARDAR HISTORIAL
+    # HISTORIAL DE TIEMPOS
     # =====================================================
 
     nueva_fila = pd.DataFrame({
@@ -355,10 +355,6 @@ if uploaded_file:
     )
 
     st.session_state.historial_tiempos = historial
-
-    # =====================================================
-    # MEJOR Y PEOR TIEMPO
-    # =====================================================
 
     mejor_tiempo = historial['Tiempo_ms'].min()
 
@@ -401,7 +397,7 @@ if uploaded_file:
         )
 
     # =====================================================
-    # FUNCIÓN COLORES
+    # COLORES TABLA
     # =====================================================
 
     def colorear_filas(row):
@@ -496,6 +492,145 @@ if uploaded_file:
     datos['Cluster'] = km4_clusters.labels_
 
     # =====================================================
+    # ANIMACIÓN CONVERGENCIA
+    # =====================================================
+
+    st.header("🎬 Animación de Convergencia")
+
+    pca_anim = PCA(n_components=2)
+
+    X_pca = pca_anim.fit_transform(datos[numericas])
+
+    fig_anim = go.Figure()
+
+    colores = [
+        'red',
+        'green',
+        'blue',
+        'yellow',
+        'purple',
+        'orange',
+        'cyan',
+        'pink',
+        'lime',
+        'white'
+    ]
+
+    centroides = X_pca[
+        np.random.choice(
+            len(X_pca),
+            k,
+            replace=False
+        )
+    ]
+
+    frames = []
+
+    for frame_num in range(iteraciones_animadas):
+
+        distancias = np.linalg.norm(
+            X_pca[:, np.newaxis] - centroides,
+            axis=2
+        )
+
+        labels = np.argmin(distancias, axis=1)
+
+        nuevos_centroides = np.array([
+            X_pca[labels == i].mean(axis=0)
+            for i in range(k)
+        ])
+
+        scatter_data = []
+
+        for i in range(k):
+
+            puntos = X_pca[labels == i]
+
+            scatter_data.append(
+                go.Scatter(
+                    x=puntos[:,0],
+                    y=puntos[:,1],
+                    mode='markers+text',
+                    text=datos['State'],
+                    textposition='top center',
+                    marker=dict(
+                        size=10,
+                        color=colores[i]
+                    ),
+                    name=f'Cluster {i}'
+                )
+            )
+
+        scatter_data.append(
+            go.Scatter(
+                x=nuevos_centroides[:,0],
+                y=nuevos_centroides[:,1],
+                mode='markers',
+                marker=dict(
+                    size=25,
+                    color='black',
+                    symbol='star'
+                ),
+                name='Centroides'
+            )
+        )
+
+        for i in range(len(X_pca)):
+
+            centroide = nuevos_centroides[labels[i]]
+
+            scatter_data.append(
+                go.Scatter(
+                    x=[X_pca[i,0], centroide[0]],
+                    y=[X_pca[i,1], centroide[1]],
+                    mode='lines',
+                    line=dict(
+                        color='gray',
+                        width=1
+                    ),
+                    showlegend=False
+                )
+            )
+
+        frames.append(
+            go.Frame(
+                data=scatter_data,
+                name=str(frame_num)
+            )
+        )
+
+        centroides = nuevos_centroides
+
+    fig_anim.frames = frames
+
+    fig_anim.add_trace(
+        go.Scatter(x=[], y=[])
+    )
+
+    fig_anim.update_layout(
+        title='Movimiento de centroides y convergencia K-Means',
+        width=1200,
+        height=800,
+        updatemenus=[
+            {
+                'type': 'buttons',
+                'buttons': [
+                    {
+                        'label': '▶ Iniciar',
+                        'method': 'animate',
+                        'args': [None]
+                    }
+                ]
+            }
+        ]
+    )
+
+    st.plotly_chart(
+        fig_anim,
+        use_container_width=True
+    )
+
+    # =====================================================
     # PCA
     # =====================================================
 
@@ -542,7 +677,317 @@ if uploaded_file:
         use_container_width=True
     )
 
-    st.success("Aplicación cargada correctamente")
+    # =====================================================
+    # SIMULACIÓN 3D REAL
+    # =====================================================
+
+    st.subheader(
+        "🎥 Simulación paso a paso REAL de K-Means"
+    )
+
+    X3D = pca_df[['PC1', 'PC2', 'PC3']].values
+
+    labels_names = datos['State'].values
+
+    np.random.seed(42)
+
+    centroides_init = X3D[
+        np.random.choice(
+            len(X3D),
+            k,
+            replace=False
+        )
+    ]
+
+    centroides_hist = [centroides_init]
+
+    labels_hist = []
+
+    centroides = centroides_init.copy()
+
+    max_iter = iteraciones_animadas
+
+    for _ in range(max_iter):
+
+        distancias = np.linalg.norm(
+            X3D[:, None] - centroides,
+            axis=2
+        )
+
+        labels = np.argmin(
+            distancias,
+            axis=1
+        )
+
+        labels_hist.append(labels)
+
+        nuevos_centroides = []
+
+        for i in range(k):
+
+            puntos = X3D[labels == i]
+
+            if len(puntos) > 0:
+
+                nuevos_centroides.append(
+                    puntos.mean(axis=0)
+                )
+
+            else:
+
+                nuevos_centroides.append(
+                    centroides[i]
+                )
+
+        nuevos_centroides = np.array(
+            nuevos_centroides
+        )
+
+        centroides_hist.append(
+            nuevos_centroides
+        )
+
+        if np.linalg.norm(
+            nuevos_centroides - centroides
+        ) < 1e-4:
+
+            break
+
+        centroides = nuevos_centroides
+
+    total_iter = len(labels_hist)
+
+    iter_sel = st.slider(
+        "Selecciona iteración",
+        0,
+        total_iter - 1,
+        0
+    )
+
+    labels_sel = labels_hist[iter_sel]
+
+    centroids_sel = centroides_hist[iter_sel]
+
+    colores_k = [
+        'red',
+        'green',
+        'blue',
+        'yellow',
+        'purple',
+        'orange',
+        'cyan',
+        'magenta'
+    ]
+
+    fig_k = go.Figure()
+
+    for i in range(k):
+
+        puntos = X3D[labels_sel == i]
+
+        nombres = labels_names[labels_sel == i]
+
+        fig_k.add_trace(go.Scatter3d(
+            x=puntos[:,0],
+            y=puntos[:,1],
+            z=puntos[:,2],
+            mode='markers+text',
+            text=nombres,
+            textposition='top center',
+            marker=dict(
+                size=5,
+                color=colores_k[i]
+            ),
+            name=f'Cluster {i}'
+        ))
+
+    fig_k.add_trace(go.Scatter3d(
+        x=centroids_sel[:,0],
+        y=centroids_sel[:,1],
+        z=centroids_sel[:,2],
+        mode='markers',
+        marker=dict(
+            size=18,
+            color='white',
+            symbol='diamond'
+        ),
+        name='Centroides'
+    ))
+
+    for i in range(len(X3D)):
+
+        c = labels_sel[i]
+
+        centroide = centroids_sel[c]
+
+        fig_k.add_trace(go.Scatter3d(
+            x=[X3D[i,0], centroide[0]],
+            y=[X3D[i,1], centroide[1]],
+            z=[X3D[i,2], centroide[2]],
+            mode='lines',
+            line=dict(
+                color=colores_k[c],
+                width=2
+            ),
+            showlegend=False
+        ))
+
+    fig_k.update_layout(
+        title=f"K-Means Paso a Paso - Iteración {iter_sel}",
+        width=1700,
+        height=900,
+        paper_bgcolor='#0e1117',
+        plot_bgcolor='#0e1117',
+        font=dict(color='white'),
+        scene=dict(
+            xaxis_title='PC1',
+            yaxis_title='PC2',
+            zaxis_title='PC3'
+        )
+    )
+
+    st.plotly_chart(
+        fig_k,
+        use_container_width=True
+    )
+
+    # =====================================================
+    # BOXPLOT
+    # =====================================================
+
+    st.header("📦 Boxplot Interactivo")
+
+    fig_box = px.box(
+        datos,
+        x='Cluster',
+        y='Rape',
+        color='Cluster',
+        points='all',
+        hover_data=['State']
+    )
+
+    st.plotly_chart(
+        fig_box,
+        use_container_width=True
+    )
+
+    # =====================================================
+    # TABLA CLUSTERS
+    # =====================================================
+
+    st.header("📋 Estados por Cluster")
+
+    grupos = pd.DataFrame()
+
+    grupos['State'] = datos['State']
+
+    grupos['Cluster'] = km4_clusters.labels_
+
+    st.dataframe(
+        grupos.sort_values(by='Cluster'),
+        use_container_width=True
+    )
+
+    # =====================================================
+    # CANTIDAD CLUSTER
+    # =====================================================
+
+    st.header("📊 Cantidad por Cluster")
+
+    conteo = grupos.groupby(
+        'Cluster'
+    ).size().reset_index()
+
+    conteo.columns = [
+        'Cluster',
+        'Cantidad'
+    ]
+
+    fig_count = px.bar(
+        conteo,
+        x='Cluster',
+        y='Cantidad',
+        color='Cluster',
+        text='Cantidad'
+    )
+
+    st.plotly_chart(
+        fig_count,
+        use_container_width=True
+    )
+
+    # =====================================================
+    # SCATTER 1
+    # =====================================================
+
+    st.header("🔍 Murder vs UrbanPop")
+
+    fig_mu = px.scatter(
+        datos,
+        x='Murder',
+        y='UrbanPop',
+        color='Cluster',
+        hover_data=['State']
+    )
+
+    st.plotly_chart(
+        fig_mu,
+        use_container_width=True
+    )
+
+    # =====================================================
+    # SCATTER 2
+    # =====================================================
+
+    st.header("🔍 Rape vs Assault")
+
+    fig_ra = px.scatter(
+        datos,
+        x='Rape',
+        y='Assault',
+        color='Cluster',
+        hover_data=['State']
+    )
+
+    st.plotly_chart(
+        fig_ra,
+        use_container_width=True
+    )
+
+    # =====================================================
+    # EXPLICACIÓN
+    # =====================================================
+
+    st.header("📘 Explicación Matemática")
+
+    st.markdown("""
+    ## ¿Cómo funciona K-Means?
+
+    1. Se eligen centroides aleatorios.
+
+    2. Cada punto calcula su distancia al centroide más cercano.
+
+    3. Los puntos se asignan al cluster más cercano.
+
+    4. Los centroides se recalculan usando el promedio de los puntos.
+
+    5. El proceso se repite hasta converger.
+
+    ## Distancia Euclidiana
+
+    """)
+
+    :contentReference[oaicite:0]{index=0}
+
+    st.markdown("""
+    ## Inercia
+
+    La inercia mide qué tan compactos son los clusters.
+
+    Menor inercia = mejores agrupaciones.
+    """)
+
+    st.success("✅ Aplicación cargada correctamente")
 
 else:
 
