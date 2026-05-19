@@ -819,66 +819,66 @@ if uploaded_file:
 # INTERPRETACIÓN PEDAGÓGICA
 # =========================================================
 
-st.subheader("📘 Interpretación de la Iteración")
+    st.subheader("Interpretación de la Iteración")
 
-st.markdown(f"""
+    st.markdown(f"""
 
-### ¿Qué está ocurriendo en la iteración {iter_sel}?
+    ### ¿Qué está ocurriendo en la iteración {iter_sel}?
 
-En esta etapa del algoritmo K-Means:
+    En esta etapa del algoritmo K-Means:
 
-- Cada punto calcula su distancia hacia todos los centroides.
-- Luego se asigna al centroide más cercano.
-- Las líneas representan esa relación de cercanía.
+    - Cada punto calcula su distancia hacia todos los centroides.
+    - Luego se asigna al centroide más cercano.
+    - Las líneas representan esa relación de cercanía.
 
-### 🔍 Puntos cercanos a fronteras
+    ###  Puntos cercanos a fronteras
 
-Algunos datos pueden observarse:
+    Algunos datos pueden observarse:
 
-- muy alejados de su centroide,
-- o cercanos a otro cluster.
+    - muy alejados de su centroide,
+    - o cercanos a otro cluster.
 
-Esto ocurre porque:
+    Esto ocurre porque:
 
-- las fronteras entre clusters no son rígidas,
-- existen regiones intermedias,
-- algunos individuos comparten características similares con varios grupos.
+    - las fronteras entre clusters no son rígidas,
+    - existen regiones intermedias,
+    - algunos individuos comparten características similares con varios grupos.
 
-### ⚠️ ¿Qué puede pasar?
+    ###  ¿Qué puede pasar?
 
-Cuando un punto queda cerca de otro centroide:
+    Cuando un punto queda cerca de otro centroide:
 
-- puede cambiar de cluster
-  en la siguiente iteración.
+    - puede cambiar de cluster
+    en la siguiente iteración.
 
-Esto provoca:
+    Esto provoca:
 
-- movimiento de centroides,
-- reajuste de grupos,
-- búsqueda de agrupaciones más compactas.
+    - movimiento de centroides,
+    - reajuste de grupos,
+    - búsqueda de agrupaciones más compactas.
 
-### 📌 Interpretación matemática
+    ###  Interpretación matemática
 
-K-Means minimiza la distancia total entre:
+    K-Means minimiza la distancia total entre:
 
-- cada punto,
-- y su centroide asignado.
+    - cada punto,
+    - y su centroide asignado.
 
-Por eso:
+     Por eso:
 
-- si un punto está demasiado lejos,
-- el algoritmo intentará reorganizar los clusters.
+     - si un punto está demasiado lejos,
+     - el algoritmo intentará reorganizar los clusters.
 
-### 🧠 Interpretación intuitiva
+     ###  Interpretación intuitiva
 
-Los puntos ubicados en fronteras representan:
+     Los puntos ubicados en fronteras representan:
 
-- observaciones ambiguas,
-- individuos con características mixtas,
-- posibles transiciones entre grupos.
+     - observaciones ambiguas,
+     - individuos con características mixtas,
+     - posibles transiciones entre grupos.
 
-Esto es completamente normal en clustering no supervisado.
-""")
+     Esto es completamente normal en clustering no supervisado.
+     """)
 
  
 
