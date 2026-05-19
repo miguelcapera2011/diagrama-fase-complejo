@@ -267,6 +267,10 @@ if uploaded_file:
 
     st.header(" Algoritmo K-Means")
 
+    st.markdown("""
+    Si desea realizar la comparcion entre numeros de cluster, debe seleccionar un numero diferente al predeterminado por la app y dar click a los  botones (Tiempo o Inercia)
+    """)
+
     kmeans = KMeans(
         n_clusters=k,
         n_init=50,
