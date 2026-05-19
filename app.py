@@ -17,7 +17,7 @@ from scipy.spatial.distance import pdist, squareform
 # CONFIGURACIÓN GENERAL
 
 st.set_page_config(
-    page_title="K-Means Profesional",
+    page_title="MINERIA DE DATOS(K-Means)",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -73,7 +73,7 @@ Incluye:
 - Estandarización
 - Distancias Euclidianas y Manhattan
 - Método del codo
--Comparacion de tiempo e inercia (cluster)
+- Comparacion de tiempo e inercia (cluster)
 - Animación de convergencia de K-Means
 - PCA 2D y 3D
 - Boxplots interactivos
@@ -94,13 +94,11 @@ uploaded_file = st.sidebar.file_uploader(
 k = st.sidebar.slider("Número de Clusters", 2, 10, 4)
 
 iteraciones_animadas = st.sidebar.slider(
-    "Frames Animación",
+    "Velocidad Animación",
     5,
     50,
     20
 )
-
-
 
 # CARGA DE DATOS
 
@@ -163,7 +161,7 @@ if uploaded_file:
 
     # ESTANDARIZACIÓN
 
-    st.header("⚖ Estandarización")
+    st.header("Estandarización")
 
     scaler = StandardScaler()
 
@@ -226,7 +224,7 @@ if uploaded_file:
 
     # METODO DEL CODO
 
-    st.header("🦴 Método del Codo")
+    st.header("Método del Codo")
 
     wss = []
 
@@ -365,7 +363,7 @@ if uploaded_file:
         ]
 
         st.markdown(f"""
-        ## Análisis Automático
+        ## Análisis
 
         - 🟢 El mejor rendimiento fue con K = {mejor_k}
 
@@ -503,7 +501,7 @@ if uploaded_file:
     # ANIMACIÓN DE CONVERGENCIA
 
 
-    st.header("🎬 Animación de Convergencia")
+    st.header("Animación de Convergencia")
 
     pca_anim = PCA(n_components=2)
 
@@ -600,6 +598,13 @@ if uploaded_file:
                         'label': 'Iniciar',
                         'method': 'animate',
                         'args': [None]
+                         # ESTILO DEL BOTÓN
+                    'bgcolor': '#87CEFA',   # Azul claro
+                    'bordercolor': '#1E3A8A',
+                    'font': {
+                        'color': 'black',
+                        'size': 16
+                    }
                     }
                 ]
             }
