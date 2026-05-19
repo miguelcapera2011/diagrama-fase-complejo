@@ -591,15 +591,27 @@ if uploaded_file:
         width=1200,
         height=800,
         updatemenus=[
+            dict(
+
+            type='buttons',
+
+            showactive=False,
+
+            bgcolor='#87CEFA',  # Azul claro
+
+            bordercolor='#1E3A8A',
+
+            font=dict(
+                color='black',
+                size=15
+            ),
             {
                 'type': 'buttons',
                 'buttons': [
                     {
                         'label': 'Iniciar',
                         'method': 'animate',
-                        'args': [None],
-                    # COLOR DEL BOTÓN
-                    'bgcolor': '#87CEFA'
+                        'args': [None]
                     }
                 ]
             }
