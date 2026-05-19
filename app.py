@@ -1,1086 +1,534 @@
+# =========================================================
+# FACEEXPLORER - REDUCCIÓN DIMENSIONAL NO LINEAL
+# Autor: Tu Proyecto de Análisis Multivariado
+#
+# Tecnologías:
+# - Streamlit
+# - Plotly
+# - Scikit-learn
+# - UMAP
+#
+# Objetivo:
+# Visualizar datos de alta dimensionalidad
+# (rostros humanos) usando:
+# PCA, t-SNE y UMAP.
+# =========================================================
 
-# LIBRERIAS
 
+# =========================================================
+# LIBRERÍAS
+# =========================================================
 
 import streamlit as st
-import pandas as pd
 import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import matplotlib.pyplot as plt
-import seaborn as sns
-import time
 
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
+# Dataset de rostros
+from sklearn.datasets import fetch_lfw_people
+
+# Reducción dimensional
 from sklearn.decomposition import PCA
-from sklearn.metrics.pairwise import euclidean_distances
-from scipy.spatial.distance import pdist, squareform
+from sklearn.manifold import TSNE
+import umap.umap_ as umap
 
+# Escalamiento
+from sklearn.preprocessing import StandardScaler
 
-
-# CONFIGURACIÓN GENERAL
-
+# =========================================================
+# CONFIGURACIÓN DE LA PÁGINA
+# =========================================================
 
 st.set_page_config(
-    page_title="K-Means Profesional",
+    page_title="FaceExplorer",
+    page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-
-
-# ESTILOS CSS
-
+# =========================================================
+# ESTILOS CSS PERSONALIZADOS
+# =========================================================
 
 st.markdown("""
 <style>
 
-/* FONDO GENERAL */
+/* ===== FONDO GENERAL ===== */
+
 .stApp {
-    background: linear-gradient(135deg, #0b1120, #111827);
+    background-color: #050816;
     color: white;
 }
 
-/* CONTENEDOR */
-.block-container {
-    padding-top: 1rem;
-    padding-left: 2rem;
-    padding-right: 2rem;
-}
+/* ===== SIDEBAR ===== */
 
-/* SIDEBAR */
 section[data-testid="stSidebar"] {
-    background-color: #111827;
-    border-right: 1px solid rgba(255,255,255,0.1);
+    background-color: #0b1120;
+    border-right: 1px solid #1f2a44;
 }
 
-/* TITULO PRINCIPAL */
-.titulo-principal {
-    font-size: 38px;
-    font-weight: 700;
-    color: #00ffd5;
-    margin-bottom: 0px;
+/* ===== TITULOS ===== */
+
+h1, h2, h3 {
+    color: #E2E8F0;
 }
 
-/* SUBTITULO */
-.subtitulo {
-    color: #9ca3af;
-    font-size: 16px;
-    margin-top: 0px;
-}
+/* ===== TARJETAS ===== */
 
-/* CONTENEDOR SUPERIOR */
-.topbar {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 10px;
+.card {
+    background: linear-gradient(
+        145deg,
+        rgba(15,23,42,0.95),
+        rgba(30,41,59,0.95)
+    );
+
+    padding: 25px;
+    border-radius: 18px;
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    box-shadow:
+        0px 0px 20px rgba(0,0,0,0.4);
+
     margin-bottom: 20px;
 }
 
-/* LOGO */
-.logo {
-    width: 70px;
+/* ===== MÉTRICAS ===== */
+
+.metric-card {
+    background: linear-gradient(
+        145deg,
+        rgba(88,28,135,0.25),
+        rgba(15,23,42,0.95)
+    );
+
+    padding: 20px;
+    border-radius: 18px;
+
+    border: 1px solid rgba(168,85,247,0.3);
+
+    text-align: center;
 }
 
-/* CONFIGURACION SIDEBAR */
-.sidebar-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #00ffd5;
-    margin-bottom: 10px;
-}
+/* ===== BOTONES ===== */
 
-/* TARJETAS */
-.stMetric {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    padding: 15px;
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-}
-
-/* BOTONES */
 .stButton>button {
-    background: linear-gradient(90deg, #00ffd5, #00c3ff);
-    color: black;
-    border-radius: 10px;
+
+    background: linear-gradient(
+        90deg,
+        #9333ea,
+        #7c3aed
+    );
+
+    color: white;
+
     border: none;
+
+    border-radius: 12px;
+
+    padding: 12px 22px;
+
+    font-size: 16px;
+
     font-weight: bold;
+
     transition: 0.3s;
 }
 
 .stButton>button:hover {
+
     transform: scale(1.03);
-    background: linear-gradient(90deg, #00c3ff, #00ffd5);
+
+    box-shadow:
+        0px 0px 15px rgba(168,85,247,0.5);
 }
 
-/* SLIDERS */
+/* ===== SELECTBOX ===== */
+
+div[data-baseweb="select"] {
+    background-color: #111827;
+    border-radius: 12px;
+}
+
+/* ===== SLIDERS ===== */
+
 .stSlider > div > div {
-    color: #00ffd5;
-}
-
-/* HEADERS */
-h2, h3 {
-    color: #00c3ff;
-}
-
-/* DATAFRAMES */
-[data-testid="stDataFrame"] {
-    border-radius: 10px;
-    overflow: hidden;
+    color: #9333ea;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-
-
-
-# HEADER PERSONALIZADO
-
-
-st.markdown("""
-<div style="text-align: center;">
-
-<h1 style="
-color:#00ffd5;
-font-size:42px;
-margin-bottom:10px;
-">
-Clustering K-Means
-</h1>
-
-<p style="
-color:#cbd5e1;
-font-size:18px;
-max-width:900px;
-margin:auto;
-line-height:1.8;
-">
-
-Esta aplicación permite explorar paso a paso el algoritmo K-Means usando el dataset USArrests.
-
-</p>
-
-</div>
-
-<br>
-
-<div style="
-background: rgba(255,255,255,0.04);
-padding:25px;
-border-radius:15px;
-border:1px solid rgba(255,255,255,0.08);
-">
-
-<ul style="
-font-size:17px;
-line-height:2;
-color:white;
-">
-
-<li>Exploración de datos</li>
-<li>Estandarización</li>
-<li>Distancias Euclidianas y Manhattan</li>
-<li>Método del codo</li>
-<li>Animación de convergencia de K-Means</li>
-<li>PCA 2D y 3D</li>
-<li>Boxplots interactivos</li>
-<li>Visualizaciones dinámicas</li>
-<li>Movimiento de centroides</li>
-<li>Explicaciones matemáticas</li>
-
-</ul>
-
-</div>
-""", unsafe_allow_html=True)
-
-
-
-
+# =========================================================
 # SIDEBAR
+# =========================================================
+
+st.sidebar.title("🧠 FaceExplorer")
 
 st.sidebar.markdown("""
-<p class="sidebar-title">
-⚙ Configuración
-</p>
-""", unsafe_allow_html=True)
+Visualización de rostros humanos usando:
 
+- PCA
+- t-SNE
+- UMAP
 
-uploaded_file = st.sidebar.file_uploader(
-    "Suba el archivo data_USArrests.xlsx",
-    type=["xlsx"]
+Aplicado a datos de alta dimensionalidad.
+""")
+
+# =========================================================
+# PARÁMETROS
+# =========================================================
+
+metodo = st.sidebar.selectbox(
+    "Selecciona el algoritmo",
+    ["PCA", "t-SNE", "UMAP"]
 )
 
-k = st.sidebar.slider("Número de Clusters", 2, 10, 4)
+dimension = st.sidebar.radio(
+    "Dimensión de visualización",
+    ["2D", "3D"]
+)
 
-iteraciones_animadas = st.sidebar.slider(
-    "Frames Animación",
+n_neighbors = st.sidebar.slider(
+    "n_neighbors (UMAP)",
     5,
     50,
-    20
+    15
 )
 
+min_dist = st.sidebar.slider(
+    "min_dist (UMAP)",
+    0.0,
+    1.0,
+    0.1
+)
 
-# CARGA DE DATOS
+perplexity = st.sidebar.slider(
+    "Perplexity (t-SNE)",
+    5,
+    50,
+    30
+)
 
+# =========================================================
+# TÍTULO PRINCIPAL
+# =========================================================
 
-if uploaded_file:
+st.title("🧠 Exploración de Rostros en Alta Dimensionalidad")
 
-    datos = pd.read_excel(uploaded_file)
+st.markdown("""
+Transformación de datos complejos usando técnicas de
+reducción dimensional no lineal.
 
-    st.header("Dataset")
-    st.dataframe(datos)
+Visualizamos rostros humanos en espacios 2D y 3D
+mediante:
 
-    st.header(" Información del Dataset")
+- PCA
+- t-SNE
+- UMAP
+""")
 
-    col1, col2, col3 = st.columns(3)
+# =========================================================
+# CARGA DEL DATASET
+# =========================================================
 
-    with col1:
-        st.metric("Filas", datos.shape[0])
+with st.spinner("Cargando dataset de rostros..."):
 
-    with col2:
-        st.metric("Columnas", datos.shape[1])
+    # Dataset de rostros humanos
+    lfw = fetch_lfw_people(min_faces_per_person=70)
 
-    with col3:
-        st.metric("Valores faltantes", datos.isnull().sum().sum())
+    # Variables
+    X = lfw.data
 
-    st.write(datos.describe())
+    # Etiquetas
+    y = lfw.target
 
+    # Nombres de personas
+    target_names = lfw.target_names
 
+    # Imágenes originales
+    images = lfw.images
 
-    # LIMPIEZA
-   
+# =========================================================
+# INFORMACIÓN GENERAL
+# =========================================================
 
-    datos = datos.dropna()
+col1, col2, col3 = st.columns(3)
 
+with col1:
 
-  
-    # HISTOGRAMAS
-
-
-    st.header(" Histogramas")
-
-    columnas_numericas = ['Murder', 'Assault', 'UrbanPop', 'Rape']
-
-    fig_hist = px.histogram(
-        datos,
-        x='Murder',
-        nbins=10,
-        title='Distribución Murder'
-    )
-
-    st.plotly_chart(fig_hist, use_container_width=True)
-
-    tabs = st.tabs(columnas_numericas)
-
-    for i, col in enumerate(columnas_numericas):
-
-        with tabs[i]:
-
-            fig = px.histogram(
-                datos,
-                x=col,
-                marginal='box',
-                color_discrete_sequence=['cyan']
-            )
-
-            st.plotly_chart(fig, use_container_width=True)
-
-
- 
-    # ESTANDARIZACIÓN
- 
-
-    st.header("Estandarización")
-
-    scaler = StandardScaler()
-
-    numericas = datos.select_dtypes(
-        include=['float64', 'int64']
-    ).columns
-
-    datos[numericas] = scaler.fit_transform(
-        datos[numericas]
-    )
-
-    st.write(datos.head())
-
-
-
-    # MATRIZ DISTANCIAS
-   
-
-    st.header("Distancias Euclidianas")
-
-    distancias = euclidean_distances(
-        datos.drop(columns=['State'])
-    )
-
-    dist_matrix = pd.DataFrame(
-        distancias,
-        index=datos['State'],
-        columns=datos['State']
-    )
-
-    fig_heat = px.imshow(
-        dist_matrix,
-        color_continuous_scale='RdBu',
-        title='Mapa de calor Distancias Euclidianas'
-    )
-
-    st.plotly_chart(fig_heat, use_container_width=True)
-
-
-
-    # DISTANCIAS MANHATTAN
-   
-
-    st.header("Distancias Manhattan")
-
-    manhattan = pdist(
-        datos.drop(columns=['State']),
-        metric='cityblock'
-    )
-
-    manhattan_square = squareform(manhattan)
-
-    manhattan_df = pd.DataFrame(
-        manhattan_square,
-        index=datos['State'],
-        columns=datos['State']
-    )
-
-    fig_manhattan = px.imshow(
-        manhattan_df,
-        color_continuous_scale='Viridis',
-        title='Mapa Distancias Manhattan'
-    )
-
-    st.plotly_chart(fig_manhattan, use_container_width=True)
-
-
-   
-    # METODO DEL CODO
- 
-
-    st.header(" Método del Codo")
-
-    wss = []
-
-    for i in range(1, 11):
-
-        modelo = KMeans(
-            n_clusters=i,
-            n_init=50,
-            random_state=42
-        )
-
-        modelo.fit(
-            datos.drop(columns=['State'])
-        )
-
-        wss.append(modelo.inertia_)
-
-    elbow_df = pd.DataFrame({
-        'Clusters': range(1, 11),
-        'WSS': wss
-    })
-
-    fig_elbow = px.line(
-        elbow_df,
-        x='Clusters',
-        y='WSS',
-        markers=True,
-        title='Método del Codo'
-    )
-
-    fig_elbow.add_vline(
-        x=k,
-        line_dash='dash',
-        line_color='red'
-    )
-
-    st.plotly_chart(fig_elbow, use_container_width=True)
-
-
- 
-    # KMEANS
-
-
-    st.header("Algoritmo K-Means ")
-    
-    st.markdown("""
-    <div style="
-    background: rgba(0,255,213,0.08);
-    padding:18px;
-    border-radius:12px;
-    border-left:5px solid #00ffd5;
-    margin-bottom:20px;
-    ">
-
-    <h4 style="color:#00ffd5;">
-    Nota:
-    </h4>
-
-    <p style="
-    color:white;
-    font-size:16px;
-    line-height:1.7;
-    ">
-
-    si deseas comparar el tiempo de ejecucion de los cluster y la inercia,la app inicia con 4 cluster,deslice la barra de numero de cluster para selecionar otro numero y podras  ver la comparacion.
-
-    </p>
-
+    st.markdown(f"""
+    <div class="metric-card">
+        <h2>{X.shape[0]}</h2>
+        <p>Imágenes</p>
     </div>
     """, unsafe_allow_html=True)
 
-    
-    kmeans = KMeans(
-        n_clusters=k,
-        n_init=50,
-        random_state=42
-    )
+with col2:
 
-    inicio = time.time()
+    st.markdown(f"""
+    <div class="metric-card">
+        <h2>{X.shape[1]}</h2>
+        <p>Dimensiones Originales</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    km4_clusters = kmeans.fit(
-        datos.drop(columns=['State'])
-    )
+with col3:
 
-    fin = time.time()
+    st.markdown(f"""
+    <div class="metric-card">
+        <h2>{len(target_names)}</h2>
+        <p>Personas</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.success(
-        f"Tiempo ejecución: {(fin - inicio)*1000:.2f} ms"
-    )
+# =========================================================
+# EXPLICACIÓN MATEMÁTICA
+# =========================================================
 
+st.markdown("""
+### 📘 ¿Qué está ocurriendo?
 
-  
-    # NUEVO BLOQUE AGREGADO
+Cada rostro humano está representado por miles de variables.
 
+Cada píxel de la imagen representa una dimensión.
 
-    tiempo_actual = (fin - inicio) * 1000
+El objetivo es transformar:
 
-    if "historial_tiempos" not in st.session_state:
-        st.session_state.historial_tiempos = []
+R^2914 → R^2 o R^3
 
-    st.session_state.historial_tiempos = [
-        x for x in st.session_state.historial_tiempos
-        if x["Clusters"] != k
-    ]
+para visualizar relaciones ocultas entre rostros similares.
+""")
 
-    st.session_state.historial_tiempos.append({
-        "Clusters": k,
-        "Tiempo": tiempo_actual
-    })
+# =========================================================
+# ESCALAMIENTO
+# =========================================================
 
-    historial_df = pd.DataFrame(
-        st.session_state.historial_tiempos
-    ).sort_values(by="Clusters")
+# Normalización de datos
+scaler = StandardScaler()
 
-    if st.button("comparación de tiempos"):
+X_scaled = scaler.fit_transform(X)
 
-        st.subheader(
-            "Comparación de tiempos por número de clusters"
+# =========================================================
+# REDUCCIÓN DIMENSIONAL
+# =========================================================
+
+st.subheader(f"🔬 Aplicando {metodo}")
+
+# =========================================================
+# PCA
+# =========================================================
+
+if metodo == "PCA":
+
+    if dimension == "2D":
+
+        reducer = PCA(n_components=2)
+
+    else:
+
+        reducer = PCA(n_components=3)
+
+# =========================================================
+# t-SNE
+# =========================================================
+
+elif metodo == "t-SNE":
+
+    if dimension == "2D":
+
+        reducer = TSNE(
+            n_components=2,
+            perplexity=perplexity,
+            random_state=42
         )
 
-        mejor = historial_df["Tiempo"].min()
-        peor = historial_df["Tiempo"].max()
+    else:
 
-        colores_barras = []
-
-        for valor in historial_df["Tiempo"]:
-
-            if valor == mejor:
-                colores_barras.append("green")
-
-            elif valor == peor:
-                colores_barras.append("red")
-
-            else:
-                colores_barras.append("orange")
-
-        fig_tiempos = go.Figure()
-
-        fig_tiempos.add_trace(
-            go.Bar(
-                x=historial_df["Clusters"],
-                y=historial_df["Tiempo"],
-                marker_color=colores_barras,
-                text=np.round(historial_df["Tiempo"], 2),
-                textposition='outside'
-            )
+        reducer = TSNE(
+            n_components=3,
+            perplexity=perplexity,
+            random_state=42
         )
 
-        fig_tiempos.update_layout(
-            title="Tiempo de ejecución según K",
-            xaxis_title="Número de Clusters",
-            yaxis_title="Tiempo (ms)",
-            height=500
-        )
-
-        st.plotly_chart(
-            fig_tiempos,
-            use_container_width=True
-        )
-
-        mejor_k = historial_df.loc[
-            historial_df["Tiempo"].idxmin(),
-            "Clusters"
-        ]
-
-        peor_k = historial_df.loc[
-            historial_df["Tiempo"].idxmax(),
-            "Clusters"
-        ]
-
-        st.markdown(f"""
-        ## Análisis Automático
-
-        - 🟢 El mejor rendimiento fue con K = {mejor_k}
-
-        - 🔴 El peor rendimiento fue con K = {peor_k}
-
-        - 🟠 Los demás fueron intermedios.
-
-        ### Interpretacion
-
-        Cuando aumenta K:
-
-        - Se calculan más centroides.
-        - Hay más distancias.
-        - Puede tardar más en converger.
-
-        Por eso algunos valores de K
-        tardan más que otros.
-        """)
-
-    #    MIGUE INICIO
-    
-    # COMPARACIÓN DE INERCIAS
-   
-
-    inercia_actual = kmeans.inertia_
-
-    if "historial_inercias" not in st.session_state:
-        st.session_state.historial_inercias = []
-
-    # eliminar K repetido
-    st.session_state.historial_inercias = [
-        x for x in st.session_state.historial_inercias
-        if x["Clusters"] != k
-    ]
-
-    # guardar nueva inercia
-    st.session_state.historial_inercias.append({
-        "Clusters": k,
-        "Inercia": inercia_actual
-    })
-
-    historial_df = pd.DataFrame(
-        st.session_state.historial_inercias
-    ).sort_values(by="Clusters")
-
-
-    # BOTON MOSTRAR COMPARACION
- 
-    if st.button(" comparación de inercias"):
-
-        st.subheader(
-            "Comparación de Inercia según número de clusters"
-        )
-
-        mejor = historial_df["Inercia"].min()
-        peor = historial_df["Inercia"].max()
-
-        colores_barras = []
-
-        for valor in historial_df["Inercia"]:
-
-            if valor == mejor:
-                colores_barras.append("green")
-
-            elif valor == peor:
-                colores_barras.append("red")
-
-            else:
-                colores_barras.append("orange")
-
-        fig_inercia = go.Figure()
-
-        fig_inercia.add_trace(
-            go.Bar(
-                x=historial_df["Clusters"],
-                y=historial_df["Inercia"],
-                marker_color=colores_barras,
-                text=np.round(
-                    historial_df["Inercia"], 2
-                ),
-                textposition='outside'
-            )
-        )
-
-        fig_inercia.update_layout(
-            title="Comparación de Inercia según K",
-            xaxis_title="Número de Clusters",
-            yaxis_title="Inercia (WSS)",
-            height=500
-        )
-
-        st.plotly_chart(
-            fig_inercia,
-            use_container_width=True
-        )
-
-        mejor_k = historial_df.loc[
-            historial_df["Inercia"].idxmin(),
-            "Clusters"
-        ]
-
-        peor_k = historial_df.loc[
-            historial_df["Inercia"].idxmax(),
-            "Clusters"
-        ]
-
-        st.markdown(f"""
-        ##  Interpretación Automática
-
-        - 🟢 La menor inercia fue con K = {mejor_k}
-
-        - 🔴 La mayor inercia fue con K = {peor_k}
-
-        - 🟠 Los demás valores son intermedios.
-
-        ### ¿Qué significa?
-
-        La inercia mide qué tan compactos
-        son los clusters.
-
-        - Menor inercia =
-          clusters más compactos.
-
-        - Mayor inercia =
-          agrupaciones menos precisas.
-
-        Normalmente al aumentar K,
-        la inercia disminuye.
-        """)
-    #fin miguel
-
-    st.subheader("Centroides")
-    st.write(kmeans.cluster_centers_)
-
-    datos['Cluster'] = km4_clusters.labels_
-
-
-    # ANIMACIÓN DE CONVERGENCIA
-
-
-    st.header("🎬 Animación de Convergencia")
-
-    pca_anim = PCA(n_components=2)
-
-    X_pca = pca_anim.fit_transform(datos[numericas])
-
-    fig_anim = go.Figure()
-
-    colores = ['red', 'green', 'blue', 'yellow', 'purple', 'orange', 'cyan', 'pink', 'lime', 'white']
-
-    centroides = X_pca[np.random.choice(len(X_pca), k, replace=False)]
-
-    frames = []
-
-    for frame_num in range(iteraciones_animadas):
-
-        distancias = np.linalg.norm(
-            X_pca[:, np.newaxis] - centroides,
-            axis=2
-        )
-
-        labels = np.argmin(distancias, axis=1)
-
-        nuevos_centroides = np.array([
-            X_pca[labels == i].mean(axis=0)
-            for i in range(k)
-        ])
-
-        scatter_data = []
-
-        for i in range(k):
-
-            puntos = X_pca[labels == i]
-
-            scatter_data.append(
-                go.Scatter(
-                    x=puntos[:,0],
-                    y=puntos[:,1],
-                    mode='markers+text',
-                    text=datos['State'],
-                    textposition='top center',
-                    marker=dict(size=10, color=colores[i]),
-                    name=f'Cluster {i}'
-                )
-            )
-
-        scatter_data.append(
-            go.Scatter(
-                x=nuevos_centroides[:,0],
-                y=nuevos_centroides[:,1],
-                mode='markers',
-                marker=dict(
-                    size=25,
-                    color='black',
-                    symbol='star'
-                ),
-                name='Centroides'
-            )
-        )
-
-        # líneas distancia
-
-        for i in range(len(X_pca)):
-            centroide = nuevos_centroides[labels[i]]
-
-            scatter_data.append(
-                go.Scatter(
-                    x=[X_pca[i,0], centroide[0]],
-                    y=[X_pca[i,1], centroide[1]],
-                    mode='lines',
-                    line=dict(color='gray', width=1),
-                    showlegend=False
-                )
-            )
-
-        frames.append(go.Frame(data=scatter_data, name=str(frame_num)))
-
-        centroides = nuevos_centroides
-
-    fig_anim.frames = frames
-
-    fig_anim.add_trace(
-        go.Scatter(x=[], y=[])
-    )
-
-    fig_anim.update_layout(
-        title='Movimiento de centroides y convergencia K-Means',
-        width=1200,
-        height=800,
-        updatemenus=[
-            {
-                'type': 'buttons',
-                'buttons': [
-                    {
-                        'label': 'Iniciar',
-                        'method': 'animate',
-                        'args': [None]
-                    }
-                ]
-            }
-        ]
-    )
-
-    st.plotly_chart(fig_anim, use_container_width=True)
-
-    # PCA
-
-
-    st.header("PCA")
-
-    pca = PCA(n_components=4)
-
-    pca_scores = pca.fit_transform(datos[numericas])
-
-    pca_df = pd.DataFrame(
-        pca_scores,
-        columns=['PC1', 'PC2', 'PC3', 'PC4']
-    )
-
-    pca_df['Cluster'] = km4_clusters.labels_.astype(str)
-    pca_df['Etiqueta'] = datos['State']
-
-    # PCA 2D
-  
-
-    st.subheader("PCA Interactivo 2D")
-
-    fig_2d = px.scatter(
-        pca_df,
-        x='PC1',
-        y='PC2',
-        color='Cluster',
-        text='Etiqueta',
-        title='PCA 2D'
-    )
-
-    fig_2d.update_traces(
-        textposition='top center'
-    )
-
-    st.plotly_chart(fig_2d, use_container_width=True)
-
-
-    # SIMULACIÓN PEDAGÓGICA REAL K-MEANS (CONTROL POR ITERACIONES)
-   
-
-    st.subheader("Simulación paso a paso REAL de K-Means (Controlable)")
-
-    st.markdown("""
-    Controla cada iteración del algoritmo:
-
-    - Iteración 0: todos los puntos sin cluster
-    - Iteración 1: centroides iniciales
-    - Iteraciones siguientes: asignación + actualización
-    """)
-
-
-    # DATOS 3D
-
-
-    X3D = pca_df[['PC1', 'PC2', 'PC3']].values
-    labels_names = datos['State'].values
-
-    np.random.seed(42)
-
-    # INICIALIZACIÓN CENTROIDES
-
-
-    centroides_init = X3D[np.random.choice(len(X3D), k, replace=False)]
-
-    # GUARDAR HISTORIAL
-
-
-    centroides_hist = [centroides_init]
-    labels_hist = []
-
-    centroides = centroides_init.copy()
-
-    max_iter = iteraciones_animadas
-
-    for _ in range(max_iter):
-
-        # DISTANCIAS
-        distancias = np.linalg.norm(X3D[:, None] - centroides, axis=2)
-        labels = np.argmin(distancias, axis=1)
-
-        labels_hist.append(labels)
-
-        # NUEVOS CENTROIDES
-        nuevos_centroides = []
-
-        for i in range(k):
-            puntos = X3D[labels == i]
-            if len(puntos) > 0:
-                nuevos_centroides.append(puntos.mean(axis=0))
-            else:
-                nuevos_centroides.append(centroides[i])
-
-        nuevos_centroides = np.array(nuevos_centroides)
-        centroides_hist.append(nuevos_centroides)
-
-        # CONVERGENCIA
-        if np.linalg.norm(nuevos_centroides - centroides) < 1e-4:
-            break
-
-        centroides = nuevos_centroides
-
-    total_iter = len(labels_hist)
-
-
-    # SLIDER ITERACIÓN
-  
-
-    iter_sel = st.slider("Selecciona iteración", 0, total_iter-1, 0)
-
-    labels_sel = labels_hist[iter_sel]
-    centroids_sel = centroides_hist[iter_sel]
-
-    colores_k = ['red','green','blue','yellow','purple','orange','cyan','magenta']
-
-    fig_k = go.Figure()
-
-    
-    # PUNTOS
-   
-
-    for i in range(k):
-
-        puntos = X3D[labels_sel == i]
-        nombres = labels_names[labels_sel == i]
-
-        fig_k.add_trace(go.Scatter3d(
-            x=puntos[:,0],
-            y=puntos[:,1],
-            z=puntos[:,2],
-            mode='markers+text',
-            text=nombres,
-            textposition='top center',
-            marker=dict(size=5, color=colores_k[i]),
-            name=f'Cluster {i}'
-        ))
-
-
-    # CENTROIDES
-    
-
-    fig_k.add_trace(go.Scatter3d(
-        x=centroids_sel[:,0],
-        y=centroids_sel[:,1],
-        z=centroids_sel[:,2],
-        mode='markers',
-        marker=dict(size=18, color='white', symbol='diamond'),
-        name='Centroides'
-    ))
-
-    # LÍNEAS DISTANCIA
-
-
-    for i in range(len(X3D)):
-        c = labels_sel[i]
-        centroide = centroids_sel[c]
-
-        fig_k.add_trace(go.Scatter3d(
-            x=[X3D[i,0], centroide[0]],
-            y=[X3D[i,1], centroide[1]],
-            z=[X3D[i,2], centroide[2]],
-            mode='lines',
-            line=dict(color=colores_k[c], width=2),
-            showlegend=False
-        ))
-
-   
-
-    fig_k.update_layout(
-        title=f"K-Means Paso a Paso - Iteración {iter_sel}",
-        width=1700,
-        height=900,
-        paper_bgcolor='#0e1117',
-        plot_bgcolor='#0e1117',
-        font=dict(color='white'),
-        scene=dict(
-            xaxis_title='PC1',
-            yaxis_title='PC2',
-            zaxis_title='PC3'
-        )
-    )
-
-    st.plotly_chart(fig_k, use_container_width=True)
-
- 
-
-    st.header("Boxplot Interactivo")
-
-    fig_box = px.box(
-        datos,
-        x='Cluster',
-        y='Rape',
-        color='Cluster',
-        points='all',
-        hover_data=['State']
-    )
-
-    st.plotly_chart(fig_box, use_container_width=True)
-
- 
-    # TABLA DE CLUSTERS
-    
-
-    st.header("Estados por Cluster")
-
-    grupos = pd.DataFrame()
-
-    grupos['State'] = datos['State']
-    grupos['Cluster'] = km4_clusters.labels_
-
-    st.dataframe(
-        grupos.sort_values(by='Cluster'),
-        use_container_width=True
-    )
-
-    # CANTIDAD POR CLUSTER
-    
-
-    st.header(" Cantidad de individuos por Cluster")
-
-    conteo = grupos.groupby('Cluster').size().reset_index()
-
-    conteo.columns = ['Cluster', 'Cantidad']
-
-    fig_count = px.bar(
-        conteo,
-        x='Cluster',
-        y='Cantidad',
-        color='Cluster',
-        text='Cantidad'
-    )
-
-    st.plotly_chart(fig_count, use_container_width=True)
-
-    
-    # VISUALIZACIÓN MURDER VS URBANPOP
-
-
-    st.header("Murder vs UrbanPop")
-
-    fig_mu = px.scatter(
-        datos,
-        x='Murder',
-        y='UrbanPop',
-        color='Cluster',
-        hover_data=['State'],
-        title='Murder vs UrbanPop'
-    )
-
-    st.plotly_chart(fig_mu, use_container_width=True)
-
-
-    # VISUALIZACIÓN RAPE VS ASSAULT
-
-
-    st.header("Rape vs Assault")
-
-    fig_ra = px.scatter(
-        datos,
-        x='Rape',
-        y='Assault',
-        color='Cluster',
-        hover_data=['State'],
-        title='Rape vs Assault'
-    )
-
-    st.plotly_chart(fig_ra, use_container_width=True)
-
-    # EXPLICACIÓN MATEMÁTICA
- 
-
-    st.header("Explicación Matemática")
-
-    st.markdown("""
-    ## ¿Cómo funciona K-Means?
-
-    1. Se eligen centroides aleatorios.
-
-    2. Cada punto calcula su distancia al centroide más cercano.
-
-    3. Los puntos se asignan al cluster más cercano.
-
-    4. Los centroides se recalculan usando el promedio de los puntos.
-
-    5. El proceso se repite hasta converger.
-
-   
-    ## Inercia
-
-    La inercia mide qué tan compactos son los clusters.
-
-    Menor inercia = mejores agrupaciones.
-    """)
-
-    st.success("Aplicación cargada correctamente")
+# =========================================================
+# UMAP
+# =========================================================
 
 else:
 
-    st.warning("Suba el archivo data_USArrests.xlsx para iniciar")
+    if dimension == "2D":
 
+        reducer = umap.UMAP(
+            n_components=2,
+            n_neighbors=n_neighbors,
+            min_dist=min_dist,
+            random_state=42
+        )
+
+    else:
+
+        reducer = umap.UMAP(
+            n_components=3,
+            n_neighbors=n_neighbors,
+            min_dist=min_dist,
+            random_state=42
+        )
+
+# =========================================================
+# EJECUCIÓN DEL MODELO
+# =========================================================
+
+with st.spinner("Reduciendo dimensionalidad..."):
+
+    embedding = reducer.fit_transform(X_scaled)
+
+# =========================================================
+# DATAFRAME
+# =========================================================
+
+df = pd.DataFrame()
+
+df["label"] = y
+df["person"] = [target_names[i] for i in y]
+
+# =========================================================
+# VISUALIZACIÓN 2D
+# =========================================================
+
+if dimension == "2D":
+
+    df["x"] = embedding[:,0]
+    df["y"] = embedding[:,1]
+
+    fig = px.scatter(
+
+        df,
+
+        x="x",
+        y="y",
+
+        color="person",
+
+        hover_data=["person"],
+
+        template="plotly_dark",
+
+        title=f"{metodo} - Visualización 2D",
+
+        width=1200,
+        height=700
+    )
+
+    fig.update_traces(
+        marker=dict(
+            size=7,
+            opacity=0.8
+        )
+    )
+
+    fig.update_layout(
+
+        paper_bgcolor="#050816",
+        plot_bgcolor="#050816",
+
+        font=dict(color="white"),
+
+        legend_title="Personas"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+# =========================================================
+# VISUALIZACIÓN 3D
+# =========================================================
+
+else:
+
+    df["x"] = embedding[:,0]
+    df["y"] = embedding[:,1]
+    df["z"] = embedding[:,2]
+
+    fig = px.scatter_3d(
+
+        df,
+
+        x="x",
+        y="y",
+        z="z",
+
+        color="person",
+
+        hover_data=["person"],
+
+        template="plotly_dark",
+
+        title=f"{metodo} - Visualización 3D",
+
+        width=1200,
+        height=800
+    )
+
+    fig.update_traces(
+        marker=dict(
+            size=4,
+            opacity=0.8
+        )
+    )
+
+    fig.update_layout(
+
+        paper_bgcolor="#050816",
+
+        scene=dict(
+            bgcolor="#050816"
+        ),
+
+        font=dict(color="white")
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+# =========================================================
+# GALERÍA DE ROSTROS
+# =========================================================
+
+st.subheader("🖼️ Ejemplos de Rostros")
+
+cols = st.columns(5)
+
+for i, col in enumerate(cols):
+
+    with col:
+
+        st.image(
+            images[i],
+            caption=target_names[y[i]],
+            use_container_width=True
+        )
+
+# =========================================================
+# CONCLUSIONES
+# =========================================================
+
+st.markdown("""
+## 📌 Conclusiones
+
+- Los rostros humanos son datos de alta dimensionalidad.
+
+- PCA realiza reducción lineal.
+
+- t-SNE preserva relaciones locales.
+
+- UMAP conserva estructuras complejas y es más rápido.
+
+- La reducción dimensional permite visualizar patrones ocultos
+  y agrupamientos faciales.
+
+- Estas técnicas son ampliamente utilizadas en:
+    - biometría,
+    - inteligencia artificial,
+    - reconocimiento facial,
+    - visión computacional.
+""")
