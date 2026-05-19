@@ -7,3 +7,4 @@ scikit-learn
 scipy
 plotly
 openpyxl
+umap-learn
