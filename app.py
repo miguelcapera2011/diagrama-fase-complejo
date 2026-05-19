@@ -587,17 +587,21 @@ if uploaded_file:
     )
 
     fig_anim.update_layout(
-        title='Movimiento de centroides y convergencia K-Means',
-        width=1200,
-        height=800,
-        updatemenus=[
-            dict(
+
+    title='Movimiento de centroides y convergencia K-Means',
+
+    width=1200,
+    height=800,
+
+    updatemenus=[
+
+        dict(
 
             type='buttons',
 
             showactive=False,
 
-            bgcolor='#87CEFA',  # Azul claro
+            bgcolor='#87CEFA',
 
             bordercolor='#1E3A8A',
 
@@ -605,19 +609,22 @@ if uploaded_file:
                 color='black',
                 size=15
             ),
-            {
-                'type': 'buttons',
-                'buttons': [
-                    {
-                        'label': 'Iniciar',
-                        'method': 'animate',
-                        'args': [None]
-                    }
-                ]
-            }
-        ]
-    )
 
+            buttons=[
+
+                dict(
+                    label='▶ Iniciar',
+                    method='animate',
+                    args=[None]
+                )
+
+            ]
+
+        )
+
+    ]
+
+)
     st.plotly_chart(fig_anim, use_container_width=True)
 
     # PCA
