@@ -597,7 +597,9 @@ if uploaded_file:
                     {
                         'label': 'Iniciar',
                         'method': 'animate',
-                        'args': [None]
+                        'args': [None],
+                    # COLOR DEL BOTÓN
+                    'bgcolor': '#87CEFA'
                     }
                 ]
             }
