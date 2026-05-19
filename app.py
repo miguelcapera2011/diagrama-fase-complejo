@@ -597,14 +597,7 @@ if uploaded_file:
                     {
                         'label': 'Iniciar',
                         'method': 'animate',
-                        'args': [None],
-                         # ESTILO DEL BOTÓN
-                    'bgcolor': '#87CEFA',   # Azul claro
-                    'bordercolor': '#1E3A8A',
-                    'font': {
-                        'color': 'black',
-                        'size': 16
-                    }
+                        'args': [None]
                     }
                 ]
             }
