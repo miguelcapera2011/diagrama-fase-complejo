@@ -3,26 +3,39 @@
 # ---------------------------------------------------------
 # Reducción de Dimensionalidad No Lineal
 #
-# Proyecto de Análisis Multivariado
-#
-# Tema:
-# UMAP y t-SNE aplicados a rostros humanos
+# Proyecto:
+# UMAP y t-SNE sobre rostros humanos
 #
 # =========================================================
 
 # =========================================================
-# LIBRERÍAS
+# LIBRERÍAS A INSTALAR
+# =========================================================
+
+# pip install streamlit
+# pip install numpy
+# pip install pandas
+# pip install plotly
+# pip install scikit-learn
+# pip install umap-learn
+# pip install streamlit-plotly-events
+
+# =========================================================
+# IMPORTAR LIBRERÍAS
 # =========================================================
 
 import streamlit as st
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import umap
 
 from sklearn.datasets import fetch_lfw_people
 from sklearn.preprocessing import StandardScaler
 from sklearn.manifold import TSNE
+
+from streamlit_plotly_events import plotly_events
 
 # =========================================================
 # CONFIGURACIÓN
@@ -110,6 +123,10 @@ CARDS
     margin-bottom:20px;
 }
 
+/* =====================================================
+HOVER
+===================================================== */
+
 .metric-card:hover{
 
     transform:translateY(-5px);
@@ -147,7 +164,7 @@ BOTONES
 }
 
 /* =====================================================
-SLIDER
+SLIDERS
 ===================================================== */
 
 .stSlider > div > div > div > div{
@@ -156,13 +173,12 @@ SLIDER
 }
 
 /* =====================================================
-SELECTBOX
+TABLAS
 ===================================================== */
 
-div[data-baseweb="select"]{
+[data-testid="stDataFrame"]{
 
-    background:#111827;
-    border-radius:14px;
+    border-radius:18px;
 }
 
 /* =====================================================
@@ -205,7 +221,7 @@ st.sidebar.markdown("# 🧠 FaceExplorer AI")
 st.sidebar.markdown("""
 ### Reducción Dimensional No Lineal
 
-Visualización de datos complejos usando:
+Visualización de rostros humanos usando:
 
 - UMAP
 - t-SNE
@@ -234,7 +250,9 @@ pagina = st.sidebar.radio(
 @st.cache_data
 def cargar_datos():
 
-    lfw = fetch_lfw_people(min_faces_per_person=70)
+    lfw = fetch_lfw_people(
+        min_faces_per_person=70
+    )
 
     X = lfw.data
     y = lfw.target
@@ -246,10 +264,11 @@ def cargar_datos():
 X, y, images, names = cargar_datos()
 
 # =========================================================
-# ESCALAMIENTO
+# ESCALAR
 # =========================================================
 
 scaler = StandardScaler()
+
 X_scaled = scaler.fit_transform(X)
 
 # =========================================================
@@ -258,7 +277,6 @@ X_scaled = scaler.fit_transform(X)
 
 n_imagenes = X.shape[0]
 n_variables = X.shape[1]
-n_personas = len(names)
 
 # =========================================================
 # INTRODUCCIÓN
@@ -269,13 +287,14 @@ if pagina == "🏠 Introducción":
     st.title("Explora la estructura oculta de los rostros 👋")
 
     st.markdown("""
-Esta aplicación muestra cómo técnicas de reducción dimensional
-transforman imágenes complejas en espacios visuales 2D y 3D.
+Esta aplicación muestra cómo técnicas
+de reducción dimensional transforman
+imágenes complejas en espacios visuales.
 """)
 
     st.markdown("")
 
-    c1,c2,c3,c4 = st.columns(4)
+    c1,c2,c3 = st.columns(3)
 
     with c1:
 
@@ -307,39 +326,12 @@ transforman imágenes complejas en espacios visuales 2D y 3D.
         </div>
         """, unsafe_allow_html=True)
 
-    with c4:
-
-        st.markdown("""
-        <div class="metric-card">
-        <h3>Visualización</h3>
-        <h1>2D/3D</h1>
-        <p>interactiva</p>
-        </div>
-        """, unsafe_allow_html=True)
-
     st.markdown("---")
 
-    col1,col2 = st.columns([2,1])
-
-    with col1:
-
-        st.markdown("""
-## 📘 ¿Qué hace esta aplicación?
-
-Cada rostro humano contiene miles de píxeles.
-
-Cada píxel representa una variable matemática.
-
-Por eso una imagen facial vive
-en un espacio de alta dimensionalidad.
-
-UMAP y t-SNE reducen esas dimensiones
-para visualizar similitudes entre rostros.
-""")
-
-    with col2:
-
-        st.image(images[0], use_container_width=True)
+    st.image(
+        images[0],
+        width=250
+    )
 
 # =========================================================
 # DATASET ORIGINAL
@@ -350,19 +342,13 @@ elif pagina == "📚 Dataset Original":
     st.title("📚 Dataset Original")
 
     st.markdown("""
-Trabajamos con:
-
-## LFW — Labeled Faces in the Wild
+## LFW Dataset
 
 Dataset utilizado en:
 - reconocimiento facial,
 - biometría,
 - inteligencia artificial.
 """)
-
-    st.markdown("---")
-
-    st.subheader("🖼️ Rostros del Dataset")
 
     cols = st.columns(5)
 
@@ -376,19 +362,8 @@ Dataset utilizado en:
                 use_container_width=True
             )
 
-    st.markdown("""
-<div class="info-box">
-
-La computadora NO ve rostros.
-
-La computadora ve matrices numéricas
-compuestas por miles de píxeles.
-
-</div>
-""", unsafe_allow_html=True)
-
 # =========================================================
-# CONVERSIÓN MATEMÁTICA
+# CONVERSIÓN MATEMÁTICA INTERACTIVA
 # =========================================================
 
 elif pagina == "🔢 Conversión Matemática":
@@ -396,13 +371,19 @@ elif pagina == "🔢 Conversión Matemática":
     st.title("🔢 Conversión de Imagen a Datos")
 
     st.markdown("""
-Selecciona un píxel de la imagen.
+## Hover interactivo
 
-La aplicación mostrará:
+Pasa el cursor sobre la imagen.
 
-- el píxel resaltado,
-- el valor matemático,
-- y la posición correspondiente en el vector.
+La aplicación detectará:
+
+- fila,
+- columna,
+- índice vectorial,
+- valor matemático,
+
+y resaltará automáticamente
+la fila correspondiente del vector.
 """)
 
     st.markdown("---")
@@ -412,53 +393,88 @@ La aplicación mostrará:
     alto, ancho = imagen.shape
 
     # =====================================================
-    # PIXEL
+    # HEATMAP INTERACTIVO
     # =====================================================
 
-    fila = st.slider(
-        "Fila del píxel",
-        0,
-        alto - 1,
-        10
+    fig = go.Figure(
+        data=go.Heatmap(
+            z=imagen,
+            colorscale='Gray',
+            showscale=False,
+
+            hovertemplate=
+            "<b>Fila:</b> %{y}<br>" +
+            "<b>Columna:</b> %{x}<br>" +
+            "<b>Valor:</b> %{z}<extra></extra>"
+        )
     )
 
-    columna = st.slider(
-        "Columna del píxel",
-        0,
-        ancho - 1,
-        10
+    fig.update_layout(
+
+        height=500,
+
+        template="plotly_dark",
+
+        paper_bgcolor="#050816",
+
+        plot_bgcolor="#050816",
+
+        margin=dict(
+            l=0,
+            r=0,
+            t=0,
+            b=0
+        )
     )
 
     # =====================================================
-    # ÍNDICE
+    # DETECTAR HOVER
     # =====================================================
 
-    pixel_index = fila * ancho + columna
+    selected_points = plotly_events(
+        fig,
 
-    pixel_value = X[0][pixel_index]
+        hover_event=True,
 
-    # =====================================================
-    # RGB
-    # =====================================================
+        click_event=False,
 
-    imagen_rgb = np.stack(
-        [imagen]*3,
-        axis=-1
+        select_event=False,
+
+        override_height=500
     )
 
-    imagen_rgb = imagen_rgb / imagen_rgb.max()
-
     # =====================================================
-    # RESALTAR PIXEL
+    # VALORES DEFAULT
     # =====================================================
 
-    imagen_rgb[fila, columna] = [0,1,0]
+    fila = 0
+    columna = 0
+
+    pixel_index = 0
+
+    pixel_value = X[0][0]
+
+    # =====================================================
+    # SI HAY HOVER
+    # =====================================================
+
+    if selected_points:
+
+        punto = selected_points[0]
+
+        columna = int(punto["x"])
+
+        fila = int(punto["y"])
+
+        pixel_index = fila * ancho + columna
+
+        pixel_value = X[0][pixel_index]
 
     # =====================================================
     # COLUMNAS
     # =====================================================
 
-    col1,col2 = st.columns([1,2])
+    col1, col2 = st.columns([1,2])
 
     # =====================================================
     # IMAGEN
@@ -468,39 +484,50 @@ La aplicación mostrará:
 
         st.subheader("🖼️ Imagen")
 
-        st.image(
-            imagen_rgb,
+        st.plotly_chart(
+            fig,
             use_container_width=True
         )
 
         st.markdown(f"""
-### Pixel seleccionado
+<div class="info-box">
 
-- Fila: {fila}
-- Columna: {columna}
+### Pixel Detectado
 
-### Valor
+- Fila: <b>{fila}</b>
+- Columna: <b>{columna}</b>
 
-{pixel_value:.2f}
-""")
+### Índice Vectorial
+
+<b>{pixel_index}</b>
+
+### Valor Matemático
+
+<b>{pixel_value:.2f}</b>
+
+</div>
+""", unsafe_allow_html=True)
 
     # =====================================================
-    # VECTOR
+    # VECTOR MATEMÁTICO
     # =====================================================
 
     with col2:
 
         st.subheader("🔢 Vector Matemático")
 
-        vector = X[0][:300]
+        vector = X[0][:500]
 
         vector_df = pd.DataFrame({
-            "Índice": np.arange(300),
+
+            "Índice": np.arange(500),
+
             "Valor": vector
+
         })
 
         # =================================================
-        # RESALTAR FILA
+        # RESALTAR FILA VERDE
         # =================================================
 
         def highlight_row(row):
@@ -523,7 +550,7 @@ La aplicación mostrará:
         st.dataframe(
             styled_df,
             use_container_width=True,
-            height=600
+            height=700
         )
 
     st.markdown("---")
@@ -536,14 +563,16 @@ en un vector matemático:
 
 x = (x₁, x₂, x₃, ..., x₂₉₁₄)
 
-Cada valor representa:
+Cada posición del vector representa:
 
 - un píxel,
 - una intensidad,
 - información visual.
 
-Por eso una imagen facial vive
-en un espacio de alta dimensionalidad.
+Ahora puedes explorar visualmente
+la relación entre:
+
+imagen ↔ píxel ↔ vector matemático.
 """)
 
 # =========================================================
@@ -559,54 +588,8 @@ Los humanos no podemos visualizar:
 
 2914 dimensiones.
 
-Por eso utilizamos reducción dimensional.
-""")
-
-    st.markdown("---")
-
-    col1,col2,col3 = st.columns(3)
-
-    with col1:
-
-        st.markdown("""
-### 🔴 Antes
-
-- 2914 dimensiones
-- imposible visualizar
-- datos complejos
-""")
-
-    with col2:
-
-        st.markdown("""
-### ⚡ UMAP / t-SNE
-
-Conservan:
-- similitudes,
-- relaciones,
-- estructuras.
-""")
-
-    with col3:
-
-        st.markdown("""
-### 🟢 Después
-
-- 2D o 3D
-- visualización simple
-- agrupamientos visibles
-""")
-
-    st.markdown("---")
-
-    st.markdown("""
-## Transformación
-
-R^2914 → R^2
-
-o
-
-R^2914 → R^3
+UMAP y t-SNE permiten transformar
+estos datos en espacios 2D y 3D.
 """)
 
 # =========================================================
@@ -617,71 +600,48 @@ elif pagina == "🚀 UMAP 2D":
 
     st.title("🚀 UMAP — Visualización 2D")
 
-    c1,c2,c3 = st.columns(3)
-
-    with c1:
-
-        n_neighbors = st.slider(
-            "n_neighbors",
-            5,
-            50,
-            15
-        )
-
-    with c2:
-
-        min_dist = st.slider(
-            "min_dist",
-            0.0,
-            1.0,
-            0.1
-        )
-
-    with c3:
-
-        metric = st.selectbox(
-            "Métrica",
-            ["euclidean", "cosine"]
-        )
-
     reducer = umap.UMAP(
         n_components=2,
-        n_neighbors=n_neighbors,
-        min_dist=min_dist,
-        metric=metric,
         random_state=42
     )
 
     embedding = reducer.fit_transform(X_scaled)
 
     df = pd.DataFrame({
+
         "x": embedding[:,0],
+
         "y": embedding[:,1],
+
         "persona": [names[i] for i in y]
     })
 
     fig = px.scatter(
-        df,
-        x="x",
-        y="y",
-        color="persona",
-        template="plotly_dark",
-        height=750
-    )
 
-    fig.update_traces(
-        marker=dict(
-            size=7,
-            opacity=0.82
-        )
+        df,
+
+        x="x",
+
+        y="y",
+
+        color="persona",
+
+        template="plotly_dark",
+
+        height=800
     )
 
     fig.update_layout(
+
         paper_bgcolor="#050816",
+
         plot_bgcolor="#050816"
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
 
 # =========================================================
 # UMAP 3D
@@ -699,34 +659,37 @@ elif pagina == "🌌 UMAP 3D":
     embedding = reducer.fit_transform(X_scaled)
 
     df = pd.DataFrame({
+
         "x": embedding[:,0],
+
         "y": embedding[:,1],
+
         "z": embedding[:,2],
+
         "persona": [names[i] for i in y]
     })
 
     fig = px.scatter_3d(
+
         df,
+
         x="x",
+
         y="y",
+
         z="z",
+
         color="persona",
+
         template="plotly_dark",
+
         height=850
     )
 
-    fig.update_traces(
-        marker=dict(
-            size=4,
-            opacity=0.8
-        )
+    st.plotly_chart(
+        fig,
+        use_container_width=True
     )
-
-    fig.update_layout(
-        paper_bgcolor="#050816"
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
 
 # =========================================================
 # TSNE
@@ -736,49 +699,41 @@ elif pagina == "🧠 t-SNE":
 
     st.title("🧠 t-SNE")
 
-    perplexity = st.slider(
-        "Perplexity",
-        5,
-        50,
-        30
-    )
-
     tsne = TSNE(
         n_components=2,
-        perplexity=perplexity,
         random_state=42
     )
 
     embedding = tsne.fit_transform(X_scaled)
 
     df = pd.DataFrame({
+
         "x": embedding[:,0],
+
         "y": embedding[:,1],
+
         "persona": [names[i] for i in y]
     })
 
     fig = px.scatter(
+
         df,
+
         x="x",
+
         y="y",
+
         color="persona",
+
         template="plotly_dark",
-        height=750
+
+        height=800
     )
 
-    fig.update_traces(
-        marker=dict(
-            size=7,
-            opacity=0.82
-        )
+    st.plotly_chart(
+        fig,
+        use_container_width=True
     )
-
-    fig.update_layout(
-        paper_bgcolor="#050816",
-        plot_bgcolor="#050816"
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
 
 # =========================================================
 # CONCLUSIONES
