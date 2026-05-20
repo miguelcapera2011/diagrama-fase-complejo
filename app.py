@@ -6,17 +6,7 @@
 # Proyecto de Análisis Multivariado
 #
 # Tema:
-# Visualización de rostros humanos usando
-# UMAP y t-SNE
-#
-# OBJETIVO:
-# Mostrar TODO el proceso:
-#
-# 1. Dataset original
-# 2. Conversión imagen -> vector
-# 3. Alta dimensionalidad
-# 4. Reducción dimensional
-# 5. Visualización 2D y 3D
+# UMAP y t-SNE aplicados a rostros humanos
 #
 # =========================================================
 
@@ -99,30 +89,6 @@ p, label, div{
 CARDS
 ===================================================== */
 
-.card{
-
-    background:
-    rgba(17,24,39,0.78);
-
-    border:
-    1px solid rgba(255,255,255,0.08);
-
-    border-radius:24px;
-
-    padding:25px;
-
-    backdrop-filter: blur(10px);
-
-    box-shadow:
-    0px 0px 30px rgba(0,0,0,0.35);
-
-    margin-bottom:25px;
-}
-
-/* =====================================================
-METRICAS
-===================================================== */
-
 .metric-card{
 
     background:
@@ -140,6 +106,8 @@ METRICAS
     1px solid rgba(139,92,246,0.25);
 
     transition:0.3s;
+
+    margin-bottom:20px;
 }
 
 .metric-card:hover{
@@ -176,20 +144,10 @@ BOTONES
     font-size:16px;
 
     font-weight:600;
-
-    transition:0.3s;
-}
-
-.stButton > button:hover{
-
-    transform:scale(1.02);
-
-    box-shadow:
-    0px 0px 20px rgba(139,92,246,0.4);
 }
 
 /* =====================================================
-SLIDERS
+SLIDER
 ===================================================== */
 
 .stSlider > div > div > div > div{
@@ -208,16 +166,7 @@ div[data-baseweb="select"]{
 }
 
 /* =====================================================
-IMÁGENES
-===================================================== */
-
-img{
-
-    border-radius:16px;
-}
-
-/* =====================================================
-CAJAS EXPLICATIVAS
+CAJAS
 ===================================================== */
 
 .info-box{
@@ -236,13 +185,12 @@ CAJAS EXPLICATIVAS
 }
 
 /* =====================================================
-SEPARADOR
+IMÁGENES
 ===================================================== */
 
-hr{
+img{
 
-    border:
-    1px solid rgba(255,255,255,0.08);
+    border-radius:16px;
 }
 
 </style>
@@ -257,7 +205,7 @@ st.sidebar.markdown("# 🧠 FaceExplorer AI")
 st.sidebar.markdown("""
 ### Reducción Dimensional No Lineal
 
-Visualización de rostros humanos mediante:
+Visualización de datos complejos usando:
 
 - UMAP
 - t-SNE
@@ -266,7 +214,7 @@ Proyecto de Análisis Multivariado.
 """)
 
 pagina = st.sidebar.radio(
-    "Exploración",
+    "Navegación",
     [
         "🏠 Introducción",
         "📚 Dataset Original",
@@ -275,7 +223,6 @@ pagina = st.sidebar.radio(
         "🚀 UMAP 2D",
         "🌌 UMAP 3D",
         "🧠 t-SNE",
-        "🖼️ Exploración Facial",
         "📌 Conclusiones"
     ]
 )
@@ -323,7 +270,7 @@ if pagina == "🏠 Introducción":
 
     st.markdown("""
 Esta aplicación muestra cómo técnicas de reducción dimensional
-transforman imágenes complejas en mapas visuales 2D y 3D.
+transforman imágenes complejas en espacios visuales 2D y 3D.
 """)
 
     st.markdown("")
@@ -356,7 +303,7 @@ transforman imágenes complejas en mapas visuales 2D y 3D.
         <div class="metric-card">
         <h3>Métodos</h3>
         <h1>UMAP</h1>
-        <p>t-SNE</p>
+        <p>y t-SNE</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -365,7 +312,7 @@ transforman imágenes complejas en mapas visuales 2D y 3D.
         st.markdown("""
         <div class="metric-card">
         <h3>Visualización</h3>
-        <h1>2D / 3D</h1>
+        <h1>2D/3D</h1>
         <p>interactiva</p>
         </div>
         """, unsafe_allow_html=True)
@@ -377,21 +324,17 @@ transforman imágenes complejas en mapas visuales 2D y 3D.
     with col1:
 
         st.markdown("""
-## 📘 ¿Qué problema resolvemos?
+## 📘 ¿Qué hace esta aplicación?
 
 Cada rostro humano contiene miles de píxeles.
 
-Cada píxel representa una variable matemática,
-por lo que una imagen vive en un espacio de alta dimensionalidad.
+Cada píxel representa una variable matemática.
 
-Los humanos no podemos visualizar 2914 dimensiones.
+Por eso una imagen facial vive
+en un espacio de alta dimensionalidad.
 
-Por eso utilizamos:
-
-- UMAP
-- t-SNE
-
-para transformar esos datos en espacios visuales simples.
+UMAP y t-SNE reducen esas dimensiones
+para visualizar similitudes entre rostros.
 """)
 
     with col2:
@@ -407,11 +350,11 @@ elif pagina == "📚 Dataset Original":
     st.title("📚 Dataset Original")
 
     st.markdown("""
-Trabajamos con el dataset:
+Trabajamos con:
 
 ## LFW — Labeled Faces in the Wild
 
-Utilizado en:
+Dataset utilizado en:
 - reconocimiento facial,
 - biometría,
 - inteligencia artificial.
@@ -419,7 +362,7 @@ Utilizado en:
 
     st.markdown("---")
 
-    st.subheader("🖼️ ¿Cómo se ven los datos originales?")
+    st.subheader("🖼️ Rostros del Dataset")
 
     cols = st.columns(5)
 
@@ -432,8 +375,6 @@ Utilizado en:
                 caption=names[y[i]],
                 use_container_width=True
             )
-
-    st.markdown("---")
 
     st.markdown("""
 <div class="info-box">
@@ -455,8 +396,13 @@ elif pagina == "🔢 Conversión Matemática":
     st.title("🔢 Conversión de Imagen a Datos")
 
     st.markdown("""
-Cada píxel de la imagen se convierte
-en una variable matemática.
+Selecciona un píxel de la imagen.
+
+La aplicación mostrará:
+
+- el píxel resaltado,
+- el valor matemático,
+- y la posición correspondiente en el vector.
 """)
 
     st.markdown("---")
@@ -465,29 +411,58 @@ en una variable matemática.
 
     alto, ancho = imagen.shape
 
-    pixel_index = st.slider(
-        "Selecciona un valor del vector",
+    # =====================================================
+    # PIXEL
+    # =====================================================
+
+    fila = st.slider(
+        "Fila del píxel",
         0,
-        X.shape[1]-1,
-        100
+        alto - 1,
+        10
     )
 
-    fila = pixel_index // ancho
-    columna = pixel_index % ancho
+    columna = st.slider(
+        "Columna del píxel",
+        0,
+        ancho - 1,
+        10
+    )
 
-    imagen_highlight = np.copy(imagen)
+    # =====================================================
+    # ÍNDICE
+    # =====================================================
+
+    pixel_index = fila * ancho + columna
+
+    pixel_value = X[0][pixel_index]
+
+    # =====================================================
+    # RGB
+    # =====================================================
 
     imagen_rgb = np.stack(
-        [imagen_highlight]*3,
+        [imagen]*3,
         axis=-1
     )
 
     imagen_rgb = imagen_rgb / imagen_rgb.max()
 
-    # resaltar pixel
-    imagen_rgb[fila, columna] = [1,0,0]
+    # =====================================================
+    # RESALTAR PIXEL
+    # =====================================================
+
+    imagen_rgb[fila, columna] = [0,1,0]
+
+    # =====================================================
+    # COLUMNAS
+    # =====================================================
 
     col1,col2 = st.columns([1,2])
+
+    # =====================================================
+    # IMAGEN
+    # =====================================================
 
     with col1:
 
@@ -499,42 +474,57 @@ en una variable matemática.
         )
 
         st.markdown(f"""
-### Pixel resaltado
+### Pixel seleccionado
 
 - Fila: {fila}
 - Columna: {columna}
+
+### Valor
+
+{pixel_value:.2f}
 """)
+
+    # =====================================================
+    # VECTOR
+    # =====================================================
 
     with col2:
 
         st.subheader("🔢 Vector Matemático")
 
-        vector = X[0][:200]
+        vector = X[0][:300]
 
         vector_df = pd.DataFrame({
-            "Índice": np.arange(200),
+            "Índice": np.arange(300),
             "Valor": vector
         })
 
-        st.dataframe(
-            vector_df,
-            use_container_width=True,
-            height=500
+        # =================================================
+        # RESALTAR FILA
+        # =================================================
+
+        def highlight_row(row):
+
+            if row.name == pixel_index:
+
+                return [
+                    'background-color: #00ff99; color:black'
+                ] * len(row)
+
+            else:
+
+                return [''] * len(row)
+
+        styled_df = vector_df.style.apply(
+            highlight_row,
+            axis=1
         )
 
-        st.markdown(f"""
-<div class="info-box">
-
-Pixel seleccionado:
-
-Índice:
-<b>{pixel_index}</b>
-
-Valor matemático:
-<b>{X[0][pixel_index]:.2f}</b>
-
-</div>
-""", unsafe_allow_html=True)
+        st.dataframe(
+            styled_df,
+            use_container_width=True,
+            height=600
+        )
 
     st.markdown("---")
 
@@ -542,16 +532,18 @@ Valor matemático:
 ## 📘 ¿Qué está ocurriendo?
 
 La computadora convierte la imagen
-en un vector numérico:
+en un vector matemático:
 
 x = (x₁, x₂, x₃, ..., x₂₉₁₄)
 
-Cada número representa:
+Cada valor representa:
+
 - un píxel,
 - una intensidad,
 - información visual.
 
-Esto genera un espacio de alta dimensionalidad.
+Por eso una imagen facial vive
+en un espacio de alta dimensionalidad.
 """)
 
 # =========================================================
@@ -567,7 +559,7 @@ Los humanos no podemos visualizar:
 
 2914 dimensiones.
 
-Por eso necesitamos reducir dimensionalidad.
+Por eso utilizamos reducción dimensional.
 """)
 
     st.markdown("---")
@@ -581,7 +573,7 @@ Por eso necesitamos reducir dimensionalidad.
 
 - 2914 dimensiones
 - imposible visualizar
-- espacio complejo
+- datos complejos
 """)
 
     with col2:
@@ -600,7 +592,7 @@ Conservan:
         st.markdown("""
 ### 🟢 Después
 
-- 2 dimensiones
+- 2D o 3D
 - visualización simple
 - agrupamientos visibles
 """)
@@ -608,7 +600,7 @@ Conservan:
     st.markdown("---")
 
     st.markdown("""
-## Transformación Matemática
+## Transformación
 
 R^2914 → R^2
 
@@ -667,20 +659,6 @@ elif pagina == "🚀 UMAP 2D":
         "y": embedding[:,1],
         "persona": [names[i] for i in y]
     })
-
-    st.markdown("""
-## 📘 ¿Qué representa este gráfico?
-
-Cada punto representa:
-
-UN rostro humano.
-
-Puntos cercanos:
-→ rostros similares.
-
-Puntos alejados:
-→ rostros diferentes.
-""")
 
     fig = px.scatter(
         df,
@@ -803,26 +781,6 @@ elif pagina == "🧠 t-SNE":
     st.plotly_chart(fig, use_container_width=True)
 
 # =========================================================
-# EXPLORACIÓN FACIAL
-# =========================================================
-
-elif pagina == "🖼️ Exploración Facial":
-
-    st.title("🖼️ Exploración Facial")
-
-    cols = st.columns(5)
-
-    for i in range(20):
-
-        with cols[i % 5]:
-
-            st.image(
-                images[i],
-                caption=names[y[i]],
-                use_container_width=True
-            )
-
-# =========================================================
 # CONCLUSIONES
 # =========================================================
 
@@ -848,6 +806,5 @@ estructuras ocultas y agrupamientos.
 - biometría,
 - inteligencia artificial,
 - visión computacional,
-- reconocimiento facial,
-- análisis multivariado.
+- reconocimiento facial.
 """)
