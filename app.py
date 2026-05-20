@@ -1,18 +1,19 @@
 # =========================================================
 # FACEEXPLORER AI
 # ---------------------------------------------------------
-# Proyecto:
-# Reducción de Dimensionalidad No Lineal
+# Reducción Dimensional No Lineal
 #
-# Técnicas:
-# - UMAP (Principal)
-# - t-SNE (Comparación)
+# Proyecto de Análisis Multivariado
+#
+# Tema:
+# Visualización de datos complejos usando UMAP y t-SNE
 #
 # Objetivo:
-# Agrupar y visualizar datos extremadamente complejos
-# (rostros humanos) en gráficos simples 2D y 3D.
+# Agrupar y visualizar rostros humanos
+# en espacios 2D y 3D.
 #
-# App moderna estilo IA / Visual Analytics
+# Diseño:
+# Inspirado en interfaces modernas de IA
 # =========================================================
 
 # =========================================================
@@ -30,7 +31,7 @@ from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
 
 # =========================================================
-# CONFIGURACIÓN DE LA PÁGINA
+# CONFIGURACIÓN DE LA APP
 # =========================================================
 
 st.set_page_config(
@@ -40,14 +41,14 @@ st.set_page_config(
 )
 
 # =========================================================
-# CSS AVANZADO
+# CSS MODERNO
 # =========================================================
 
 st.markdown("""
 <style>
 
 /* ======================================================
-FONDO GENERAL
+FONDO PRINCIPAL
 ====================================================== */
 
 .stApp{
@@ -62,6 +63,7 @@ SIDEBAR
 ====================================================== */
 
 section[data-testid="stSidebar"]{
+
     background:
     linear-gradient(
         180deg,
@@ -74,22 +76,12 @@ section[data-testid="stSidebar"]{
 }
 
 /* ======================================================
-TÍTULOS
-====================================================== */
-
-h1{
-    color:#F8FAFC;
-    font-size:50px;
-    font-weight:700;
-}
-
-h2,h3{
-    color:#E2E8F0;
-}
-
-/* ======================================================
 TEXTOS
 ====================================================== */
+
+h1,h2,h3,h4{
+    color:#F8FAFC;
+}
 
 p, label, div{
     color:#CBD5E1;
@@ -102,25 +94,25 @@ CARDS
 .card{
 
     background:
-    rgba(17,24,39,0.72);
+    rgba(17,24,39,0.75);
 
     border:
     1px solid rgba(255,255,255,0.06);
 
     border-radius:22px;
 
-    padding:22px;
+    padding:24px;
 
     backdrop-filter: blur(12px);
 
     box-shadow:
-    0px 0px 20px rgba(0,0,0,0.35);
+    0px 0px 25px rgba(0,0,0,0.35);
 
     margin-bottom:20px;
 }
 
 /* ======================================================
-METRIC CARDS
+MÉTRICAS
 ====================================================== */
 
 .metric-card{
@@ -129,25 +121,25 @@ METRIC CARDS
     linear-gradient(
         145deg,
         rgba(139,92,246,0.12),
-        rgba(17,24,39,0.88)
+        rgba(17,24,39,0.9)
     );
 
     border-radius:20px;
 
-    padding:22px;
+    padding:24px;
 
     border:
-    1px solid rgba(139,92,246,0.25);
+    1px solid rgba(139,92,246,0.22);
 
     transition:0.3s;
 }
 
 .metric-card:hover{
 
-    transform:translateY(-5px);
+    transform:translateY(-4px);
 
     box-shadow:
-    0px 0px 25px rgba(139,92,246,0.35);
+    0px 0px 22px rgba(139,92,246,0.35);
 }
 
 /* ======================================================
@@ -176,16 +168,6 @@ BOTONES
     font-size:16px;
 
     font-weight:600;
-
-    transition:0.3s;
-}
-
-.stButton > button:hover{
-
-    transform:scale(1.02);
-
-    box-shadow:
-    0px 0px 18px rgba(139,92,246,0.45);
 }
 
 /* ======================================================
@@ -223,15 +205,6 @@ img{
     border-radius:16px;
 }
 
-/* ======================================================
-HR
-====================================================== */
-
-hr{
-    border:
-    1px solid rgba(255,255,255,0.08);
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -239,17 +212,15 @@ hr{
 # SIDEBAR
 # =========================================================
 
-st.sidebar.markdown("# 🧠 FaceExplorer AI")
+st.sidebar.markdown("# 🧠 FaceExplorer")
 
 st.sidebar.markdown("""
-### Reducción Dimensional No Lineal
-
-Visualización de rostros humanos usando:
+Visualización de datos complejos mediante:
 
 - UMAP
 - t-SNE
 
-Aplicado a datos de alta dimensionalidad.
+Aplicado a rostros humanos de alta dimensionalidad.
 """)
 
 pagina = st.sidebar.radio(
@@ -260,15 +231,14 @@ pagina = st.sidebar.radio(
         "🚀 UMAP 2D",
         "🌌 UMAP 3D",
         "🧠 t-SNE",
+        "🔬 Proceso Interno",
         "🖼️ Explorar Rostros",
         "📌 Conclusiones"
     ]
 )
 
-st.sidebar.markdown("---")
-
 # =========================================================
-# CARGAR DATASET
+# CARGA DEL DATASET
 # =========================================================
 
 @st.cache_data
@@ -290,7 +260,6 @@ X, y, images, names = cargar_datos()
 # =========================================================
 
 scaler = StandardScaler()
-
 X_scaled = scaler.fit_transform(X)
 
 # =========================================================
@@ -310,34 +279,31 @@ if pagina == "🏠 Inicio":
     st.title("Explora la estructura oculta de los rostros 👋")
 
     st.markdown("""
-Utilizamos reducción dimensional no lineal para visualizar
-rostros humanos en espacios de 2D y 3D.
-
-El objetivo es transformar datos extremadamente complejos
-en representaciones visuales simples e interpretables.
+Utilizamos técnicas de reducción dimensional no lineal
+para transformar datos complejos en visualizaciones 2D y 3D.
 """)
 
     st.markdown("")
 
-    c1, c2, c3, c4 = st.columns(4)
+    c1,c2,c3,c4 = st.columns(4)
 
     with c1:
 
         st.markdown(f"""
         <div class="metric-card">
-        <h3>Imágenes</h3>
-        <h1 style="font-size:40px;">{n_imagenes}</h1>
-        <p>rostros humanos</p>
+        <h3>Dimensionalidad</h3>
+        <h1>{n_variables}</h1>
+        <p>variables por imagen</p>
         </div>
         """, unsafe_allow_html=True)
 
     with c2:
 
-        st.markdown(f"""
+        st.markdown("""
         <div class="metric-card">
-        <h3>Dimensionalidad</h3>
-        <h1 style="font-size:40px;">{n_variables}</h1>
-        <p>variables por imagen</p>
+        <h3>Métodos</h3>
+        <h1>2</h1>
+        <p>UMAP y t-SNE</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -345,9 +311,9 @@ en representaciones visuales simples e interpretables.
 
         st.markdown("""
         <div class="metric-card">
-        <h3>Método Principal</h3>
-        <h1 style="font-size:40px;">UMAP</h1>
-        <p>no lineal</p>
+        <h3>Visualización</h3>
+        <h1>2D / 3D</h1>
+        <p>interactiva</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -355,28 +321,36 @@ en representaciones visuales simples e interpretables.
 
         st.markdown("""
         <div class="metric-card">
-        <h3>Visualización</h3>
-        <h1 style="font-size:40px;">2D / 3D</h1>
-        <p>interactiva</p>
+        <h3>Objetivo</h3>
+        <h1>Agrupar</h1>
+        <p>rostros similares</p>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("---")
 
-    st.subheader("📘 ¿Qué está ocurriendo?")
+    col1,col2 = st.columns([2,1])
 
-    st.markdown("""
-Cada rostro humano contiene miles de variables.
+    with col1:
 
-Cada píxel representa información visual, por lo que
-una imagen facial vive en un espacio de alta dimensionalidad.
+        st.markdown("""
+### 📘 ¿Qué hace esta aplicación?
 
-UMAP reduce estas dimensiones para visualizar:
+Cada rostro humano contiene miles de píxeles.
 
-R^2914 → R^2 o R^3
+Cada píxel representa una variable matemática,
+por lo que cada imagen vive en un espacio de alta dimensionalidad.
 
-permitiendo observar agrupamientos y similitudes entre rostros.
+UMAP transforma:
+
+R^2914 → R^2
+
+permitiendo visualizar agrupamientos y similitudes faciales.
 """)
+
+    with col2:
+
+        st.image(images[0], use_container_width=True)
 
 # =========================================================
 # DATASET
@@ -384,21 +358,20 @@ permitiendo observar agrupamientos y similitudes entre rostros.
 
 elif pagina == "📚 Dataset":
 
-    st.title("📚 Dataset de Rostros Humanos")
+    st.title("📚 Dataset Facial")
 
     st.markdown("""
-Trabajamos con el dataset:
+Trabajamos con:
 
 ## LFW — Labeled Faces in the Wild
 
-Utilizado en:
+Dataset utilizado en:
 - biometría,
-- visión artificial,
-- inteligencia artificial,
-- reconocimiento facial.
+- reconocimiento facial,
+- inteligencia artificial.
 """)
 
-    c1, c2, c3 = st.columns(3)
+    c1,c2,c3 = st.columns(3)
 
     with c1:
         st.metric("Imágenes", n_imagenes)
@@ -411,11 +384,11 @@ Utilizado en:
 
     st.markdown("---")
 
-    st.subheader("🖼️ Ejemplos de Rostros")
+    st.subheader("🖼️ Ejemplos")
 
     cols = st.columns(5)
 
-    for i, col in enumerate(cols):
+    for i,col in enumerate(cols):
 
         with col:
 
@@ -425,21 +398,6 @@ Utilizado en:
                 use_container_width=True
             )
 
-    st.markdown("---")
-
-    st.subheader("📘 Explicación Multivariada")
-
-    st.markdown("""
-Cada imagen facial puede representarse como:
-
-x = (x1, x2, x3, ..., x2914)
-
-donde cada variable corresponde a un píxel.
-
-Esto convierte a las imágenes en datos
-extremadamente complejos y de alta dimensionalidad.
-""")
-
 # =========================================================
 # UMAP 2D
 # =========================================================
@@ -448,7 +406,7 @@ elif pagina == "🚀 UMAP 2D":
 
     st.title("🚀 UMAP — Visualización 2D")
 
-    c1, c2 = st.columns([3,1])
+    c1,c2,c3 = st.columns([1,1,1])
 
     with c1:
 
@@ -468,16 +426,24 @@ elif pagina == "🚀 UMAP 2D":
             0.1
         )
 
-    st.markdown("""
-UMAP preserva relaciones locales y globales.
+    with c3:
 
-Los puntos cercanos representan rostros similares.
+        metrica = st.selectbox(
+            "Métrica",
+            ["euclidean", "cosine"]
+        )
+
+    st.markdown("""
+UMAP intenta preservar similitudes entre rostros.
+
+Los puntos cercanos representan caras similares.
 """)
 
     reducer = umap.UMAP(
         n_components=2,
         n_neighbors=n_neighbors,
         min_dist=min_dist,
+        metric=metrica,
         random_state=42
     )
 
@@ -495,7 +461,7 @@ Los puntos cercanos representan rostros similares.
         y="y",
         color="persona",
         template="plotly_dark",
-        height=760
+        height=750
     )
 
     fig.update_traces(
@@ -507,8 +473,7 @@ Los puntos cercanos representan rostros similares.
 
     fig.update_layout(
         paper_bgcolor="#050816",
-        plot_bgcolor="#050816",
-        legend_title="Personas"
+        plot_bgcolor="#050816"
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -520,11 +485,6 @@ Los puntos cercanos representan rostros similares.
 elif pagina == "🌌 UMAP 3D":
 
     st.title("🌌 UMAP — Visualización 3D")
-
-    st.markdown("""
-Visualización tridimensional interactiva
-de rostros humanos utilizando UMAP.
-""")
 
     reducer = umap.UMAP(
         n_components=3,
@@ -569,7 +529,7 @@ de rostros humanos utilizando UMAP.
 
 elif pagina == "🧠 t-SNE":
 
-    st.title("🧠 t-SNE — Comparación")
+    st.title("🧠 t-SNE")
 
     perplexity = st.slider(
         "Perplexity",
@@ -577,13 +537,6 @@ elif pagina == "🧠 t-SNE":
         50,
         30
     )
-
-    st.markdown("""
-t-SNE también es una técnica de reducción
-dimensional no lineal.
-
-Preserva relaciones locales entre observaciones.
-""")
 
     tsne = TSNE(
         n_components=2,
@@ -605,7 +558,7 @@ Preserva relaciones locales entre observaciones.
         y="y",
         color="persona",
         template="plotly_dark",
-        height=760
+        height=750
     )
 
     fig.update_traces(
@@ -623,16 +576,84 @@ Preserva relaciones locales entre observaciones.
     st.plotly_chart(fig, use_container_width=True)
 
 # =========================================================
+# PROCESO INTERNO
+# =========================================================
+
+elif pagina == "🔬 Proceso Interno":
+
+    st.title("🔬 ¿Qué ocurre internamente?")
+
+    st.markdown("""
+La aplicación realiza una transformación matemática
+para convertir imágenes complejas en puntos visuales.
+""")
+
+    st.markdown("---")
+
+    c1,c2,c3 = st.columns(3)
+
+    with c1:
+
+        st.subheader("1️⃣ Imagen Original")
+
+        st.image(images[0], use_container_width=True)
+
+        st.markdown("""
+La computadora recibe una imagen facial.
+""")
+
+    with c2:
+
+        st.subheader("2️⃣ Vector Matemático")
+
+        vector = X[0][:20]
+
+        st.write(vector)
+
+        st.markdown("""
+Cada píxel se convierte en una variable matemática.
+""")
+
+    with c3:
+
+        st.subheader("3️⃣ Reducción UMAP")
+
+        st.markdown("""
+UMAP transforma:
+
+R^2914 → R^2
+
+para visualizar similitudes.
+""")
+
+    st.markdown("---")
+
+    st.subheader("📘 Explicación")
+
+    st.markdown("""
+Antes de UMAP:
+
+- cada rostro tiene 2914 dimensiones,
+- imposible de visualizar.
+
+Después de UMAP:
+
+- cada rostro se convierte en:
+(x,y)
+
+permitiendo observar:
+- agrupamientos,
+- similitudes,
+- estructuras ocultas.
+""")
+
+# =========================================================
 # EXPLORAR ROSTROS
 # =========================================================
 
 elif pagina == "🖼️ Explorar Rostros":
 
     st.title("🖼️ Explorar Rostros")
-
-    st.markdown("""
-Galería interactiva del dataset facial.
-""")
 
     cols = st.columns(5)
 
@@ -655,23 +676,22 @@ elif pagina == "📌 Conclusiones":
     st.title("📌 Conclusiones")
 
     st.markdown("""
-## Resultados del Proyecto
+## Resultados
 
-- Los rostros humanos representan datos de alta dimensionalidad.
+- Los rostros humanos representan datos complejos.
 
-- UMAP y t-SNE realizan reducción dimensional no lineal.
+- Cada imagen contiene miles de variables.
 
-- Estas técnicas permiten visualizar agrupamientos
-  y relaciones ocultas entre rostros similares.
+- UMAP y t-SNE reducen dimensionalidad
+  preservando similitudes.
 
-- La reducción dimensional transforma datos complejos
-  en representaciones visuales simples de 2D y 3D.
+- La reducción dimensional permite visualizar
+  agrupamientos en espacios 2D y 3D.
 
-## Aplicaciones Reales
+## Aplicaciones
 
 - biometría,
 - reconocimiento facial,
-- inteligencia artificial,
 - visión computacional,
-- análisis multivariado.
+- inteligencia artificial.
 """)
