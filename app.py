@@ -1,12 +1,26 @@
 # =========================================================
 # FACEEXPLORER AI
 # ---------------------------------------------------------
-# Reducción Dimensional No Lineal
-# UMAP y t-SNE
+# Proyecto:
+# Reducción de Dimensionalidad No Lineal
+#
+# Tema:
+# UMAP y t-SNE para visualizar rostros humanos
+#
+# Objetivo:
+# Mostrar TODO el proceso:
+#
+# 1. Dataset original
+# 2. Conversión a datos matemáticos
+# 3. Alta dimensionalidad
+# 4. Reducción dimensional
+# 5. Visualización final 2D y 3D
 #
 # NUEVA FUNCIÓN:
-# Hover sobre vector matemático
-# → ilumina pixel correspondiente en la imagen
+# Hover conceptual entre vector y pixel
+#
+# Autor:
+# Proyecto de Análisis Multivariado
 # =========================================================
 
 # =========================================================
@@ -35,33 +49,45 @@ st.set_page_config(
 )
 
 # =========================================================
-# CSS
+# CSS MODERNO
 # =========================================================
 
 st.markdown("""
 <style>
 
-/* FONDO */
+/* =====================================================
+FONDO PRINCIPAL
+===================================================== */
 
 .stApp{
+
     background:
     radial-gradient(circle at top left, #1e1b4b 0%, #050816 40%),
     radial-gradient(circle at bottom right, #111827 0%, #050816 50%);
+
     color:white;
 }
 
-/* SIDEBAR */
+/* =====================================================
+SIDEBAR
+===================================================== */
 
 section[data-testid="stSidebar"]{
+
     background:
     linear-gradient(
         180deg,
         #0B1120 0%,
         #050816 100%
     );
+
+    border-right:
+    1px solid rgba(255,255,255,0.08);
 }
 
-/* TEXTOS */
+/* =====================================================
+TEXTOS
+===================================================== */
 
 h1,h2,h3,h4{
     color:#F8FAFC;
@@ -71,9 +97,12 @@ p, label, div{
     color:#CBD5E1;
 }
 
-/* CARDS */
+/* =====================================================
+CARDS
+===================================================== */
 
 .card{
+
     background:
     rgba(17,24,39,0.78);
 
@@ -84,12 +113,20 @@ p, label, div{
 
     padding:25px;
 
+    backdrop-filter: blur(10px);
+
+    box-shadow:
+    0px 0px 30px rgba(0,0,0,0.35);
+
     margin-bottom:25px;
 }
 
-/* METRIC */
+/* =====================================================
+METRICAS
+===================================================== */
 
 .metric-card{
+
     background:
     linear-gradient(
         145deg,
@@ -103,12 +140,26 @@ p, label, div{
 
     border:
     1px solid rgba(139,92,246,0.25);
+
+    transition:0.3s;
 }
 
-/* BOTONES */
+.metric-card:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:
+    0px 0px 24px rgba(139,92,246,0.35);
+}
+
+/* =====================================================
+BOTONES
+===================================================== */
 
 .stButton > button{
+
     width:100%;
+
     background:
     linear-gradient(
         90deg,
@@ -117,20 +168,75 @@ p, label, div{
     );
 
     color:white;
+
     border:none;
+
     border-radius:14px;
+
     padding:14px;
+
+    font-size:16px;
+
     font-weight:600;
+
+    transition:0.3s;
 }
 
-/* SLIDERS */
+/* =====================================================
+SLIDERS
+===================================================== */
 
 .stSlider > div > div > div > div{
+
     background:#8B5CF6;
 }
 
+/* =====================================================
+SELECTBOX
+===================================================== */
+
+div[data-baseweb="select"]{
+
+    background:#111827;
+    border-radius:14px;
+}
+
+/* =====================================================
+IMÁGENES
+===================================================== */
+
 img{
+
     border-radius:16px;
+}
+
+/* =====================================================
+CAJAS EXPLICATIVAS
+===================================================== */
+
+.info-box{
+
+    background:
+    rgba(139,92,246,0.08);
+
+    border-left:
+    4px solid #8B5CF6;
+
+    padding:18px;
+
+    border-radius:12px;
+
+    margin-top:15px;
+}
+
+/* =====================================================
+SEPARADOR
+===================================================== */
+
+hr{
+
+    border:
+    1px solid rgba(255,255,255,0.08);
 }
 
 </style>
@@ -141,6 +247,17 @@ img{
 # =========================================================
 
 st.sidebar.markdown("# 🧠 FaceExplorer AI")
+
+st.sidebar.markdown("""
+### Reducción Dimensional No Lineal
+
+Visualización de rostros humanos mediante:
+
+- UMAP
+- t-SNE
+
+Proyecto de Análisis Multivariado.
+""")
 
 pagina = st.sidebar.radio(
     "Exploración",
@@ -157,7 +274,7 @@ pagina = st.sidebar.radio(
 )
 
 # =========================================================
-# CARGAR DATOS
+# CARGAR DATASET
 # =========================================================
 
 @st.cache_data
@@ -175,7 +292,7 @@ def cargar_datos():
 X, y, images, names = cargar_datos()
 
 # =========================================================
-# ESCALAMIENTO
+# ESCALAR DATOS
 # =========================================================
 
 scaler = StandardScaler()
@@ -199,29 +316,120 @@ if pagina == "🏠 Introducción":
 
     st.markdown("""
 Esta aplicación muestra cómo técnicas de reducción dimensional
-transforman imágenes complejas en visualizaciones 2D y 3D.
+transforman imágenes complejas en mapas visuales 2D y 3D.
 """)
+
+    st.markdown("")
 
     c1,c2,c3,c4 = st.columns(4)
 
     with c1:
-        st.metric("Dimensiones", n_variables)
+
+        st.markdown(f"""
+        <div class="metric-card">
+        <h3>Dimensiones</h3>
+        <h1>{n_variables}</h1>
+        <p>variables por imagen</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     with c2:
-        st.metric("Imágenes", n_imagenes)
+
+        st.markdown(f"""
+        <div class="metric-card">
+        <h3>Imágenes</h3>
+        <h1>{n_imagenes}</h1>
+        <p>rostros humanos</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     with c3:
-        st.metric("Métodos", "UMAP / t-SNE")
+
+        st.markdown("""
+        <div class="metric-card">
+        <h3>Métodos</h3>
+        <h1>UMAP</h1>
+        <p>t-SNE</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     with c4:
-        st.metric("Visualización", "2D / 3D")
+
+        st.markdown("""
+        <div class="metric-card">
+        <h3>Visualización</h3>
+        <h1>2D/3D</h1>
+        <p>interactiva</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("---")
 
-    st.image(images[0], width=250)
+    col1,col2 = st.columns([2,1])
+
+    with col1:
+
+        st.markdown("""
+## 📘 ¿Qué problema resolvemos?
+
+Cada rostro humano contiene miles de píxeles.
+
+Cada píxel representa información matemática,
+por lo que una imagen vive en un espacio de alta dimensionalidad.
+
+Los humanos no podemos visualizar 2914 dimensiones.
+
+Por eso utilizamos:
+
+- UMAP
+- t-SNE
+
+para transformar esos datos en espacios visuales simples.
+
+---
+
+## 🔍 ¿Qué aprenderás en esta aplicación?
+
+✅ Cómo se ve el dataset original  
+✅ Cómo la computadora interpreta una imagen  
+✅ Cómo una imagen se convierte en vectores matemáticos  
+✅ Qué significa alta dimensionalidad  
+✅ Cómo UMAP y t-SNE reducen dimensiones  
+✅ Cómo aparecen agrupamientos visuales  
+
+---
+
+## 🧠 Idea principal
+
+La reducción dimensional NO elimina información al azar.
+
+El objetivo es:
+
+preservar relaciones y similitudes
+entre los datos originales.
+
+Por eso:
+
+rostros parecidos terminan cerca
+en el espacio reducido.
+""")
+
+    with col2:
+
+        st.image(images[0], use_container_width=True)
+
+        st.markdown("""
+<div class="info-box">
+
+La computadora no ve una cara.
+
+Ve miles de números.
+
+</div>
+""", unsafe_allow_html=True)
 
 # =========================================================
-# DATASET
+# DATASET ORIGINAL
 # =========================================================
 
 elif pagina == "📚 Dataset Original":
@@ -229,8 +437,19 @@ elif pagina == "📚 Dataset Original":
     st.title("📚 Dataset Original")
 
     st.markdown("""
-LFW — Labeled Faces in the Wild
+Trabajamos con el dataset:
+
+## LFW — Labeled Faces in the Wild
+
+Utilizado en:
+- reconocimiento facial,
+- biometría,
+- inteligencia artificial.
 """)
+
+    st.markdown("---")
+
+    st.subheader("🖼️ ¿Cómo se ven los datos originales?")
 
     cols = st.columns(5)
 
@@ -243,6 +462,19 @@ LFW — Labeled Faces in the Wild
                 caption=names[y[i]],
                 use_container_width=True
             )
+
+    st.markdown("---")
+
+    st.markdown("""
+<div class="info-box">
+
+La computadora NO ve rostros.
+
+La computadora ve matrices numéricas
+compuestas por miles de píxeles.
+
+</div>
+""", unsafe_allow_html=True)
 
 # =========================================================
 # CONVERSIÓN MATEMÁTICA
@@ -257,19 +489,11 @@ Cada píxel de la imagen se convierte
 en una variable matemática.
 """)
 
-    # =====================================================
-    # IMAGEN ORIGINAL
-    # =====================================================
-
     image = images[0]
 
     alto, ancho = image.shape
 
     vector = X[0]
-
-    # =====================================================
-    # SELECCIÓN DEL PIXEL
-    # =====================================================
 
     pixel_index = st.slider(
         "Selecciona un valor del vector",
@@ -280,34 +504,16 @@ en una variable matemática.
 
     valor_pixel = vector[pixel_index]
 
-    # =====================================================
-    # CONVERTIR ÍNDICE A FILA/COLUMNA
-    # =====================================================
-
     fila = pixel_index // ancho
     columna = pixel_index % ancho
-
-    # =====================================================
-    # CREAR IMAGEN RESALTADA
-    # =====================================================
 
     imagen_color = np.stack([image]*3, axis=-1)
 
     imagen_color = imagen_color / imagen_color.max()
 
-    # PIXEL ROJO
-
     imagen_color[fila, columna] = [1,0,0]
 
-    # =====================================================
-    # COLUMNAS
-    # =====================================================
-
     c1, c2 = st.columns([1,1])
-
-    # =====================================================
-    # IMAGEN
-    # =====================================================
 
     with c1:
 
@@ -335,10 +541,6 @@ en una variable matemática.
 - Valor: {valor_pixel:.2f}
 """)
 
-    # =====================================================
-    # VECTOR
-    # =====================================================
-
     with c2:
 
         st.subheader("🔢 Vector Matemático")
@@ -354,8 +556,6 @@ en una variable matemática.
             y="Valor",
             template="plotly_dark"
         )
-
-        # RESALTAR PIXEL
 
         colores = [
             "#8B5CF6" if i != pixel_index else "#ff004c"
