@@ -1,19 +1,19 @@
 # =========================================================
-# FACEEXPLORER - REDUCCIÓN DIMENSIONAL NO LINEAL
-# Autor: Tu Proyecto de Análisis Multivariado
+# FACEEXPLORER AI
+# ---------------------------------------------------------
+# Proyecto:
+# Reducción de Dimensionalidad No Lineal
 #
-# Tecnologías:
-# - Streamlit
-# - Plotly
-# - Scikit-learn
-# - UMAP
+# Técnicas:
+# - UMAP (Principal)
+# - t-SNE (Comparación)
 #
 # Objetivo:
-# Visualizar datos de alta dimensionalidad
-# (rostros humanos) usando:
-# PCA, t-SNE y UMAP.
+# Agrupar y visualizar datos extremadamente complejos
+# (rostros humanos) en gráficos simples 2D y 3D.
+#
+# App moderna estilo IA / Visual Analytics
 # =========================================================
-
 
 # =========================================================
 # LIBRERÍAS
@@ -23,17 +23,10 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
+import umap
 
-# Dataset de rostros
 from sklearn.datasets import fetch_lfw_people
-
-# Reducción dimensional
-from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
-import umap.umap_ as umap
-
-# Escalamiento
 from sklearn.preprocessing import StandardScaler
 
 # =========================================================
@@ -41,120 +34,202 @@ from sklearn.preprocessing import StandardScaler
 # =========================================================
 
 st.set_page_config(
-    page_title="FaceExplorer",
+    page_title="FaceExplorer AI",
     page_icon="🧠",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 # =========================================================
-# ESTILOS CSS PERSONALIZADOS
+# CSS AVANZADO
 # =========================================================
 
 st.markdown("""
 <style>
 
-/* ===== FONDO GENERAL ===== */
+/* ======================================================
+FONDO GENERAL
+====================================================== */
 
-.stApp {
-    background-color: #050816;
-    color: white;
+.stApp{
+    background:
+    radial-gradient(circle at top left, #1e1b4b 0%, #050816 35%),
+    radial-gradient(circle at bottom right, #111827 0%, #050816 40%);
+    color:white;
 }
 
-/* ===== SIDEBAR ===== */
+/* ======================================================
+SIDEBAR
+====================================================== */
 
-section[data-testid="stSidebar"] {
-    background-color: #0b1120;
-    border-right: 1px solid #1f2a44;
-}
-
-/* ===== TITULOS ===== */
-
-h1, h2, h3 {
-    color: #E2E8F0;
-}
-
-/* ===== TARJETAS ===== */
-
-.card {
-    background: linear-gradient(
-        145deg,
-        rgba(15,23,42,0.95),
-        rgba(30,41,59,0.95)
+section[data-testid="stSidebar"]{
+    background:
+    linear-gradient(
+        180deg,
+        #0B1120 0%,
+        #050816 100%
     );
 
-    padding: 25px;
-    border-radius: 18px;
+    border-right:
+    1px solid rgba(255,255,255,0.08);
+}
 
-    border: 1px solid rgba(255,255,255,0.08);
+/* ======================================================
+TÍTULOS
+====================================================== */
+
+h1{
+    color:#F8FAFC;
+    font-size:50px;
+    font-weight:700;
+}
+
+h2,h3{
+    color:#E2E8F0;
+}
+
+/* ======================================================
+TEXTOS
+====================================================== */
+
+p, label, div{
+    color:#CBD5E1;
+}
+
+/* ======================================================
+CARDS
+====================================================== */
+
+.card{
+
+    background:
+    rgba(17,24,39,0.72);
+
+    border:
+    1px solid rgba(255,255,255,0.06);
+
+    border-radius:22px;
+
+    padding:22px;
+
+    backdrop-filter: blur(12px);
 
     box-shadow:
-        0px 0px 20px rgba(0,0,0,0.4);
+    0px 0px 20px rgba(0,0,0,0.35);
 
-    margin-bottom: 20px;
+    margin-bottom:20px;
 }
 
-/* ===== MÉTRICAS ===== */
+/* ======================================================
+METRIC CARDS
+====================================================== */
 
-.metric-card {
-    background: linear-gradient(
+.metric-card{
+
+    background:
+    linear-gradient(
         145deg,
-        rgba(88,28,135,0.25),
-        rgba(15,23,42,0.95)
+        rgba(139,92,246,0.12),
+        rgba(17,24,39,0.88)
     );
 
-    padding: 20px;
-    border-radius: 18px;
+    border-radius:20px;
 
-    border: 1px solid rgba(168,85,247,0.3);
+    padding:22px;
 
-    text-align: center;
+    border:
+    1px solid rgba(139,92,246,0.25);
+
+    transition:0.3s;
 }
 
-/* ===== BOTONES ===== */
+.metric-card:hover{
 
-.stButton>button {
+    transform:translateY(-5px);
 
-    background: linear-gradient(
+    box-shadow:
+    0px 0px 25px rgba(139,92,246,0.35);
+}
+
+/* ======================================================
+BOTONES
+====================================================== */
+
+.stButton > button{
+
+    width:100%;
+
+    background:
+    linear-gradient(
         90deg,
-        #9333ea,
-        #7c3aed
+        #8B5CF6,
+        #7C3AED
     );
 
-    color: white;
+    color:white;
 
-    border: none;
+    border:none;
 
-    border-radius: 12px;
+    border-radius:14px;
 
-    padding: 12px 22px;
+    padding:14px;
 
-    font-size: 16px;
+    font-size:16px;
 
-    font-weight: bold;
+    font-weight:600;
 
-    transition: 0.3s;
+    transition:0.3s;
 }
 
-.stButton>button:hover {
+.stButton > button:hover{
 
-    transform: scale(1.03);
+    transform:scale(1.02);
 
     box-shadow:
-        0px 0px 15px rgba(168,85,247,0.5);
+    0px 0px 18px rgba(139,92,246,0.45);
 }
 
-/* ===== SELECTBOX ===== */
+/* ======================================================
+SLIDERS
+====================================================== */
 
-div[data-baseweb="select"] {
-    background-color: #111827;
-    border-radius: 12px;
+.stSlider > div > div > div > div{
+    background:#8B5CF6;
 }
 
-/* ===== SLIDERS ===== */
+/* ======================================================
+SELECTBOX
+====================================================== */
 
-.stSlider > div > div {
-    color: #9333ea;
+div[data-baseweb="select"]{
+    background:#111827;
+    border-radius:14px;
+}
+
+/* ======================================================
+RADIO
+====================================================== */
+
+.stRadio > div{
+    background:#111827;
+    padding:10px;
+    border-radius:14px;
+}
+
+/* ======================================================
+IMÁGENES
+====================================================== */
+
+img{
+    border-radius:16px;
+}
+
+/* ======================================================
+HR
+====================================================== */
+
+hr{
+    border:
+    1px solid rgba(255,255,255,0.08);
 }
 
 </style>
@@ -164,310 +239,315 @@ div[data-baseweb="select"] {
 # SIDEBAR
 # =========================================================
 
-st.sidebar.title("🧠 FaceExplorer")
+st.sidebar.markdown("# 🧠 FaceExplorer AI")
 
 st.sidebar.markdown("""
+### Reducción Dimensional No Lineal
+
 Visualización de rostros humanos usando:
 
-- PCA
-- t-SNE
 - UMAP
+- t-SNE
 
 Aplicado a datos de alta dimensionalidad.
 """)
 
-# =========================================================
-# PARÁMETROS
-# =========================================================
-
-metodo = st.sidebar.selectbox(
-    "Selecciona el algoritmo",
-    ["PCA", "t-SNE", "UMAP"]
+pagina = st.sidebar.radio(
+    "Navegación",
+    [
+        "🏠 Inicio",
+        "📚 Dataset",
+        "🚀 UMAP 2D",
+        "🌌 UMAP 3D",
+        "🧠 t-SNE",
+        "🖼️ Explorar Rostros",
+        "📌 Conclusiones"
+    ]
 )
 
-dimension = st.sidebar.radio(
-    "Dimensión de visualización",
-    ["2D", "3D"]
-)
-
-n_neighbors = st.sidebar.slider(
-    "n_neighbors (UMAP)",
-    5,
-    50,
-    15
-)
-
-min_dist = st.sidebar.slider(
-    "min_dist (UMAP)",
-    0.0,
-    1.0,
-    0.1
-)
-
-perplexity = st.sidebar.slider(
-    "Perplexity (t-SNE)",
-    5,
-    50,
-    30
-)
+st.sidebar.markdown("---")
 
 # =========================================================
-# TÍTULO PRINCIPAL
+# CARGAR DATASET
 # =========================================================
 
-st.title("🧠 Exploración de Rostros en Alta Dimensionalidad")
+@st.cache_data
+def cargar_datos():
 
-st.markdown("""
-Transformación de datos complejos usando técnicas de
-reducción dimensional no lineal.
-
-Visualizamos rostros humanos en espacios 2D y 3D
-mediante:
-
-- PCA
-- t-SNE
-- UMAP
-""")
-
-# =========================================================
-# CARGA DEL DATASET
-# =========================================================
-
-with st.spinner("Cargando dataset de rostros..."):
-
-    # Dataset de rostros humanos
     lfw = fetch_lfw_people(min_faces_per_person=70)
 
-    # Variables
     X = lfw.data
-
-    # Etiquetas
     y = lfw.target
-
-    # Nombres de personas
-    target_names = lfw.target_names
-
-    # Imágenes originales
     images = lfw.images
+    names = lfw.target_names
 
-# =========================================================
-# INFORMACIÓN GENERAL
-# =========================================================
+    return X, y, images, names
 
-col1, col2, col3 = st.columns(3)
-
-with col1:
-
-    st.markdown(f"""
-    <div class="metric-card">
-        <h2>{X.shape[0]}</h2>
-        <p>Imágenes</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-
-    st.markdown(f"""
-    <div class="metric-card">
-        <h2>{X.shape[1]}</h2>
-        <p>Dimensiones Originales</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-
-    st.markdown(f"""
-    <div class="metric-card">
-        <h2>{len(target_names)}</h2>
-        <p>Personas</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# =========================================================
-# EXPLICACIÓN MATEMÁTICA
-# =========================================================
-
-st.markdown("""
-### 📘 ¿Qué está ocurriendo?
-
-Cada rostro humano está representado por miles de variables.
-
-Cada píxel de la imagen representa una dimensión.
-
-El objetivo es transformar:
-
-R^2914 → R^2 o R^3
-
-para visualizar relaciones ocultas entre rostros similares.
-""")
+X, y, images, names = cargar_datos()
 
 # =========================================================
 # ESCALAMIENTO
 # =========================================================
 
-# Normalización de datos
 scaler = StandardScaler()
 
 X_scaled = scaler.fit_transform(X)
 
 # =========================================================
-# REDUCCIÓN DIMENSIONAL
+# MÉTRICAS
 # =========================================================
 
-st.subheader(f"🔬 Aplicando {metodo}")
+n_imagenes = X.shape[0]
+n_variables = X.shape[1]
+n_personas = len(names)
 
 # =========================================================
-# PCA
+# INICIO
 # =========================================================
 
-if metodo == "PCA":
+if pagina == "🏠 Inicio":
 
-    if dimension == "2D":
+    st.title("Explora la estructura oculta de los rostros 👋")
 
-        reducer = PCA(n_components=2)
+    st.markdown("""
+Utilizamos reducción dimensional no lineal para visualizar
+rostros humanos en espacios de 2D y 3D.
 
-    else:
+El objetivo es transformar datos extremadamente complejos
+en representaciones visuales simples e interpretables.
+""")
 
-        reducer = PCA(n_components=3)
+    st.markdown("")
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    with c1:
+
+        st.markdown(f"""
+        <div class="metric-card">
+        <h3>Imágenes</h3>
+        <h1 style="font-size:40px;">{n_imagenes}</h1>
+        <p>rostros humanos</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c2:
+
+        st.markdown(f"""
+        <div class="metric-card">
+        <h3>Dimensionalidad</h3>
+        <h1 style="font-size:40px;">{n_variables}</h1>
+        <p>variables por imagen</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c3:
+
+        st.markdown("""
+        <div class="metric-card">
+        <h3>Método Principal</h3>
+        <h1 style="font-size:40px;">UMAP</h1>
+        <p>no lineal</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c4:
+
+        st.markdown("""
+        <div class="metric-card">
+        <h3>Visualización</h3>
+        <h1 style="font-size:40px;">2D / 3D</h1>
+        <p>interactiva</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    st.subheader("📘 ¿Qué está ocurriendo?")
+
+    st.markdown("""
+Cada rostro humano contiene miles de variables.
+
+Cada píxel representa información visual, por lo que
+una imagen facial vive en un espacio de alta dimensionalidad.
+
+UMAP reduce estas dimensiones para visualizar:
+
+R^2914 → R^2 o R^3
+
+permitiendo observar agrupamientos y similitudes entre rostros.
+""")
 
 # =========================================================
-# t-SNE
+# DATASET
 # =========================================================
 
-elif metodo == "t-SNE":
+elif pagina == "📚 Dataset":
 
-    if dimension == "2D":
+    st.title("📚 Dataset de Rostros Humanos")
 
-        reducer = TSNE(
-            n_components=2,
-            perplexity=perplexity,
-            random_state=42
+    st.markdown("""
+Trabajamos con el dataset:
+
+## LFW — Labeled Faces in the Wild
+
+Utilizado en:
+- biometría,
+- visión artificial,
+- inteligencia artificial,
+- reconocimiento facial.
+""")
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        st.metric("Imágenes", n_imagenes)
+
+    with c2:
+        st.metric("Variables", n_variables)
+
+    with c3:
+        st.metric("Personas", n_personas)
+
+    st.markdown("---")
+
+    st.subheader("🖼️ Ejemplos de Rostros")
+
+    cols = st.columns(5)
+
+    for i, col in enumerate(cols):
+
+        with col:
+
+            st.image(
+                images[i],
+                caption=names[y[i]],
+                use_container_width=True
+            )
+
+    st.markdown("---")
+
+    st.subheader("📘 Explicación Multivariada")
+
+    st.markdown("""
+Cada imagen facial puede representarse como:
+
+x = (x1, x2, x3, ..., x2914)
+
+donde cada variable corresponde a un píxel.
+
+Esto convierte a las imágenes en datos
+extremadamente complejos y de alta dimensionalidad.
+""")
+
+# =========================================================
+# UMAP 2D
+# =========================================================
+
+elif pagina == "🚀 UMAP 2D":
+
+    st.title("🚀 UMAP — Visualización 2D")
+
+    c1, c2 = st.columns([3,1])
+
+    with c1:
+
+        n_neighbors = st.slider(
+            "n_neighbors",
+            5,
+            50,
+            15
         )
 
-    else:
+    with c2:
 
-        reducer = TSNE(
-            n_components=3,
-            perplexity=perplexity,
-            random_state=42
+        min_dist = st.slider(
+            "min_dist",
+            0.0,
+            1.0,
+            0.1
         )
 
-# =========================================================
-# UMAP
-# =========================================================
+    st.markdown("""
+UMAP preserva relaciones locales y globales.
 
-else:
+Los puntos cercanos representan rostros similares.
+""")
 
-    if dimension == "2D":
-
-        reducer = umap.UMAP(
-            n_components=2,
-            n_neighbors=n_neighbors,
-            min_dist=min_dist,
-            random_state=42
-        )
-
-    else:
-
-        reducer = umap.UMAP(
-            n_components=3,
-            n_neighbors=n_neighbors,
-            min_dist=min_dist,
-            random_state=42
-        )
-
-# =========================================================
-# EJECUCIÓN DEL MODELO
-# =========================================================
-
-with st.spinner("Reduciendo dimensionalidad..."):
+    reducer = umap.UMAP(
+        n_components=2,
+        n_neighbors=n_neighbors,
+        min_dist=min_dist,
+        random_state=42
+    )
 
     embedding = reducer.fit_transform(X_scaled)
 
-# =========================================================
-# DATAFRAME
-# =========================================================
-
-df = pd.DataFrame()
-
-df["label"] = y
-df["person"] = [target_names[i] for i in y]
-
-# =========================================================
-# VISUALIZACIÓN 2D
-# =========================================================
-
-if dimension == "2D":
-
-    df["x"] = embedding[:,0]
-    df["y"] = embedding[:,1]
+    df = pd.DataFrame({
+        "x": embedding[:,0],
+        "y": embedding[:,1],
+        "persona": [names[i] for i in y]
+    })
 
     fig = px.scatter(
-
         df,
-
         x="x",
         y="y",
-
-        color="person",
-
-        hover_data=["person"],
-
+        color="persona",
         template="plotly_dark",
-
-        title=f"{metodo} - Visualización 2D",
-
-        width=1200,
-        height=700
+        height=760
     )
 
     fig.update_traces(
         marker=dict(
             size=7,
-            opacity=0.8
+            opacity=0.82
         )
     )
 
     fig.update_layout(
-
         paper_bgcolor="#050816",
         plot_bgcolor="#050816",
-
-        font=dict(color="white"),
-
         legend_title="Personas"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
 # =========================================================
-# VISUALIZACIÓN 3D
+# UMAP 3D
 # =========================================================
 
-else:
+elif pagina == "🌌 UMAP 3D":
 
-    df["x"] = embedding[:,0]
-    df["y"] = embedding[:,1]
-    df["z"] = embedding[:,2]
+    st.title("🌌 UMAP — Visualización 3D")
+
+    st.markdown("""
+Visualización tridimensional interactiva
+de rostros humanos utilizando UMAP.
+""")
+
+    reducer = umap.UMAP(
+        n_components=3,
+        random_state=42
+    )
+
+    embedding = reducer.fit_transform(X_scaled)
+
+    df = pd.DataFrame({
+        "x": embedding[:,0],
+        "y": embedding[:,1],
+        "z": embedding[:,2],
+        "persona": [names[i] for i in y]
+    })
 
     fig = px.scatter_3d(
-
         df,
-
         x="x",
         y="y",
         z="z",
-
-        color="person",
-
-        hover_data=["person"],
-
+        color="persona",
         template="plotly_dark",
-
-        title=f"{metodo} - Visualización 3D",
-
-        width=1200,
-        height=800
+        height=850
     )
 
     fig.update_traces(
@@ -478,57 +558,120 @@ else:
     )
 
     fig.update_layout(
-
-        paper_bgcolor="#050816",
-
-        scene=dict(
-            bgcolor="#050816"
-        ),
-
-        font=dict(color="white")
+        paper_bgcolor="#050816"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
 # =========================================================
-# GALERÍA DE ROSTROS
+# TSNE
 # =========================================================
 
-st.subheader("🖼️ Ejemplos de Rostros")
+elif pagina == "🧠 t-SNE":
 
-cols = st.columns(5)
+    st.title("🧠 t-SNE — Comparación")
 
-for i, col in enumerate(cols):
+    perplexity = st.slider(
+        "Perplexity",
+        5,
+        50,
+        30
+    )
 
-    with col:
+    st.markdown("""
+t-SNE también es una técnica de reducción
+dimensional no lineal.
 
-        st.image(
-            images[i],
-            caption=target_names[y[i]],
-            use_container_width=True
+Preserva relaciones locales entre observaciones.
+""")
+
+    tsne = TSNE(
+        n_components=2,
+        perplexity=perplexity,
+        random_state=42
+    )
+
+    embedding = tsne.fit_transform(X_scaled)
+
+    df = pd.DataFrame({
+        "x": embedding[:,0],
+        "y": embedding[:,1],
+        "persona": [names[i] for i in y]
+    })
+
+    fig = px.scatter(
+        df,
+        x="x",
+        y="y",
+        color="persona",
+        template="plotly_dark",
+        height=760
+    )
+
+    fig.update_traces(
+        marker=dict(
+            size=7,
+            opacity=0.82
         )
+    )
+
+    fig.update_layout(
+        paper_bgcolor="#050816",
+        plot_bgcolor="#050816"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+# =========================================================
+# EXPLORAR ROSTROS
+# =========================================================
+
+elif pagina == "🖼️ Explorar Rostros":
+
+    st.title("🖼️ Explorar Rostros")
+
+    st.markdown("""
+Galería interactiva del dataset facial.
+""")
+
+    cols = st.columns(5)
+
+    for i in range(20):
+
+        with cols[i % 5]:
+
+            st.image(
+                images[i],
+                caption=names[y[i]],
+                use_container_width=True
+            )
 
 # =========================================================
 # CONCLUSIONES
 # =========================================================
 
-st.markdown("""
-## 📌 Conclusiones
+elif pagina == "📌 Conclusiones":
 
-- Los rostros humanos son datos de alta dimensionalidad.
+    st.title("📌 Conclusiones")
 
-- PCA realiza reducción lineal.
+    st.markdown("""
+## Resultados del Proyecto
 
-- t-SNE preserva relaciones locales.
+- Los rostros humanos representan datos de alta dimensionalidad.
 
-- UMAP conserva estructuras complejas y es más rápido.
+- UMAP y t-SNE realizan reducción dimensional no lineal.
 
-- La reducción dimensional permite visualizar patrones ocultos
-  y agrupamientos faciales.
+- Estas técnicas permiten visualizar agrupamientos
+  y relaciones ocultas entre rostros similares.
 
-- Estas técnicas son ampliamente utilizadas en:
-    - biometría,
-    - inteligencia artificial,
-    - reconocimiento facial,
-    - visión computacional.
+- La reducción dimensional transforma datos complejos
+  en representaciones visuales simples de 2D y 3D.
+
+## Aplicaciones Reales
+
+- biometría,
+- reconocimiento facial,
+- inteligencia artificial,
+- visión computacional,
+- análisis multivariado.
 """)
