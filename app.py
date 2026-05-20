@@ -1,23 +1,23 @@
 # =========================================================
 # FACEEXPLORER AI
 # ---------------------------------------------------------
-# Proyecto:
 # Reducción de Dimensionalidad No Lineal
 #
-# Tema:
-# UMAP y t-SNE para visualizar rostros humanos
+# Proyecto de Análisis Multivariado
 #
-# Objetivo:
+# Tema:
+# Visualización de rostros humanos usando
+# UMAP y t-SNE
+#
+# OBJETIVO:
 # Mostrar TODO el proceso:
 #
 # 1. Dataset original
-# 2. Conversión a datos matemáticos
+# 2. Conversión imagen -> vector
 # 3. Alta dimensionalidad
 # 4. Reducción dimensional
-# 5. Visualización final 2D y 3D
+# 5. Visualización 2D y 3D
 #
-# Autor:
-# Proyecto de Análisis Multivariado
 # =========================================================
 
 # =========================================================
@@ -45,14 +45,14 @@ st.set_page_config(
 )
 
 # =========================================================
-# CSS ULTRA MODERNO
+# CSS MODERNO
 # =========================================================
 
 st.markdown("""
 <style>
 
 /* =====================================================
-FONDO PRINCIPAL
+FONDO
 ===================================================== */
 
 .stApp{
@@ -299,7 +299,7 @@ def cargar_datos():
 X, y, images, names = cargar_datos()
 
 # =========================================================
-# ESCALAR DATOS
+# ESCALAMIENTO
 # =========================================================
 
 scaler = StandardScaler()
@@ -365,7 +365,7 @@ transforman imágenes complejas en mapas visuales 2D y 3D.
         st.markdown("""
         <div class="metric-card">
         <h3>Visualización</h3>
-        <h1>2D/3D</h1>
+        <h1>2D / 3D</h1>
         <p>interactiva</p>
         </div>
         """, unsafe_allow_html=True)
@@ -381,7 +381,7 @@ transforman imágenes complejas en mapas visuales 2D y 3D.
 
 Cada rostro humano contiene miles de píxeles.
 
-Cada píxel representa información matemática,
+Cada píxel representa una variable matemática,
 por lo que una imagen vive en un espacio de alta dimensionalidad.
 
 Los humanos no podemos visualizar 2914 dimensiones.
@@ -454,47 +454,105 @@ elif pagina == "🔢 Conversión Matemática":
 
     st.title("🔢 Conversión de Imagen a Datos")
 
+    st.markdown("""
+Cada píxel de la imagen se convierte
+en una variable matemática.
+""")
+
+    st.markdown("---")
+
+    imagen = images[0]
+
+    alto, ancho = imagen.shape
+
+    pixel_index = st.slider(
+        "Selecciona un valor del vector",
+        0,
+        X.shape[1]-1,
+        100
+    )
+
+    fila = pixel_index // ancho
+    columna = pixel_index % ancho
+
+    imagen_highlight = np.copy(imagen)
+
+    imagen_rgb = np.stack(
+        [imagen_highlight]*3,
+        axis=-1
+    )
+
+    imagen_rgb = imagen_rgb / imagen_rgb.max()
+
+    # resaltar pixel
+    imagen_rgb[fila, columna] = [1,0,0]
+
     col1,col2 = st.columns([1,2])
 
     with col1:
 
         st.subheader("🖼️ Imagen")
 
-        st.image(images[0], use_container_width=True)
+        st.image(
+            imagen_rgb,
+            use_container_width=True
+        )
+
+        st.markdown(f"""
+### Pixel resaltado
+
+- Fila: {fila}
+- Columna: {columna}
+""")
 
     with col2:
 
         st.subheader("🔢 Vector Matemático")
 
-        vector = X[0][:80]
+        vector = X[0][:200]
 
-        st.write(vector)
+        vector_df = pd.DataFrame({
+            "Índice": np.arange(200),
+            "Valor": vector
+        })
+
+        st.dataframe(
+            vector_df,
+            use_container_width=True,
+            height=500
+        )
+
+        st.markdown(f"""
+<div class="info-box">
+
+Pixel seleccionado:
+
+Índice:
+<b>{pixel_index}</b>
+
+Valor matemático:
+<b>{X[0][pixel_index]:.2f}</b>
+
+</div>
+""", unsafe_allow_html=True)
 
     st.markdown("---")
 
     st.markdown("""
 ## 📘 ¿Qué está ocurriendo?
 
-Cada píxel de la imagen se transforma
-en una variable matemática.
+La computadora convierte la imagen
+en un vector numérico:
 
-La imagen facial:
+x = (x₁, x₂, x₃, ..., x₂₉₁₄)
 
-50 x 37 pixeles
+Cada número representa:
+- un píxel,
+- una intensidad,
+- información visual.
 
-se convierte en:
-
-2914 variables numéricas.
+Esto genera un espacio de alta dimensionalidad.
 """)
-
-    st.markdown("""
-<div class="info-box">
-
-Ahora el rostro vive matemáticamente
-en un espacio de 2914 dimensiones.
-
-</div>
-""", unsafe_allow_html=True)
 
 # =========================================================
 # REDUCCIÓN DIMENSIONAL
@@ -514,7 +572,7 @@ Por eso necesitamos reducir dimensionalidad.
 
     st.markdown("---")
 
-    col1,col2,col3 = st.columns([1,1,1])
+    col1,col2,col3 = st.columns(3)
 
     with col1:
 
@@ -669,11 +727,6 @@ elif pagina == "🌌 UMAP 3D":
         "persona": [names[i] for i in y]
     })
 
-    st.markdown("""
-La reducción dimensional también puede
-visualizarse en espacios tridimensionales.
-""")
-
     fig = px.scatter_3d(
         df,
         x="x",
@@ -726,11 +779,6 @@ elif pagina == "🧠 t-SNE":
         "persona": [names[i] for i in y]
     })
 
-    st.markdown("""
-t-SNE es otra técnica de reducción dimensional
-no lineal.
-""")
-
     fig = px.scatter(
         df,
         x="x",
@@ -760,11 +808,7 @@ no lineal.
 
 elif pagina == "🖼️ Exploración Facial":
 
-    st.title("🖼️ Exploración de Rostros")
-
-    st.markdown("""
-Galería interactiva del dataset.
-""")
+    st.title("🖼️ Exploración Facial")
 
     cols = st.columns(5)
 
