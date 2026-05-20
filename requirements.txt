@@ -8,3 +8,4 @@ scipy
 plotly
 openpyxl
 umap-learn
+streamlit-plotly-events
