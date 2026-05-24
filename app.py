@@ -346,19 +346,19 @@ elif pagina == "📚 Dataset Original":
             st.image(images[i], caption=names[y[i]], use_container_width=True)
 
 # =========================================================
-# CONVERSIÓN MATEMÁTICA: PÍXEL COMO VARIABLE ESPECÍFICA
+# CONVERSIÓN MATEMÁTICA
 # =========================================================
 
 elif pagina == "🔢 Conversión Matemática":
-    st.title("🔢 Conversión de Imagen a Variables Matemáticas")
-    st.markdown("Para el análisis estadístico multivariado y los algoritmos de reducción, **cada píxel individual de la imagen constituye una variable única independiente ($X_i$)**.")
+    st.title("🔢 Conversión de Imagen a Vector Matemático")
+    st.markdown("Cada píxel de la imagen se extrae ordenadamente de izquierda a derecha y de arriba a abajo, convirtiéndose en una celda dentro de un vector de características unidimensional.")
     
     image = images[0]
     alto, ancho = image.shape
     vector = X[0]
     
     pixel_index = st.slider(
-        "Mueve el slider para rastrear qué píxel físico corresponde a cuál variable en el espacio vectorial:",
+        "Mueve el slider para rastrear la equivalencia entre el píxel físico y su representación en la tabla:",
         0, len(vector)-1, 100
     )
     
@@ -366,7 +366,7 @@ elif pagina == "🔢 Conversión Matemática":
     fila = pixel_index // ancho
     columna = pixel_index % ancho
     
-    # Duplicamos la matriz a escala RGB y resaltamos el píxel variable seleccionado en rojo
+    # Marcador visual en la imagen: Duplicamos a RGB y pintamos el pixel seleccionado de rojo intenso
     imagen_color = np.stack([image]*3, axis=-1)
     imagen_color = imagen_color / imagen_color.max()
     imagen_color[fila, columna] = [1, 0, 0] 
@@ -374,7 +374,7 @@ elif pagina == "🔢 Conversión Matemática":
     c1, c2 = st.columns([1, 1])
     
     with c1:
-        st.subheader("🖼️ Localización de la Variable en el Rostro")
+        st.subheader("🖼️ Ubicación Espacial (Píxel en Imagen)")
         fig = px.imshow(imagen_color)
         fig.update_layout(height=420, margin=dict(l=0, r=0, t=0, b=0), coloraxis_showscale=False)
         fig.update_xaxes(showticklabels=False)
@@ -383,42 +383,38 @@ elif pagina == "🔢 Conversión Matemática":
         
         st.markdown(f"""
         <div class="info-box">
-        <strong>Identificación Formal de Datos:</strong><br>
-        • El píxel actual es tratado formalmente como la variable estadística: <b>$X_{{{pixel_index}}}$</b><br>
-        • Fila física en matriz de captura: <b>{fila}</b><br>
-        • Columna física en matriz de captura: <b>{columna}</b><br>
-        • Valor registrado de la variable (Intensidad lumínica): <b>{valor_pixel:.2f}</b>
+        <strong>Propiedades del Punto Actual:</strong><br>
+        • <b>ID en Vector lineal:</b> Elemento número {pixel_index}<br>
+        • <b>Coordenada Espacial:</b> Fila {fila}, Columna {columna}<br>
+        • <b>Valor de Intensidad numérica:</b> {valor_pixel:.2f}
         </div>
         """, unsafe_allow_html=True)
         
     with c2:
-        st.subheader("📊 Tabla Detallada de Variables Vectoriales")
-        st.markdown("Así es como el algoritmo lee la vecindad de variables de la imagen de forma secuencial:")
+        st.subheader("📊 Estructura de la Tabla Vectorial")
+        st.markdown("Ventana de datos dinámicos que muestra cómo la computadora almacena las secciones del rostro consecutivamente:")
         
-        # Construir ventana ordenada de las variables contiguas
+        # Crear ventana de visualización alrededor del pixel seleccionado
         rango_min = max(0, pixel_index - 5)
         rango_max = min(len(vector), pixel_index + 6)
         
         indices_tabla = np.arange(rango_min, rango_max)
         valores_tabla = vector[rango_min:rango_max]
+        roles = ["Vecino Adyacente" if idx != pixel_index else "📌 PÍXEL SELECCIONADO" for idx in indices_tabla]
         
-        # Etiquetar explícitamente cada elemento como la "Variable X_índice" solicitado por el usuario
-        nombres_variables = [f"Variable X_{idx}" for idx in indices_tabla]
-        informacion_estado = ["Píxel de Contexto" if idx != pixel_index else "📌 VARIABLE ACTIVA EN SLIDER" for idx in indices_tabla]
-        
+        # Tabla organizada con nombres claros tal como fue solicitado
         tabla_df = pd.DataFrame({
-            "Variable Matemática": nombres_variables,
-            "ID de Píxel Lineal": indices_tabla,
-            "Valor Registrado (Información)": np.round(valores_tabla, 4),
-            "Ubicación Fila": indices_tabla // ancho,
-            "Ubicación Columna": indices_tabla % ancho,
-            "Estado del Rastreador": informacion_estado
+            "ID Píxel (Posición en Vector)": indices_tabla,
+            "Intensidad de Color (0-255)": np.round(valores_tabla, 4),
+            "Fila en Imagen": indices_tabla // ancho,
+            "Columna en Imagen": indices_tabla % ancho,
+            "Rol en el Algoritmo": roles
         })
         
-        # Resaltado visual en el dataframe para la variable seleccionada
+        # Resaltar la fila seleccionada usando estilos nativos de Pandas
         styled_df = tabla_df.style.map(
-            lambda v: 'background-color: rgba(139, 92, 246, 0.35); color: #FFFFFF; font-weight: bold; border: 1px solid #8B5CF6;' if v == "📌 VARIABLE ACTIVA EN SLIDER" else '',
-            subset=["Estado del Rastreador"]
+            lambda v: 'background-color: rgba(139, 92, 246, 0.3); color: #FFFFFF; font-weight: bold;' if v == "📌 PÍXEL SELECCIONADO" else '',
+            subset=["Rol en el Algoritmo"]
         )
         
         st.dataframe(styled_df, use_container_width=True, height=420)
