@@ -273,7 +273,7 @@ if pagina == "🏠 Introducción":
         st.markdown('<div class="info-box">La computadora no ve una cara. Ve miles de números alineados.</div>', unsafe_allow_html=True)
 
 # =========================================================
-# NUEVA PESTAÑA: TEORÍA E HISTORIA DE UMAP
+# TEORÍA E HISTORIA DE UMAP
 # =========================================================
 
 elif pagina == "📖 Teoría e Historia de UMAP":
@@ -295,7 +295,6 @@ elif pagina == "📖 Teoría e Historia de UMAP":
     3. **Paso 3:** Mientras lo estira, intenta que las partes que estaban pegadas no se rompan y que las partes que estaban lejos en el globo sigan quedando lejos en la mesa.
     """)
     
-    # Marcador de posición para imagen explicativa conceptual
     st.markdown("#### 🎨 Flujo Visual de UMAP de Principio a Fin")
     st.write("")
     
@@ -347,19 +346,19 @@ elif pagina == "📚 Dataset Original":
             st.image(images[i], caption=names[y[i]], use_container_width=True)
 
 # =========================================================
-# CONVERSIÓN MATEMÁTICA (CON TABLA SOLICITADA)
+# CONVERSIÓN MATEMÁTICA
 # =========================================================
 
 elif pagina == "🔢 Conversión Matemática":
-    st.title("🔢 Conversión de Imagen a Datos vectoriales")
-    st.markdown("Cada píxel de la imagen se aplana secuencialmente y pasa a ser una coordenada dentro de un vector de alta dimensionalidad.")
+    st.title("🔢 Conversión de Imagen a Vector Matemático")
+    st.markdown("Cada píxel de la imagen se extrae ordenadamente de izquierda a derecha y de arriba a abajo, convirtiéndose en una celda dentro de un vector de características unidimensional.")
     
     image = images[0]
     alto, ancho = image.shape
     vector = X[0]
     
     pixel_index = st.slider(
-        "Selecciona un índice del vector para rastrear su posición en la imagen:",
+        "Mueve el slider para rastrear la equivalencia entre el píxel físico y su representación en la tabla:",
         0, len(vector)-1, 100
     )
     
@@ -367,56 +366,58 @@ elif pagina == "🔢 Conversión Matemática":
     fila = pixel_index // ancho
     columna = pixel_index % ancho
     
+    # Marcador visual en la imagen: Duplicamos a RGB y pintamos el pixel seleccionado de rojo intenso
     imagen_color = np.stack([image]*3, axis=-1)
     imagen_color = imagen_color / imagen_color.max()
-    imagen_color[fila, columna] = [1, 0, 0] # Pintar el pixel seleccionado de rojo
+    imagen_color[fila, columna] = [1, 0, 0] 
     
     c1, c2 = st.columns([1, 1])
     
     with c1:
-        st.subheader("🖼️ Ubicación espacial en el Rostro")
+        st.subheader("🖼️ Ubicación Espacial (Píxel en Imagen)")
         fig = px.imshow(imagen_color)
-        fig.update_layout(height=400, margin=dict(l=0,r=0,t=0,b=0), coloraxis_showscale=False)
+        fig.update_layout(height=420, margin=dict(l=0, r=0, t=0, b=0), coloraxis_showscale=False)
         fig.update_xaxes(showticklabels=False)
         fig.update_yaxes(showticklabels=False)
         st.plotly_chart(fig, use_container_width=True)
         
         st.markdown(f"""
-        **Propiedades del Píxel Objetivo:**
-        * **Índice en Vector:** `{pixel_index}`
-        * **Coordenada de Matriz:** Fila `{fila}`, Columna `{columna}`
-        * **Intensidad Lumínica:** `{valor_pixel:.2f}` (Escala original de grises)
-        """)
+        <div class="info-box">
+        <strong>Propiedades del Punto Actual:</strong><br>
+        • <b>ID en Vector lineal:</b> Elemento número {pixel_index}<br>
+        • <b>Coordenada Espacial:</b> Fila {fila}, Columna {columna}<br>
+        • <b>Valor de Intensidad numérica:</b> {valor_pixel:.2f}
+        </div>
+        """, unsafe_allow_html=True)
         
     with c2:
-        st.subheader("📊 Tabla de Valores del Vector Dinámico")
-        st.markdown("A continuación se muestra el segmento del vector matemático que rodea al punto que has seleccionado en el slider:")
+        st.subheader("📊 Estructura de la Tabla Vectorial")
+        st.markdown("Ventana de datos dinámicos que muestra cómo la computadora almacena las secciones del rostro consecutivamente:")
         
-        # Generar DataFrame con ventana alrededor del pixel seleccionado para mejor usabilidad
+        # Crear ventana de visualización alrededor del pixel seleccionado
         rango_min = max(0, pixel_index - 5)
         rango_max = min(len(vector), pixel_index + 6)
         
         indices_tabla = np.arange(rango_min, rango_max)
         valores_tabla = vector[rango_min:rango_max]
-        tipos = ["Vecino Cercano" if idx != pixel_index else "📌 PUNTO SELECCIONADO" for idx in indices_tabla]
+        roles = ["Vecino Adyacente" if idx != pixel_index else "📌 PÍXEL SELECCIONADO" for idx in indices_tabla]
         
+        # Tabla organizada con nombres claros tal como fue solicitado
         tabla_df = pd.DataFrame({
-            "Índice del Vector": indices_tabla,
-            "Valor de Intensidad (Pixel)": np.round(valores_tabla, 4),
-            "Fila de Origen": indices_tabla // ancho,
-            "Columna de Origen": indices_tabla % ancho,
-            "Estado": tipos
+            "ID Píxel (Posición en Vector)": indices_tabla,
+            "Intensidad de Color (0-255)": np.round(valores_tabla, 4),
+            "Fila en Imagen": indices_tabla // ancho,
+            "Columna en Imagen": indices_tabla % ancho,
+            "Rol en el Algoritmo": roles
         })
         
-        st.dataframe(tabla_df.style.highlight_max(axis=0, color="#7C3AED" if "📌 PUNTO SELECCIONADO" in tipos else None), use_container_width=True)
+        # Resaltar la fila seleccionada usando estilos nativos de Pandas
+        styled_df = tabla_df.style.map(
+            lambda v: 'background-color: rgba(139, 92, 246, 0.3); color: #FFFFFF; font-weight: bold;' if v == "📌 PÍXEL SELECCIONADO" else '',
+            subset=["Rol en el Algoritmo"]
+        )
         
-        # Gráfico complementario de barras cortas
-        vector_df_corto = pd.DataFrame({"Índice": np.arange(150), "Valor": vector[:150]})
-        fig2 = px.bar(vector_df_corto, x="Índice", y="Valor", template="plotly_dark", height=220)
-        colores = ["#8B5CF6" if i != pixel_index else "#ff004c" for i in range(150)]
-        fig2.update_traces(marker_color=colores)
-        fig2.update_layout(margin=dict(l=0,r=0,t=0,b=0), paper_bgcolor="#050816", plot_bgcolor="#050816")
-        st.plotly_chart(fig2, use_container_width=True)
+        st.dataframe(styled_df, use_container_width=True, height=420)
 
 # =========================================================
 # REDUCCIÓN DIMENSIONAL
