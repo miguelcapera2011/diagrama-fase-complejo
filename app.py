@@ -200,7 +200,6 @@ pagina = st.sidebar.radio(
     "Exploración",
     [
         "🏠 Introducción",
-        "📖 Teoría e Historia de UMAP",
         "📚 Dataset Original",
         "🔢 Conversión Matemática",
         "📉 Reducción Dimensional",
@@ -271,64 +270,6 @@ if pagina == "🏠 Introducción":
     with col2:
         st.image(images[0], use_container_width=True)
         st.markdown('<div class="info-box">La computadora no ve una cara. Ve miles de números alineados.</div>', unsafe_allow_html=True)
-
-# =========================================================
-# TEORÍA E HISTORIA DE UMAP
-# =========================================================
-
-elif pagina == "📖 Teoría e Historia de UMAP":
-    st.title("📖 Aproximación y Proyección de Variedades Uniformes (UMAP)")
-    
-    st.markdown("""
-    ### ⏳ Origen e Historia
-    **UMAP** (*Uniform Manifold Approximation and Projection*) fue desarrollado en **2018** por el matemático **McInnes, Healy y Melville**. Nació como una respuesta directa a las limitaciones de *t-SNE*, el cual era extremadamente lento con datasets gigantescos y fallaba en conservar la estructura global de los datos (la relación de distancia entre grupos muy separados).
-    
-    McInnes recurrió a la **geometría diferencial** y la **topología algebraica** para demostrar que se podía hacer reducción de dimensionalidad manteniendo tanto la vecindad local como la distribución global de los datos de manera extremadamente veloz.
-    """)
-    
-    st.markdown("---")
-    st.subheader("💡 Sentido del Funcionamiento (Metáfora Sencilla)")
-    st.markdown("""
-    Imagina que tu dataset de rostros es un **globo inflado lleno de puntos dibujados en su superficie**. 
-    1. **Paso 1:** UMAP pasa un 'pegamento' sobre los puntos que están muy cerca creando una malla o esqueleto elástico (un *complejo simplicial*).
-    2. **Paso 2:** El algoritmo desinfla el globo y lo estira sobre una mesa plana (2D).
-    3. **Paso 3:** Mientras lo estira, intenta que las partes que estaban pegadas no se rompan y que las partes que estaban lejos en el globo sigan quedando lejos en la mesa.
-    """)
-    
-    st.markdown("#### 🎨 Flujo Visual de UMAP de Principio a Fin")
-    st.write("")
-    
-    st.markdown("---")
-    st.subheader("🧬 El Proceso de Principio a Fin y su Fórmula")
-    st.markdown("""
-    El algoritmo opera en dos fases matemáticas estrictas:
-    
-    #### 1. Construcción del Grafo en Alta Dimensión
-    Para cada punto $x_i$, se calcula la distancia con sus vecinos. Como los datos reales no están distribuidos de manera uniforme, UMAP asume una métrica local donde la distancia al vecino más cercano es $\rho_i$, y define la probabilidad de conexión entre el punto $i$ y el punto $j$ mediante la función exponencial decreciente:
-    """)
-    
-    st.latex(r"p_{j|i} = \exp \left( -\frac{\max(0, d(x_i, x_j) - \rho_i)}{\sigma_i} \right)")
-    
-    st.markdown("""
-    Donde $\sigma_i$ es un factor de escala adaptativo para que el número de vecinos efectivos coincida con el hiperparámetro `n_neighbors`. Para hacer la matriz simétrica (ya que $i$ puede ser vecino de $j$, pero $j$ no necesariamente de $i$), se calcula:
-    """)
-    st.latex(r"p_{ij} = p_{i|j} + p_{j|i} - p_{i|j}p_{j|i}")
-
-    st.markdown("""
-    #### 2. Optimización en Baja Dimensión
-    En el espacio de destino (2D o 3D), la probabilidad de que dos puntos $y_i$ e $y_j$ estén conectados se modela usando una curva similar a la distribución t de Student:
-    """)
-    st.latex(r"q_{ij} = \left( 1 + a ||y_i - y_j||^{2b} \right)^{-1}")
-    
-    st.markdown("""
-    Finalmente, para que el mapa de baja dimensión se parezca lo máximo posible al de alta dimensión, UMAP minimiza la **Entropía Cruzada Difusa** usando descenso de gradiente:
-    """)
-    st.latex(r"CE(P, Q) = \sum_{i \neq j} \left[ p_{ij} \log \left(\frac{p_{ij}}{q_{ij}}\right) + (1 - p_{ij}) \log \left(\frac{1 - p_{ij}}{1 - q_{ij}}\right) \right]")
-    
-    st.markdown("""
-    * El **primer término** empuja a los puntos similares a estar muy cerca en 2D.
-    * El **segundo término** empuja a los puntos disímiles a alejarse, preservando la estructura global.
-    """)
 
 # =========================================================
 # DATASET ORIGINAL
@@ -514,7 +455,7 @@ elif pagina == "📌 Conclusiones":
     - **UMAP** demuestra una velocidad y consistencia matemática superior a t-SNE al mantener la coherencia espacial general.
     - Los clusters visibles demuestran que expresiones, orientaciones de rostros y rasgos genómicos se agrupan sin necesidad de darle etiquetas de nombres al algoritmo (aprendizaje no supervisado).
     
-    ## Aplicaciones en la Industria
+    ## Aplicaciones en la Industry
     - **Sistemas Biométricos:** Agrupación rápida de bases de datos criminalísticas.
     - **Compresión de Modelos de IA:** Reducción de costos de procesamiento en redes neuronales convolucionales.
     """)
