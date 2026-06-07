@@ -1,5 +1,5 @@
 # =========================================================
-# FACEEXPLORER AI
+# UMAP PROYECTO
 # ---------------------------------------------------------
 # Proyecto:
 # Reducción de Dimensionalidad No Lineal
@@ -31,7 +31,7 @@ from sklearn.manifold import TSNE
 # =========================================================
 
 st.set_page_config(
-    page_title="FaceExplorer AI",
+    page_title="UMAP (Uniform Manifold Approximation and Projection)",
     page_icon="brain",
     layout="wide"
 )
@@ -189,7 +189,7 @@ CAJAS EXPLICATIVAS
 # SIDEBAR
 # =========================================================
 
-st.sidebar.markdown("# FaceExplorer AI")
+st.sidebar.markdown("# UMAP (Uniform Manifold Approximation and Projection)")
 
 st.sidebar.markdown("""
 ### Reducción Dimensional No Lineal
