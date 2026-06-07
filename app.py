@@ -189,9 +189,11 @@ CAJAS EXPLICATIVAS
 # SIDEBAR
 # =========================================================
 
-st.sidebar.markdown("# UMAP ### Uniform Manifold Approximation and Projection")
+st.sidebar.markdown("# ")
 
 st.sidebar.markdown("""
+# UMAP
+### Uniform Manifold Approximation and Projection
 ### Reducción Dimensional No Lineal
 Visualización de rostros humanos mediante técnicas avanzadas.
 """)
