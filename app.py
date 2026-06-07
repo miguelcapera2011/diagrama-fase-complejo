@@ -189,7 +189,7 @@ CAJAS EXPLICATIVAS
 # SIDEBAR
 # =========================================================
 
-st.sidebar.markdown("#UMAP")
+st.sidebar.markdown("     UMAP    ")
 
 st.sidebar.markdown("""
 ### Reducción Dimensional No Lineal
