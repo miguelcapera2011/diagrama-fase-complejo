@@ -189,7 +189,7 @@ CAJAS EXPLICATIVAS
 # SIDEBAR
 # =========================================================
 
-st.sidebar.markdown("# UMAP")
+st.sidebar.markdown("# UMAP ### Uniform Manifold Approximation and Projection")
 
 st.sidebar.markdown("""
 ### Reducción Dimensional No Lineal
