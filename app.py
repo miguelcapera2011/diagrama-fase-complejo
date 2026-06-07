@@ -211,7 +211,7 @@ Reducción dimensional no lineal. Visualización y análisis morfológico de ros
 """, unsafe_allow_html=True)
 
 pagina = st.sidebar.radio(
-    "Menú de Exploración",
+    "Contenido",
     [
         "Introducción",
         "Dataset Original",
