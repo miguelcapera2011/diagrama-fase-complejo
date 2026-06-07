@@ -1,19 +1,5 @@
-# =========================================================
-# UMAP PROYECTO
-# ---------------------------------------------------------
-# Proyecto:
-# Reducción de Dimensionalidad No Lineal
-#
-# Tema:
-# UMAP y t-SNE para visualizar rostros humanos
-#
-# Autor:
-# Proyecto de Análisis Multivariado
-# =========================================================
 
-# =========================================================
 # LIBRERÍAS
-# =========================================================
 
 import streamlit as st
 import numpy as np
@@ -26,9 +12,7 @@ from sklearn.datasets import fetch_lfw_people
 from sklearn.preprocessing import StandardScaler
 from sklearn.manifold import TSNE
 
-# =========================================================
 # CONFIGURACIÓN
-# =========================================================
 
 st.set_page_config(
     page_title="UMAP (Uniform Manifold Approximation and Projection)",
@@ -36,16 +20,14 @@ st.set_page_config(
     layout="wide"
 )
 
-# =========================================================
 # CSS MODERNO
-# =========================================================
 
 st.markdown("""
 <style>
 
-/* =====================================================
+/* 
 FONDO PRINCIPAL
-===================================================== */
+*/
 
 .stApp{
     background:
@@ -54,9 +36,9 @@ FONDO PRINCIPAL
     color:white;
 }
 
-/* =====================================================
+/* 
 SIDEBAR
-===================================================== */
+ */
 
 section[data-testid="stSidebar"]{
     background:
@@ -69,9 +51,9 @@ section[data-testid="stSidebar"]{
     1px solid rgba(255,255,255,0.08);
 }
 
-/* =====================================================
+/*
 TEXTOS
-===================================================== */
+*/
 
 h1,h2,h3,h4{
     color:#F8FAFC;
@@ -81,9 +63,9 @@ p, label, div{
     color:#CBD5E1;
 }
 
-/* =====================================================
+/* 
 CARDS
-===================================================== */
+*/
 
 .card{
     background:
@@ -98,9 +80,9 @@ CARDS
     margin-bottom:25px;
 }
 
-/* =====================================================
+/* 
 METRICAS
-===================================================== */
+*/
 
 .metric-card{
     background:
@@ -122,9 +104,9 @@ METRICAS
     0px 0px 24px rgba(139,92,246,0.35);
 }
 
-/* =====================================================
+/* 
 BOTONES
-===================================================== */
+*/
 
 .stButton > button{
     width:100%;
@@ -143,9 +125,9 @@ BOTONES
     transition:0.3s;
 }
 
-/* =====================================================
+/*
 SLIDERS
-===================================================== */
+*/
 
 .stSlider > div > div > div > div{
     background:#8B5CF6;
