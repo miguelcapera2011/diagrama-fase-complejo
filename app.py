@@ -31,7 +31,7 @@ from sklearn.manifold import TSNE
 # =========================================================
 
 st.set_page_config(
-    page_title="UMAP Explorer",
+    page_title="UMAP - Reducción Dimensional",
     page_icon="brain",
     layout="wide"
 )
@@ -57,15 +57,16 @@ section[data-testid="stSidebar"] {
     border-right: 1px solid rgba(255,255,255,0.08);
 }
 
-/* Título de la Barra Lateral */
+/* Título de la Barra Lateral (Contenido Descriptivo) */
 .sidebar-title {
-    font-size: 24px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    background: linear-gradient(90deg, #a78bfa, #a855f7);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.3px;
+    background: linear-gradient(90deg, #c084fc, #a855f7);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     margin-bottom: 20px;
 }
@@ -90,18 +91,22 @@ p, label, div {
 }
 
 .main-header h1 {
-    font-size: 42px;
+    font-size: 34px;
     font-weight: 800;
-    margin-bottom: 5px;
-    letter-spacing: -1px;
+    line-height: 1.2;
+    margin-bottom: 10px;
+    letter-spacing: -0.8px;
+    background: linear-gradient(90deg, #FFFFFF, #E2E8F0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .main-header .subtitle {
-    font-size: 16px;
-    color: #94A3B8;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+    font-size: 18px;
+    color: #A78BFA;
     font-weight: 600;
+    letter-spacing: -0.2px;
+    margin-bottom: 5px;
 }
 
 /* Métricas Estilo Dashboard Premium */
@@ -183,12 +188,12 @@ img {
 # SIDEBAR
 # =========================================================
 
-# Título corto y limpio con gradiente CSS
-st.sidebar.markdown('<div class="sidebar-title">UMAP Explorer</div>', unsafe_allow_html=True)
+# Ahora colocamos la descripción corta del contenido como el encabezado de la barra lateral
+st.sidebar.markdown('<div class="sidebar-title">Reducción Dimensional No Lineal</div>', unsafe_allow_html=True)
 
 st.sidebar.markdown("""
 <p style="font-size: 14px; color: #94A3B8; margin-top: -10px; margin-bottom: 25px;">
-Reducción Dimensional No Lineal aplicada al análisis morfológico de rostros humanos.
+Visualización y análisis morfológico de rostros humanos mediante algoritmos avanzados.
 </p>
 """, unsafe_allow_html=True)
 
@@ -241,18 +246,18 @@ n_personas = len(names)
 # =========================================================
 
 if pagina == "Introducción":
-    # Aquí desplegamos el título completo de forma espectacular y ultra estética
+    # Ubicación del nombre matemático completo sobre el título principal de la aplicación
     st.markdown("""
     <div class="main-header">
-        <div class="subtitle">Uniform Manifold Approximation and Projection</div>
+        <div class="subtitle">Uniform Manifold Approximation and Projection (UMAP)</div>
         <h1>Explora la estructura oculta de los rostros</h1>
-        <p style="margin: 0; color: #94A3B8; font-size: 16px;">
+        <p style="margin: 0; color: #94A3B8; font-size: 15px;">
             Análisis visual e interactivo mediante técnicas avanzadas de reducción dimensional no lineal.
         </p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Grid de métricas rediseñadas
+    # Grid de métricas
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         st.markdown(f'<div class="metric-card"><h3>Dimensiones</h3><h1>{n_variables}</h1><p>Variables por imagen</p></div>', unsafe_allow_html=True)
