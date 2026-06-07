@@ -1,19 +1,4 @@
-# =========================================================
-# UMAP PROYECTO
-# ---------------------------------------------------------
-# Proyecto:
-# Reducción de Dimensionalidad No Lineal
-#
-# Tema:
-# UMAP y t-SNE para visualizar rostros humanos
-#
-# Autor:
-# Proyecto de Análisis Multivariado
-# =========================================================
 
-# =========================================================
-# LIBRERÍAS
-# =========================================================
 
 import streamlit as st
 import numpy as np
@@ -195,11 +180,11 @@ img {
 # SIDEBAR
 # =========================================================
 
-st.sidebar.markdown('<div class="sidebar-title"><i class="bi bi-layers-half" style="margin-right: 8px;"></i>Reducción Dimensional No Lineal</div>', unsafe_allow_html=True)
+st.sidebar.markdown('<div class="sidebar-title"><i class="bi bi-layers-half" style="margin-right: 8px;"></i>ANALISIS MULTIVARIADO</div>', unsafe_allow_html=True)
 
 st.sidebar.markdown("""
 <p style="font-size: 14px; color: #94A3B8; margin-top: -10px; margin-bottom: 25px;">
-Visualización y análisis morfológico de rostros humanos mediante algoritmos avanzados.
+Reducción dimensional no lineal ,Visualización y análisis morfológico de rostros humanos mediante algoritmos avanzados.
 </p>
 """, unsafe_allow_html=True)
 
