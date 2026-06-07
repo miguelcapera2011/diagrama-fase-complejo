@@ -5,7 +5,7 @@
 # Reducción de Dimensionalidad No Lineal
 #
 # Tema:
-# UMAP y t-SNE para visualizar rostros humanos
+# UMAP para visualizar rostros humanos
 #
 # Autor:
 # Proyecto de Análisis Multivariado
@@ -24,7 +24,6 @@ import umap
 
 from sklearn.datasets import fetch_lfw_people
 from sklearn.preprocessing import StandardScaler
-from sklearn.manifold import TSNE
 
 # =========================================================
 # CONFIGURACIÓN
@@ -219,7 +218,6 @@ pagina = st.sidebar.radio(
         "Reducción Dimensional",
         "UMAP 2D",
         "UMAP 3D",
-        "t-SNE",
         "Conclusiones"
     ]
 )
@@ -275,7 +273,7 @@ if pagina == "Introducción":
     with c2:
         st.markdown(f'<div class="metric-card"><i class="bi bi-people-fill"></i><h3>Imágenes</h3><h1>{n_imagenes}</h1><p>Rostros procesados</p></div>', unsafe_allow_html=True)
     with c3:
-        st.markdown('<div class="metric-card"><i class="bi bi-activity"></i><h3>Algoritmia</h3><h1>UMAP</h1><p>Y modelo t-SNE</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><i class="bi bi-activity"></i><h3>Algoritmia</h3><h1>UMAP</h1><p>Geometría Riemanniana</p></div>', unsafe_allow_html=True)
     with c4:
         st.markdown('<div class="metric-card"><i class="bi bi-projector-fill"></i><h3>Espacio</h3><h1>2D / 3D</h1><p>Mapas interactivos</p></div>', unsafe_allow_html=True)
 
@@ -390,7 +388,7 @@ elif pagina == "Reducción Dimensional":
     with c1:
         st.markdown("### Alta Dimensión\n- 2914 descriptores ortogonales por espécimen.\n- Geometría abstracta ininterpretable mediante análisis visual directo.")
     with c2:
-        st.markdown("### Proyección No Lineal\n- Detección de patrones y varianzas conjuntas mediante cálculo de vecindades y optimizaciones probabilísticas.")
+        st.markdown("### Proyección No Lineal\n- Detección de patrones y varianzas conjuntas mediante cálculo de vecindades de grafos difusos basados en geometría algebraica.")
     with c3:
         st.markdown("### Baja Dimensión\n- Reducción compacta a coordenadas Cartesianas.\n- Preservación óptima de la topología y de los agrupamientos familiares.")
 
@@ -414,7 +412,6 @@ elif pagina == "UMAP 2D":
     
     st.markdown("Cada vector transformado se representa como un punto. El algoritmo aproxima subvariedades riemannianas para cohesionar rostros con similitudes estructurales.")
     
-    # Usando escala de color viva 'Plasma_r' para resaltar los datos contra el fondo oscuro
     fig = px.scatter(df, x="x", y="y", color="persona", color_discrete_sequence=px.colors.sequential.Plasma_r, template="plotly_dark", height=650)
     fig.update_traces(marker=dict(size=7, opacity=0.85))
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(15, 23, 42, 0.5)")
@@ -442,27 +439,6 @@ elif pagina == "UMAP 3D":
     st.plotly_chart(fig, use_container_width=True)
 
 # =========================================================
-# TSNE
-# =========================================================
-
-elif pagina == "t-SNE":
-    st.markdown('<h1><i class="bi bi-graph-up title-icon"></i>Mapeo Comparativo vía t-SNE</h1>', unsafe_allow_html=True)
-    st.markdown("Modelado de proximidades fundamentado en distribuciones de probabilidad condicional. Tiende a maximizar la dispersión inter-clase, fragmentando la continuidad global.")
-    
-    tsne = TSNE(n_components=2, perplexity=30, random_state=42)
-    embedding = tsne.fit_transform(X_scaled)
-    
-    df = pd.DataFrame({
-        "x": embedding[:, 0],
-        "y": embedding[:, 1],
-        "persona": [names[i] for i in y]
-    })
-    
-    fig = px.scatter(df, x="x", y="y", color="persona", color_discrete_sequence=px.colors.sequential.Plasma_r, template="plotly_dark", height=650)
-    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(15, 23, 42, 0.5)")
-    st.plotly_chart(fig, use_container_width=True)
-
-# =========================================================
 # CONCLUSIONES
 # =========================================================
 
@@ -470,11 +446,11 @@ elif pagina == "Conclusiones":
     st.markdown('<h1><i class="bi bi-award title-icon"></i>Análisis y Evaluaciones Estadísticas</h1>', unsafe_allow_html=True)
     st.markdown("""
     ## Hallazgos Clave
-    - **UMAP** demuestra una velocidad y consistencia matemática superior a t-SNE al mantener la coherencia espacial general.
-    - Los clusters visibles demuestran que expresiones, orientaciones de rostros y rasgos genómicos se agrupan sin necesidad de darle etiquetas de nombres al algoritmo (aprendizaje no supervisado).
+    - **Optimización Topológica:** UMAP demuestra una velocidad y consistencia matemática superior al mantener la coherencia espacial general tanto a nivel micro como macroscópico.
+    - **Aprendizaje No Supervisado:** Los clusters visibles demuestran que expresiones, orientaciones de rostros y rasgos genómicos se agrupan de manera natural sin necesidad de proveer etiquetas de nombres al algoritmo durante el entrenamiento.
     
-    ## Dinámica de los Algoritmos
-    - **Preservación Estructural:** Mientras que t-SNE prioriza de manera casi exclusiva las relaciones de vecindad local (creando "islas" aisladas), UMAP logra balancear la microestructura y la macroestructura, permitiendo interpretar qué tan distantes o similares son los grupos de rostros entre sí en el espacio completo.
-    - **Sensibilidad a los Hiperparámetros:** El ajuste de parámetros como `n_neighbors` altera drásticamente la topología del mapa resultante. Valores bajos aíslan patrones finos (como una inclinación de cabeza específica), mientras que valores altos unifican identidades completas bajo un criterio global.
-    - **Importancia del Escalado:** La reducción dimensional no lineal es altamente sensible a las magnitudes. Sin un escalado estándar previo (`StandardScaler`), los píxeles con variaciones extremas de iluminación dominarían por completo la geometría de la proyección, ocultando los rasgos morfológicos reales de los rostros.
+    ## Dinámica del Algoritmo
+    - **Preservación Estructural:** Al balancear la estructura local y global, UMAP permite interpretar de forma matemática qué tan distantes o similares son los diferentes grupos de rostros entre sí en el hiperespacio completo.
+    - **Sensibilidad a los Hiperparámetros:** El ajuste del parámetro `n_neighbors` altera la topología del mapa resultante. Valores bajos aíslan patrones finos (como una inclinación de cabeza específica), mientras que valores altos unifican identidades completas bajo un criterio global.
+    - **Importancia del Escalado:** La reducción dimensional no lineal es altamente sensible a las magnitudes de entrada. Sin un escalado estándar previo (`StandardScaler`), los píxeles con variaciones extremas de iluminación dominarían por completo la geometría de la proyección, ocultando los rasgos morfológicos reales de los rostros.
     """)
