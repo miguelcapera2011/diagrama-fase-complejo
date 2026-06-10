@@ -1,7 +1,5 @@
-# =========================================================
-# LIBRERÍAS
-# =========================================================
 
+# LIBRERÍAS
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -12,10 +10,7 @@ import umap
 from sklearn.datasets import fetch_lfw_people
 from sklearn.preprocessing import StandardScaler
 
-
-# =========================================================
 # CONFIGURACIÓN
-# =========================================================
 
 st.set_page_config(
     page_title="UMAP - Reducción Dimensional",
@@ -23,10 +18,7 @@ st.set_page_config(
     layout="wide"
 )
 
-
-# =========================================================
 # CSS E ICONOS
-# =========================================================
 
 st.markdown("""
 <link rel="stylesheet"
@@ -215,11 +207,7 @@ img {
 
 """, unsafe_allow_html=True)
 
-
-# =========================================================
 # SIDEBAR
-# =========================================================
-
 
 st.sidebar.markdown(
 """
@@ -255,10 +243,7 @@ pagina = st.sidebar.radio(
     ]
 )
 
-
-# =========================================================
 # CARGA DEL DATASET
-# =========================================================
 
 @st.cache_data
 def cargar_datos():
@@ -277,20 +262,13 @@ def cargar_datos():
 
 X,y,images,names = cargar_datos()
 
-
-# =========================================================
 # ESCALADO
-# =========================================================
-
 
 scaler = StandardScaler()
 
 X_scaled = scaler.fit_transform(X)
 
-
-# =========================================================
 # MÉTRICAS
-# =========================================================
 
 
 n_imagenes = X.shape[0]
@@ -299,12 +277,7 @@ n_variables = X.shape[1]
 
 n_personas = len(names)
 
-
-
-# =========================================================
 # INTRODUCCIÓN
-# =========================================================
-
 
 if pagina == "Introducción":
 
@@ -315,7 +288,9 @@ if pagina == "Introducción":
 
     <div class="subtitle">
     <i class="bi bi-diagram-3-fill"></i>
+    <h2>
     Uniform Manifold Approximation and Projection (UMAP)
+    </h2>
     </div>
 
 
@@ -424,10 +399,8 @@ UMAP permite transformar este espacio complejo en una representación de dos o t
         """,
         unsafe_allow_html=True
         )
-
-# =========================================================
+        
 # DATASET ORIGINAL
-# =========================================================
 
 elif pagina == "Dataset Original":
 
@@ -484,10 +457,7 @@ elif pagina == "Dataset Original":
     unsafe_allow_html=True
     )
 
-
-# =========================================================
 # CONVERSIÓN MATEMÁTICA
-# =========================================================
 
 elif pagina == "Conversión Matemática":
 
@@ -543,10 +513,7 @@ elif pagina == "Conversión Matemática":
 
     c1, c2 = st.columns([1, 1])
 
-
-    # -----------------------------------------------------
     # Imagen original con píxel resaltado
-    # -----------------------------------------------------
 
     with c1:
 
@@ -594,11 +561,9 @@ elif pagina == "Conversión Matemática":
         """,
         unsafe_allow_html=True
         )
-
-
-    # -----------------------------------------------------
+        
     # Representación del vector
-    # -----------------------------------------------------
+
 
     with c2:
 
@@ -697,9 +662,7 @@ elif pagina == "Conversión Matemática":
 
     Esta representación matemática es la que permite aplicar algoritmos como UMAP para encontrar patrones y similitudes entre las imágenes.
     """)
-# =========================================================
 # REDUCCIÓN DIMENSIONAL
-# =========================================================
 
 elif pagina == "Reducción Dimensional":
 
@@ -754,10 +717,7 @@ elif pagina == "Reducción Dimensional":
         - Podemos observar agrupamientos y patrones entre rostros similares.
         """)
 
-
-# =========================================================
 # UMAP 2D
-# =========================================================
 
 elif pagina == "UMAP 2D":
 
@@ -839,10 +799,7 @@ elif pagina == "UMAP 2D":
         use_container_width=True
     )
 
-
-# =========================================================
 # UMAP 3D
-# =========================================================
 
 elif pagina == "UMAP 3D":
 
@@ -899,17 +856,15 @@ elif pagina == "UMAP 3D":
         use_container_width=True
     )
 
-
-# =========================================================
 # CONCLUSIONES
-# =========================================================
+
 
 elif pagina == "Conclusiones":
 
     st.markdown("""
     <h1>
     <i class="bi bi-award title-icon"></i>
-    Conclusiones del Análisis
+    Conclusiones
     </h1>
     """,
     unsafe_allow_html=True)
