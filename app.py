@@ -286,16 +286,17 @@ if pagina == "Introducción":
     """
     <div class="main-header">
 
-    <div class="subtitle">
-    <i class="bi bi-diagram-3-fill"></i>
-    <h2>
-    Uniform Manifold Approximation and Projection (UMAP)
-    </h2>
-    </div>
+   
 
 
     <h1>
     Descubriendo patrones ocultos en los rostros
+     <div class="subtitle">
+    <i class="bi bi-diagram-3-fill"></i>
+
+    Uniform Manifold Approximation and Projection (UMAP)
+
+    </div>
     </h1>
 
 
