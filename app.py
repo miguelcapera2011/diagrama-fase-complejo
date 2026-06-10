@@ -288,8 +288,8 @@ if pagina == "Introducción":
 
    
     <div class="subtitle">
-    <i class="bi bi-diagram-3-fill"></i>
     <h1>
+    <i class="bi bi-diagram-3-fill"></i>
     Uniform Manifold Approximation and Projection (UMAP)
     </h1>
     </div>
