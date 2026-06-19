@@ -1,889 +1,674 @@
-
-# LIBRERÍAS
+#librerias
 import streamlit as st
-import numpy as np
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import umap
+import matplotlib.pyplot as plt
+import seaborn as sns
+import time
 
-from sklearn.datasets import fetch_lfw_people
 from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.metrics.pairwise import euclidean_distances
+from scipy.spatial.distance import pdist, squareform
 
-# CONFIGURACIÓN
+
+# CONFIGURACIÓN GENERAL
+
 
 st.set_page_config(
-    page_title="UMAP - Reducción Dimensional",
-    page_icon="https://cdn-icons-png.flaticon.com/512/2103/2103633.png",
-    layout="wide"
+    page_title="K-Means Profesional",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# CSS E ICONOS
+
+# ESTILOS CSS
+st.markdown("""
+<style>
+.main {
+    background-color: #0e1117;
+}
+
+h1 {
+    color: #00ffd5;
+    text-align: center;
+    font-size: 50px;
+}
+
+h2 {
+    color: #00c3ff;
+}
+
+h3 {
+    color: #ffffff;
+}
+
+.stMetric {
+    background-color: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.block-container {
+    padding-top: 2rem;
+}
+
+.css-1d391kg {
+    background-color: #111827;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+st.title("Clustering K-Means")
 
 st.markdown("""
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-<style>
-
-/* Fondo principal */
-.stApp {
-    background:
-    radial-gradient(circle at top left, #2e1065 0%, #090514 45%),
-    radial-gradient(circle at bottom right, #083344 0%, #02243a 50%);
-    color: #f8fafc;
-}
-
-
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0f0726 0%, #05020f 100%);
-    border-right: 1px solid rgba(192,132,252,0.15);
-}
-
-
-/* Título del menú */
-.sidebar-title {
-
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-
-    background:
-    linear-gradient(90deg,#38bdf8,#c084fc);
-
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(192,132,252,0.2);
-    margin-bottom: 20px;
-}
-
-
-/* Iconos */
-.title-icon {
-
-    background:
-    linear-gradient(135deg,#38bdf8,#e879f9);
-
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-
-    font-size:30px;
-    margin-right:12px;
-}
-
-
-/* Texto */
-h1,h2,h3,h4 {
-
-    color:white;
-    font-weight:700;
-}
-
-p,label,div {
-
-    color:#e2e8f0;
-}
-
-
-/* Encabezado principal */
-
-.main-header {
-
-    background:
-    linear-gradient(
-    135deg,
-    rgba(168,85,247,0.25),
-    rgba(6,182,212,0.15));
-
-    padding:35px;
-
-    border-radius:24px;
-
-    border:
-    1px solid rgba(192,132,252,0.3);
-
-    margin-bottom:30px;
-
-    box-shadow:
-    0 8px 32px rgba(168,85,247,0.1);
-}
-
-
-.main-header h1 {
-
-    font-size:36px;
-    font-weight:800;
-}
-
-
-.subtitle {
-
-    color:#38bdf8;
-    font-size:15px;
-    font-weight:700;
-
-    letter-spacing:1.5px;
-}
-
-
-/* Tarjetas de métricas */
-
-.metric-card {
-
-    background:
-    linear-gradient(
-    145deg,
-    rgba(147,51,234,0.15),
-    rgba(15,23,42,0.6));
-
-    border-radius:22px;
-
-    padding:24px;
-
-    text-align:center;
-
-    border:
-    1px solid rgba(56,189,248,0.2);
-}
-
-
-.metric-card i {
-
-    font-size:26px;
-    color:#38bdf8;
-}
-
-
-.metric-card h3 {
-
-    color:#94a3b8;
-    font-size:11px;
-}
-
-
-.metric-card h1 {
-
-    font-size:34px;
-}
-
-
-.metric-card p {
-
-    color:#94a3b8;
-}
-
-
-/* Imágenes */
-
-img {
-
-    border-radius:20px;
-
-    box-shadow:
-    0 15px 35px rgba(0,0,0,0.6);
-}
-
-
-/* Caja informativa */
-
-.info-box {
-
-    background:
-    rgba(6,182,212,0.08);
-
-    border-left:
-    4px solid #06b6d4;
-
-    padding:16px;
-
-    border-radius:0 12px 12px 0;
-}
-
-
-</style>
-
-""", unsafe_allow_html=True)
+Esta aplicación permite explorar paso a paso el algoritmo K-Means usando el dataset USArrests.
+
+Incluye:
+
+- Exploración de datos
+- Estandarización
+- Distancias Euclidianas y Manhattan
+- Método del codo
+- Animación de convergencia de K-Means
+- PCA 2D y 3D
+- Boxplots interactivos
+- Visualizaciones dinámicas
+- Movimiento de centroides
+- Explicaciones matemáticas
+""")
 
 # SIDEBAR
 
-st.sidebar.markdown(
-"""
-<div class="sidebar-title">
-<i class="bi bi-cpu-fill"></i>
-ANÁLISIS MULTIVARIADO
-</div>
-""",
-unsafe_allow_html=True
+st.sidebar.title("⚙ Configuración")
+
+uploaded_file = st.sidebar.file_uploader(
+    "Suba el archivo data_USArrests.xlsx",
+    type=["xlsx"]
+)
+
+k = st.sidebar.slider("Número de Clusters", 2, 10, 4)
+
+iteraciones_animadas = st.sidebar.slider(
+    "Frames Animación",
+    5,
+    50,
+    20
 )
 
 
-st.sidebar.markdown(
-"""
-<p style="font-size:13px;color:#94a3b8;">
-Reducción de dimensionalidad utilizando UMAP para transformar imágenes de rostros en representaciones más simples que permiten descubrir patrones y similitudes.
-</p>
-""",
-unsafe_allow_html=True
-)
+# CARGA DE DATOS
 
 
-pagina = st.sidebar.radio(
-    "Contenido",
-    [
-        "Introducción",
-        "Dataset Original",
-        "Conversión Matemática",
-        "Reducción Dimensional",
-        "UMAP 2D",
-        "UMAP 3D",
-        "Conclusiones"
-    ]
-)
+if uploaded_file:
 
-# CARGA DEL DATASET
+    datos = pd.read_excel(uploaded_file)
 
-@st.cache_data
-def cargar_datos():
+    st.header("Dataset")
+    st.dataframe(datos)
+    
+    st.header(" Información del Dataset")
 
-    lfw = fetch_lfw_people(
-        min_faces_per_person=70
-    )
-
-    X = lfw.data
-    y = lfw.target
-    images = lfw.images
-    names = lfw.target_names
-
-    return X,y,images,names
-
-
-X,y,images,names = cargar_datos()
-
-# ESCALADO
-
-scaler = StandardScaler()
-
-X_scaled = scaler.fit_transform(X)
-
-# MÉTRICAS
-
-
-n_imagenes = X.shape[0]
-
-n_variables = X.shape[1]
-
-n_personas = len(names)
-
-# INTRODUCCIÓN
-
-if pagina == "Introducción":
-
-
-    st.markdown(
-    """
-    <div class="main-header">
-
-   
-    <div class="subtitle">
-    <h1>
-    <i class="bi bi-diagram-3-fill"></i>
-    Uniform Manifold Approximation and Projection (UMAP)
-    </h1>
-    </div>
-
-
-    <p style="color:#cbd5e1; font-size:15px;">
-
-    Esta aplicación muestra cómo una computadora convierte una imagen en datos numéricos y cómo UMAP reduce miles de características a una representación más sencilla en 2D o 3D, permitiendo observar similitudes entre diferentes rostros.
-
-    </p>
-
-    </div>
-    """,
-    unsafe_allow_html=True
-    )
-
-
-    c1,c2,c3,c4 = st.columns(4)
-
-
-    with c1:
-
-        st.markdown(f"""
-        <div class="metric-card">
-        <i class="bi bi-bounding-box-circles"></i>
-        <h3>DIMENSIONES</h3>
-        <h1>{n_variables}</h1>
-        <p>valores por imagen</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-
-    with c2:
-
-        st.markdown(f"""
-        <div class="metric-card">
-        <i class="bi bi-people-fill"></i>
-        <h3>IMÁGENES</h3>
-        <h1>{n_imagenes}</h1>
-        <p>rostros del dataset</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-
-    with c3:
-
-        st.markdown("""
-        <div class="metric-card">
-        <i class="bi bi-activity"></i>
-        <h3>ALGORITMO</h3>
-        <h1>UMAP</h1>
-        <p>reducción dimensional</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-
-    with c4:
-
-        st.markdown("""
-        <div class="metric-card">
-        <i class="bi bi-projector-fill"></i>
-        <h3>VISUALIZACIÓN</h3>
-        <h1>2D / 3D</h1>
-        <p>mapas interactivos</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-
-    col1,col2 = st.columns([1.8,1])
-
+    col1, col2, col3 = st.columns(3)
 
     with col1:
-
-
-        st.markdown("""
-
-## ¿Por qué necesitamos reducir dimensiones?
-
-Cada imagen está formada por miles de píxeles. Cada píxel contiene un valor numérico que representa la intensidad de luz en una posición determinada.
-
-Cuando reunimos todos esos valores, un rostro queda representado por 2914 características numéricas. Esto crea un espacio de alta dimensionalidad que no podemos visualizar directamente.
-
-UMAP permite transformar este espacio complejo en una representación de dos o tres dimensiones, intentando conservar la relación de similitud entre los rostros originales.
-
-""")
+        st.metric("Filas", datos.shape[0])
 
     with col2:
+        st.metric("Columnas", datos.shape[1])
+
+    with col3:
+        st.metric("Valores faltantes", datos.isnull().sum().sum())
+
+    st.write(datos.describe())
 
 
-        st.image(
-            images[0],
-            use_container_width=True
-        )
+    # LIMPIEZA
 
 
-        st.markdown("""
-        <div class="info-box">
+    datos = datos.dropna()
 
-        <b>Idea principal:</b>
-        La computadora no ve un rostro como nosotros. Para ella una imagen es una colección de números donde cada valor corresponde a un píxel.
+    # HISTOGRAMAS
 
-        </div>
-        """,
-        unsafe_allow_html=True
-        )
-        
-# DATASET ORIGINAL
 
-elif pagina == "Dataset Original":
+    st.header(" Histogramas")
 
-    st.markdown(
-    """
-    <h1>
-    <i class="bi bi-images title-icon"></i>
-    Dataset Original: LFW
-    </h1>
-    """,
-    unsafe_allow_html=True
+    columnas_numericas = ['Murder', 'Assault', 'UrbanPop', 'Rape']
+
+    fig_hist = px.histogram(
+        datos,
+        x='Murder',
+        nbins=10,
+        title='Distribución Murder'
     )
 
+    st.plotly_chart(fig_hist, use_container_width=True)
 
-    st.markdown("""
-    Trabajamos con el conjunto de datos 
-    <b>LFW (Labeled Faces in the Wild)</b>, una colección de fotografías reales de diferentes personas.
+    tabs = st.tabs(columnas_numericas)
 
-    Este dataset es ampliamente utilizado en investigaciones de reconocimiento facial y aprendizaje automático, ya que permite estudiar cómo una computadora puede encontrar similitudes y diferencias entre distintos rostros.
-    """,
-    unsafe_allow_html=True
-    )
-
-
-    st.markdown("---")
-
-
-    st.subheader("Ejemplos de imágenes del conjunto de datos")
-
-
-    cols = st.columns(5)
-
-
-    for i in range(10):
-
-        with cols[i % 5]:
-
-            st.image(
-                images[i],
-                caption=names[y[i]],
-                use_container_width=True
+    for i, col in enumerate(columnas_numericas):
+        with tabs[i]:
+            fig = px.histogram(
+                datos,
+                x=col,
+                marginal='box',
+                color_discrete_sequence=['cyan']
             )
+            st.plotly_chart(fig, use_container_width=True)
+
+   
+    # ESTANDARIZACIÓN
+
+    st.header("⚖ Estandarización")
+
+    scaler = StandardScaler()
+
+    numericas = datos.select_dtypes(include=['float64', 'int64']).columns
+
+    datos[numericas] = scaler.fit_transform(datos[numericas])
+
+    st.write(datos.head())
+
+    # MATRICES DE DISTANCIA
 
 
-    st.markdown(
-    """
-    <div class="info-box">
+    st.header("📏 Distancias Euclidianas")
 
-    <b>Dato importante:</b>
-    Aunque nosotros vemos una fotografía de una persona, la computadora almacena esta imagen como una matriz de valores numéricos donde cada número representa la intensidad de un píxel.
+    distancias = euclidean_distances(datos.drop(columns=['State']))
 
-    </div>
-    """,
-    unsafe_allow_html=True
+    dist_matrix = pd.DataFrame(
+        distancias,
+        index=datos['State'],
+        columns=datos['State']
     )
 
-# CONVERSIÓN MATEMÁTICA
-
-elif pagina == "Conversión Matemática":
-
-
-    st.markdown(
-    """
-    <h1>
-    <i class="bi bi-calculator title-icon"></i>
-    De una imagen a un vector matemático
-    </h1>
-    """,
-    unsafe_allow_html=True
+    fig_heat = px.imshow(
+        dist_matrix,
+        color_continuous_scale='RdBu',
+        title='Mapa de calor Distancias Euclidianas'
     )
 
+    st.plotly_chart(fig_heat, use_container_width=True)
 
-    st.markdown("""
-    Una imagen está organizada inicialmente como una matriz de píxeles. Para que un algoritmo matemático pueda analizarla, la imagen se transforma en un vector, donde cada posición corresponde a un píxel y su valor indica la intensidad de ese píxel.
-    """)
-
-
-    image = images[0]
-
-    alto, ancho = image.shape
+    # DISTANCIAS MANHATTAN
 
 
-    vector = X[0]
+    st.header("📐 Distancias Manhattan")
 
-
-    pixel_index = st.slider(
-        "Selecciona una posición del vector para identificar el píxel correspondiente:",
-        0,
-        len(vector) - 1,
-        100
+    manhattan = pdist(
+        datos.drop(columns=['State']),
+        metric='cityblock'
     )
 
+    manhattan_square = squareform(manhattan)
 
-    valor_pixel = vector[pixel_index]
+    manhattan_df = pd.DataFrame(
+        manhattan_square,
+        index=datos['State'],
+        columns=datos['State']
+    )
 
+    fig_manhattan = px.imshow(
+        manhattan_df,
+        color_continuous_scale='Viridis',
+        title='Mapa Distancias Manhattan'
+    )
 
-    fila = pixel_index // ancho
-
-    columna = pixel_index % ancho
-
-
-    imagen_color = np.stack([image] * 3, axis=-1)
-
-    imagen_color = imagen_color / imagen_color.max()
-
-
-    # Se resalta el píxel seleccionado en color rojo
-    imagen_color[fila, columna] = [1, 0, 0]
-
-
-    c1, c2 = st.columns([1, 1])
-
-    # Imagen original con píxel resaltado
-
-    with c1:
+    st.plotly_chart(fig_manhattan, use_container_width=True)
 
 
-        st.subheader("Ubicación del píxel dentro de la imagen")
+    # MÉTODO DEL CODO
+  
 
+    st.header("🦴 Método del Codo")
 
-        fig = px.imshow(imagen_color)
+    wss = []
 
-
-        fig.update_layout(
-            height=420,
-            margin=dict(
-                l=0,
-                r=0,
-                t=0,
-                b=0
-            ),
-            coloraxis_showscale=False
+    for i in range(1, 11):
+        modelo = KMeans(
+            n_clusters=i,
+            n_init=50,
+            random_state=42
         )
 
+        modelo.fit(datos.drop(columns=['State']))
 
-        fig.update_xaxes(showticklabels=False)
+        wss.append(modelo.inertia_)
 
-        fig.update_yaxes(showticklabels=False)
+    elbow_df = pd.DataFrame({
+        'Clusters': range(1, 11),
+        'WSS': wss
+    })
 
+    fig_elbow = px.line(
+        elbow_df,
+        x='Clusters',
+        y='WSS',
+        markers=True,
+        title='Método del Codo'
+    )
 
-        st.plotly_chart(
-            fig,
-            use_container_width=True
+    fig_elbow.add_vline(
+        x=k,
+        line_dash='dash',
+        line_color='red'
+    )
+
+    st.plotly_chart(fig_elbow, use_container_width=True)
+
+    # =========================================================
+    # COMPARACIÓN DE CLUSTERS Y TIEMPOS
+    # =========================================================
+
+    st.header("⏱ Comparación de Clusters y Tiempo de Ejecución")
+
+    comparacion = []
+
+    X_cluster = datos.drop(columns=['State'])
+
+    for n_clusters in range(2, 11):
+
+        inicio_comp = time.time()
+
+        modelo_comp = KMeans(
+            n_clusters=n_clusters,
+            n_init=50,
+            random_state=42
         )
 
+        modelo_comp.fit(X_cluster)
 
-        st.markdown(
-        f"""
-        <div class="info-box">
+        fin_comp = time.time()
 
-        <b>Información del píxel seleccionado:</b><br><br>
+        tiempo_ms = (fin_comp - inicio_comp) * 1000
 
-        • Posición en el vector: {pixel_index}<br>
-        • Ubicación en la imagen: fila {fila}, columna {columna}<br>
-        • Intensidad del píxel: {valor_pixel:.2f}
+        inercia = modelo_comp.inertia_
 
-        </div>
-        """,
-        unsafe_allow_html=True
-        )
-        
-    # Representación del vector
-
-
-    with c2:
-
-
-        st.subheader(
-            "Representación del vector de la imagen"
-        )
-
-
-        st.markdown("""
-        A continuación observamos una pequeña parte del vector que representa la imagen. Cada posición corresponde a un píxel de la fotografía original.
-        """)
-
-
-        rango_min = max(
-            0,
-            pixel_index - 5
-        )
-
-        rango_max = min(
-            len(vector),
-            pixel_index + 6
-        )
-
-
-        indices_tabla = np.arange(
-            rango_min,
-            rango_max
-        )
-
-
-        valores_tabla = vector[
-            rango_min:rango_max
-        ]
-
-
-        estado = [
-            "Píxel cercano"
-            if idx != pixel_index
-            else "PÍXEL SELECCIONADO"
-            for idx in indices_tabla
-        ]
-
-
-        tabla_df = pd.DataFrame({
-
-            "Posición en el vector": indices_tabla,
-
-            "Valor de intensidad": np.round(
-                valores_tabla,
-                4
-            ),
-
-            "Fila en la imagen":
-            indices_tabla // ancho,
-
-
-            "Columna en la imagen":
-            indices_tabla % ancho,
-
-
-            "Descripción":
-            estado
+        comparacion.append({
+            "Clusters": n_clusters,
+            "Tiempo_ms": tiempo_ms,
+            "Inercia": inercia
         })
 
+    comparacion_df = pd.DataFrame(comparacion)
 
-        styled_df = tabla_df.style.map(
+    # NORMALIZACIÓN
 
-            lambda valor:
-            "background-color: rgba(168,85,247,0.4);"
-            "color:white;font-weight:bold;"
-            if valor == "PÍXEL SELECCIONADO"
-            else "",
-
-            subset=["Descripción"]
-
-        )
-
-
-        st.dataframe(
-            styled_df,
-            use_container_width=True,
-            height=420
-        )
-
-
-    st.markdown("---")
-
-
-    st.markdown("""
-    ## Idea clave
-
-    Una imagen que nosotros observamos como un rostro, para la computadora es simplemente una gran lista de números.
-
-    En este caso, cada rostro queda representado por un vector de 2914 valores, donde cada número guarda la información de un píxel específico.
-
-    Esta representación matemática es la que permite aplicar algoritmos como UMAP para encontrar patrones y similitudes entre las imágenes.
-    """)
-# REDUCCIÓN DIMENSIONAL
-
-elif pagina == "Reducción Dimensional":
-
-    st.markdown("""
-    <h1>
-    <i class="bi bi-funnel-fill title-icon"></i>
-    Reducción de Dimensionalidad
-    </h1>
-    """,
-    unsafe_allow_html=True)
-
-
-    st.markdown("""
-    Después de convertir cada imagen en un vector de 2914 valores, cada rostro se representa como un punto dentro de un espacio de 2914 dimensiones.
-
-    Este espacio es demasiado complejo para ser visualizado por una persona. Por esta razón utilizamos UMAP, un algoritmo capaz de encontrar una representación más pequeña de los datos conservando, en la medida de lo posible, la relación de similitud entre los rostros.
-    """)
-
-
-    st.markdown("---")
-
-
-    c1, c2, c3 = st.columns(3)
-
-
-    with c1:
-
-        st.markdown("""
-        ### 🔴 Espacio original
-
-        - Cada rostro está descrito por 2914 características.
-        - Es un espacio matemático muy grande que no podemos visualizar directamente.
-        """)
-
-
-    with c2:
-
-        st.markdown("""
-        ### 🧠 Algoritmo UMAP
-
-        - Analiza qué rostros son más similares entre sí.
-        - Construye una representación más sencilla manteniendo esas relaciones de cercanía.
-        """)
-
-
-    with c3:
-
-        st.markdown("""
-        ### 🟢 Nuevo espacio
-
-        - Los datos se representan en 2 o 3 dimensiones.
-        - Podemos observar agrupamientos y patrones entre rostros similares.
-        """)
-
-# UMAP 2D
-
-elif pagina == "UMAP 2D":
-
-    st.markdown("""
-    <h1>
-    <i class="bi bi-grid-3x3 title-icon"></i>
-    Visualización UMAP en 2 Dimensiones
-    </h1>
-    """,
-    unsafe_allow_html=True)
-
-
-    st.markdown("""
-    En esta representación, cada punto corresponde a un rostro del conjunto de datos.
-
-    Cuando dos puntos aparecen cercanos significa que UMAP encontró características similares entre esos rostros. Por el contrario, puntos alejados indican rostros con mayores diferencias.
-    """)
-
-
-    n_neighbors = st.slider(
-        "Parámetro n_neighbors (cantidad de vecinos que UMAP analiza)",
-        5,
-        50,
-        15
+    comparacion_df["Tiempo_norm"] = (
+        comparacion_df["Tiempo_ms"] /
+        comparacion_df["Tiempo_ms"].max()
     )
 
-
-    st.markdown("""
-    El parámetro **n_neighbors** controla cuánta información del entorno cercano utiliza UMAP.
-
-    Valores pequeños se enfocan en detalles locales y grupos pequeños, mientras que valores mayores intentan conservar una estructura más general de todos los datos.
-    """)
-
-
-    reducer = umap.UMAP(
-        n_components=2,
-        n_neighbors=n_neighbors,
-        random_state=42
+    comparacion_df["Inercia_norm"] = (
+        comparacion_df["Inercia"] /
+        comparacion_df["Inercia"].max()
     )
 
+    # SCORE FINAL
 
-    embedding = reducer.fit_transform(X_scaled)
-
-
-    df = pd.DataFrame({
-        "x": embedding[:, 0],
-        "y": embedding[:, 1],
-        "persona": [names[i] for i in y]
-    })
-
-
-    fig = px.scatter(
-        df,
-        x="x",
-        y="y",
-        color="persona",
-        color_discrete_sequence=px.colors.sequential.Plasma_r,
-        template="plotly_dark",
-        height=650
+    comparacion_df["Score"] = (
+        comparacion_df["Tiempo_norm"] * 0.3 +
+        comparacion_df["Inercia_norm"] * 0.7
     )
 
+    mejor_idx = comparacion_df["Score"].idxmin()
+    peor_idx = comparacion_df["Score"].idxmax()
 
-    fig.update_traces(
-        marker=dict(
-            size=7,
-            opacity=0.85
-        )
-    )
+    colores_modelo = []
 
+    for idx in comparacion_df.index:
 
-    fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(15,23,42,0.5)"
-    )
+        if idx == mejor_idx:
+            colores_modelo.append("green")
 
+        elif idx == peor_idx:
+            colores_modelo.append("red")
 
-    st.plotly_chart(
-        fig,
+        else:
+            colores_modelo.append("orange")
+
+    comparacion_df["Color"] = colores_modelo
+
+    # TABLA
+
+    st.subheader("📋 Tabla Comparativa")
+
+    st.dataframe(
+        comparacion_df[
+            [
+                "Clusters",
+                "Tiempo_ms",
+                "Inercia",
+                "Score"
+            ]
+        ].style.format({
+            "Tiempo_ms": "{:.2f}",
+            "Inercia": "{:.2f}",
+            "Score": "{:.4f}"
+        }),
         use_container_width=True
     )
 
-# UMAP 3D
+    # GRÁFICA TIEMPOS
 
-elif pagina == "UMAP 3D":
+    st.subheader("⚡ Tiempo de Ejecución por Número de Clusters")
 
-    st.markdown("""
-    <h1>
-    <i class="bi bi-box-seam title-icon"></i>
-    Visualización UMAP en 3 Dimensiones
-    </h1>
-    """,
-    unsafe_allow_html=True)
+    fig_tiempo = px.bar(
+        comparacion_df,
+        x="Clusters",
+        y="Tiempo_ms",
+        color="Color",
+        color_discrete_map={
+            "green": "green",
+            "red": "red",
+            "orange": "orange"
+        },
+        text="Tiempo_ms",
+        title="Comparación de Tiempo de Ejecución"
+    )
 
+    fig_tiempo.update_traces(
+        texttemplate='%{text:.2f} ms',
+        textposition='outside'
+    )
 
-    st.markdown("""
-    Esta visualización utiliza el mismo principio de UMAP 2D, pero agrega una tercera dimensión que permite observar con mayor detalle la separación y los grupos existentes entre los diferentes rostros.
+    st.plotly_chart(fig_tiempo, use_container_width=True)
+
+    # GRÁFICA SCORE
+
+    st.subheader("🎯 Calidad General del Modelo")
+
+    fig_score = px.bar(
+        comparacion_df,
+        x="Clusters",
+        y="Score",
+        color="Color",
+        color_discrete_map={
+            "green": "green",
+            "red": "red",
+            "orange": "orange"
+        },
+        text="Score",
+        title="Evaluación Global de Clusters"
+    )
+
+    fig_score.update_traces(
+        texttemplate='%{text:.4f}',
+        textposition='outside'
+    )
+
+    st.plotly_chart(fig_score, use_container_width=True)
+
+    # DATOS MEJOR Y PEOR
+
+    mejor_cluster = comparacion_df.loc[mejor_idx, "Clusters"]
+    peor_cluster = comparacion_df.loc[peor_idx, "Clusters"]
+
+    mejor_tiempo = comparacion_df.loc[mejor_idx, "Tiempo_ms"]
+    peor_tiempo = comparacion_df.loc[peor_idx, "Tiempo_ms"]
+
+    mejor_inercia = comparacion_df.loc[mejor_idx, "Inercia"]
+    peor_inercia = comparacion_df.loc[peor_idx, "Inercia"]
+
+    # ANÁLISIS AUTOMÁTICO
+
+    st.subheader("🧠 Análisis Automático")
+
+    st.success(
+        f"""
+        🟢 MEJOR MODELO DETECTADO
+
+        Número de clusters: {mejor_cluster}
+
+        Tiempo de ejecución: {mejor_tiempo:.2f} ms
+
+        Inercia: {mejor_inercia:.2f}
+
+        Este modelo tiene el mejor equilibrio entre:
+
+        ✔ velocidad computacional
+
+        ✔ compactación de grupos
+
+        ✔ estabilidad del agrupamiento
+
+        ✔ eficiencia matemática
+
+        Una menor inercia significa que los puntos están
+        más cerca de sus centroides.
+        """
+    )
+
+    st.error(
+        f"""
+        🔴 PEOR MODELO DETECTADO
+
+        Número de clusters: {peor_cluster}
+
+        Tiempo de ejecución: {peor_tiempo:.2f} ms
+
+        Inercia: {peor_inercia:.2f}
+
+        Este modelo presenta el peor rendimiento general,
+        debido a:
+
+        ✖ exceso de dispersión
+
+        ✖ peor compactación
+
+        ✖ menor eficiencia computacional
+
+        ✖ agrupamientos menos óptimos
+        """
+    )
+
+    st.warning("""
+    🟠 CLUSTERS INTERMEDIOS
+
+    Los modelos naranjas representan soluciones balanceadas.
+
+    Dependiendo del análisis pueden ser útiles para:
+
+    • segmentación más detallada
+
+    • exploración de patrones
+
+    • reducción de complejidad
+
+    • interpretabilidad del modelo
+
+    En Machine Learning no siempre el modelo más rápido
+    es el mejor.
+
+    Tampoco el de menor inercia absoluta.
+
+    El objetivo es encontrar equilibrio entre:
+
+    ✔ precisión
+
+    ✔ estabilidad
+
+    ✔ interpretación
+
+    ✔ costo computacional
     """)
 
+    # KMEANS
 
-    reducer = umap.UMAP(
-        n_components=3,
+
+    st.header("🤖 Algoritmo K-Means")
+
+    kmeans = KMeans(
+        n_clusters=k,
+        n_init=50,
         random_state=42
     )
 
+    inicio = time.time()
 
-    embedding = reducer.fit_transform(X_scaled)
+    km4_clusters = kmeans.fit(datos.drop(columns=['State']))
+
+    fin = time.time()
+
+    st.success(f"Tiempo ejecución: {(fin - inicio)*1000:.2f} ms")
+
+    st.subheader("Centroides")
+    st.write(kmeans.cluster_centers_)
+
+    datos['Cluster'] = km4_clusters.labels_
+
+  
+    # ANIMACIÓN DE CONVERGENCIA
 
 
-    df = pd.DataFrame({
-        "x": embedding[:, 0],
-        "y": embedding[:, 1],
-        "z": embedding[:, 2],
-        "persona": [names[i] for i in y]
-    })
+    st.header("🎬 Animación de Convergencia")
 
+    pca_anim = PCA(n_components=2)
 
-    fig = px.scatter_3d(
-        df,
-        x="x",
-        y="y",
-        z="z",
-        color="persona",
-        color_discrete_sequence=px.colors.sequential.Plasma_r,
-        template="plotly_dark",
-        height=750
+    X_pca = pca_anim.fit_transform(datos[numericas])
+
+    fig_anim = go.Figure()
+
+    colores = ['red', 'green', 'blue', 'yellow', 'purple', 'orange', 'cyan', 'pink', 'lime', 'white']
+
+    centroides = X_pca[np.random.choice(len(X_pca), k, replace=False)]
+
+    frames = []
+
+    for frame_num in range(iteraciones_animadas):
+
+        distancias = np.linalg.norm(
+            X_pca[:, np.newaxis] - centroides,
+            axis=2
+        )
+
+        labels = np.argmin(distancias, axis=1)
+
+        nuevos_centroides = np.array([
+            X_pca[labels == i].mean(axis=0)
+            for i in range(k)
+        ])
+
+        scatter_data = []
+
+        for i in range(k):
+
+            puntos = X_pca[labels == i]
+
+            scatter_data.append(
+                go.Scatter(
+                    x=puntos[:,0],
+                    y=puntos[:,1],
+                    mode='markers+text',
+                    text=datos['State'],
+                    textposition='top center',
+                    marker=dict(size=10, color=colores[i]),
+                    name=f'Cluster {i}'
+                )
+            )
+
+        scatter_data.append(
+            go.Scatter(
+                x=nuevos_centroides[:,0],
+                y=nuevos_centroides[:,1],
+                mode='markers',
+                marker=dict(
+                    size=25,
+                    color='black',
+                    symbol='star'
+                ),
+                name='Centroides'
+            )
+        )
+
+        # líneas distancia
+
+        for i in range(len(X_pca)):
+            centroide = nuevos_centroides[labels[i]]
+
+            scatter_data.append(
+                go.Scatter(
+                    x=[X_pca[i,0], centroide[0]],
+                    y=[X_pca[i,1], centroide[1]],
+                    mode='lines',
+                    line=dict(color='gray', width=1),
+                    showlegend=False
+                )
+            )
+
+        frames.append(go.Frame(data=scatter_data, name=str(frame_num)))
+
+        centroides = nuevos_centroides
+
+    fig_anim.frames = frames
+
+    fig_anim.add_trace(
+        go.Scatter(x=[], y=[])
     )
 
-
-    fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)"
+    fig_anim.update_layout(
+        title='Movimiento de centroides y convergencia K-Means',
+        width=1200,
+        height=800,
+        updatemenus=[
+            {
+                'type': 'buttons',
+                'buttons': [
+                    {
+                        'label': '▶ Iniciar',
+                        'method': 'animate',
+                        'args': [None]
+                    }
+                ]
+            }
+        ]
     )
 
+    st.plotly_chart(fig_anim, use_container_width=True)
 
-    st.plotly_chart(
-        fig,
-        use_container_width=True
+    # PCA
+
+
+    st.header("🧠 PCA")
+
+    pca = PCA(n_components=4)
+
+    pca_scores = pca.fit_transform(datos[numericas])
+
+    pca_df = pd.DataFrame(
+        pca_scores,
+        columns=['PC1', 'PC2', 'PC3', 'PC4']
     )
 
-# CONCLUSIONES
+    pca_df['Cluster'] = km4_clusters.labels_.astype(str)
+    pca_df['Etiqueta'] = datos['State']
 
+    # PCA 2D
+  
 
-elif pagina == "Conclusiones":
+    st.subheader("PCA Interactivo 2D")
 
-    st.markdown("""
-    <h1>
-    <i class="bi bi-award title-icon"></i>
-    Conclusiones
-    </h1>
-    """,
-    unsafe_allow_html=True)
+    fig_2d = px.scatter(
+        pca_df,
+        x='PC1',
+        y='PC2',
+        color='Cluster',
+        text='Etiqueta',
+        title='PCA 2D'
+    )
 
+    fig_2d.update_traces(
+        textposition='top center'
+    )
 
-    st.markdown("""
-    ## Principales resultados
+    st.plotly_chart(fig_2d, use_container_width=True)
 
-    - Una imagen puede transformarse en un conjunto de miles de valores numéricos, donde cada número representa la intensidad de un píxel.
+    st.success("Aplicación cargada correctamente")
 
-    - Cada rostro queda representado como un punto en un espacio de 2914 dimensiones, un espacio imposible de visualizar directamente.
+else:
 
-    - UMAP permite reducir este espacio complejo a una representación en 2 o 3 dimensiones conservando la información de similitud entre los rostros.
-
-    - Los grupos observados en los gráficos muestran que los rostros con características parecidas tienden a ubicarse cerca unos de otros.
-
-    ---
-
-    ## Aspectos importantes del proceso
-
-    - El escalado mediante **StandardScaler** permite que todos los píxeles tengan una influencia equilibrada durante el análisis.
-
-    - El parámetro **n_neighbors** controla si UMAP se concentra más en relaciones locales entre pocos rostros o en la estructura general del conjunto de datos.
-
-    - La reducción de dimensionalidad facilita la exploración visual de grandes conjuntos de datos y ayuda a descubrir patrones ocultos que no son evidentes en espacios de alta dimensión.
-    """)
+    st.warning("⚠ Suba el archivo data_USArrests.xlsx para iniciar")
