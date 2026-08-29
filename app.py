@@ -30,7 +30,7 @@ GRAY = "#475569"
 LIGHT = "#F8FAFC"
 BORDER = "#CBD5E1"
 
-# ESTILOS CSS (AJUSTES DE VISIBILIDAD DE CONTROLES, NAVEGACIÓN Y WIDGETS)
+# ESTILOS CSS (AJUSTES DE TAMAÑO Y ALINEACIÓN DE ICONO)
 st.markdown(
     f"""
     <style>
@@ -43,36 +43,6 @@ st.markdown(
             background: {LIGHT};
             color: #0F172A !important;
         }}
-        
-        /* FIX GENERAL DE VISIBILIDAD DE SELECTS, RADIOS Y LABLES EN EL CONTENIDO */
-        div[data-testid="stMarkdownContainer"] *,
-        div[data-testid="stWidgetLabel"] *,
-        div[data-testid="stSelectbox"] *,
-        div[data-testid="stRadio"] *,
-        div[aria-label="Forma de observar la Figura 1"] *,
-        div[data-baseweb="select"] * {{
-            color: #0F172A !important;
-            font-weight: 600 !important;
-        }}
-        
-        /* ESTILO ESPECÍFICO PARA BOTONES DE NAVEGACIÓN (ANT Y SIG) */
-        div[data-testid="stColumn"] button {{
-            background-color: {NAVY} !important;
-            color: #FFFFFF !important;
-            border: 1px solid {BORDER} !important;
-            font-weight: 700 !important;
-            border-radius: 8px !important;
-            transition: all 0.2s ease;
-        }}
-        div[data-testid="stColumn"] button * {{
-            color: #FFFFFF !important;
-        }}
-        div[data-testid="stColumn"] button:hover {{
-            background-color: {BLUE} !important;
-            color: #FFFFFF !important;
-            border-color: {BLUE} !important;
-        }}
-
         [data-testid="stSidebar"] {{
             background: linear-gradient(180deg, #0F172A 0%, #172554 100%);
         }}
@@ -80,7 +50,7 @@ st.markdown(
             color: #F8FAFC !important;
         }}
         
-        /* ESTILO PARA LA BARRA LATERAL */
+        /* ESTILO PARA LA BARRA LATERAL (ICONO Y TEXTOS PERFECTAMENTE CENTRADOS) */
         .sidebar-header-box {{
             text-align: center;
             padding: 0.3rem 0 0.8rem 0;
@@ -118,7 +88,7 @@ st.markdown(
             width: 100%;
         }}
 
-        /* ENCABEZADO PRINCIPAL */
+        /* ESTILO PARA EL TÍTULO PRINCIPAL LIGERAMENTE MÁS PEQUEÑO Y CENTRADO */
         .title-container {{
             text-align: center;
             padding: 0.3rem 1rem 0.6rem 1rem;
@@ -249,7 +219,7 @@ st.markdown(
             color: {NAVY} !important;
         }}
         
-        /* CORRECCIÓN VISOR PDF */
+        /* CORRECCIÓN PARA ELIMINAR EL BORDES Y LA FRANJA NEGRA DEL PDF */
         iframe[title="streamlit_pdf_viewer.pdf_viewer"] {{
             background-color: transparent !important;
             width: 100% !important;
@@ -292,7 +262,7 @@ prevalence = {
     2013: [0.0, 9.6, 23.5, 21.4, 16.3, 6.8, 5.9, 5.1, 3.1, 2.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
     2014: [0.0, 0.4, 16.9, 15.9, 11.7, 10.8, 5.0, 0.9, 0.0, 0.7, 2.2, 0.0, 0.0, 0.0, 0.0, 0.0],
     2015: [0.0, 4.2, 16.2, 17.0, 8.9, 5.9, 3.0, 0.9, 1.5, 0.7, 0.0, 0.0, 0.8, 0.0, 0.0, 0.0],
-    2016: [0.0, 9.4, 26.8, 15.2, 5.0, 2.0, 4.0, 0.0, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7],
+    2016: [0.0, 9.4, 26.8, 15.2, 5.0, 2.0, 4.0, 0.0, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7],
     2017: [0.0, 4.3, 21.0, 19.1, 9.0, 8.1, 5.0, 3.8, 3.1, 0.7, 2.0, 0.0, 0.0, 0.0, 0.0, 0.7],
 }
 
