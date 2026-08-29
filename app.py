@@ -6,6 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 import streamlit.components.v1 as components
+from streamlit_pdf_viewer import pdf_viewer
 
 
 # ============================================================
@@ -73,7 +74,6 @@ st.markdown(
             margin-bottom: 0.8rem;
         }}
 
-        /* Tarjetas con texto oscuro 100% visible */
         .card {{
             background: #FFFFFF;
             border: 1px solid {BORDER};
@@ -339,20 +339,6 @@ def article_path():
     return None
 
 
-def pdf_viewer(pdf_bytes, page=1, height=850):
-    encoded = base64.b64encode(pdf_bytes).decode("utf-8")
-    html = f"""
-    <iframe
-        src="data:application/pdf;base64,{encoded}#page={page}&zoom=page-width"
-        width="100%"
-        height="{height}px"
-        style="border:1px solid #CBD5E1;border-radius:12px;background:white;"
-        type="application/pdf">
-    </iframe>
-    """
-    components.html(html, height=height + 15, scrolling=False)
-
-
 def source_box(text):
     st.markdown(f'<div class="source-box">📌 {text}</div>', unsafe_allow_html=True)
 
@@ -500,7 +486,14 @@ with left:
     st.markdown("### 📄 Artículo original")
     st.caption(f"Página mostrada: {current_page} de 15")
     if pdf_bytes is not None:
-        pdf_viewer(pdf_bytes, page=current_page, height=820)
+        # VISOR DE PDF COMPATIBLE CON CHROME
+        pdf_viewer(
+            input=pdf_bytes,
+            page_number=current_page,
+            width=700,
+            height=800,
+            key=f"pdf_page_{current_page}"
+        )
     else:
         st.warning(
             "No se encontró el PDF en la ruta local. Puedes cargarlo manualmente desde el menú lateral."
