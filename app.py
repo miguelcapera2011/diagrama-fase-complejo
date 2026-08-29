@@ -30,7 +30,7 @@ GRAY = "#475569"
 LIGHT = "#F8FAFC"
 BORDER = "#CBD5E1"
 
-# ESTILOS CSS (AJUSTES DE TAMAÑO Y ALINEACIÓN DE ICONO)
+# ESTILOS CSS (AJUSTES DE TAMAÑO, ALINEACIÓN Y COLOR DE TEXTOS EN WIDGETS)
 st.markdown(
     f"""
     <style>
@@ -43,6 +43,17 @@ st.markdown(
             background: {LIGHT};
             color: #0F172A !important;
         }}
+        
+        /* VISIBILIDAD Y COLOR DE TEXTO DE WIDGETS (RADIO, SELECTBOX, CHECKBOX) */
+        div[data-testid="stRadio"] label span {{
+            color: #0F172A !important;
+            font-weight: 600 !important;
+        }}
+        div[data-testid="stRadio"] p {{
+            color: #0F172A !important;
+            font-weight: 700 !important;
+        }}
+        
         [data-testid="stSidebar"] {{
             background: linear-gradient(180deg, #0F172A 0%, #172554 100%);
         }}
@@ -262,7 +273,7 @@ prevalence = {
     2013: [0.0, 9.6, 23.5, 21.4, 16.3, 6.8, 5.9, 5.1, 3.1, 2.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
     2014: [0.0, 0.4, 16.9, 15.9, 11.7, 10.8, 5.0, 0.9, 0.0, 0.7, 2.2, 0.0, 0.0, 0.0, 0.0, 0.0],
     2015: [0.0, 4.2, 16.2, 17.0, 8.9, 5.9, 3.0, 0.9, 1.5, 0.7, 0.0, 0.0, 0.8, 0.0, 0.0, 0.0],
-    2016: [0.0, 9.4, 26.8, 15.2, 5.0, 2.0, 4.0, 0.0, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7],
+    2016: [0.0, 9.4, 26.8, 15.2, 5.0, 2.0, 4.0, 0.0, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7],
     2017: [0.0, 4.3, 21.0, 19.1, 9.0, 8.1, 5.0, 3.8, 3.1, 0.7, 2.0, 0.0, 0.0, 0.0, 0.0, 0.7],
 }
 
