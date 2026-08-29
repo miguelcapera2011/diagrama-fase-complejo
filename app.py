@@ -530,7 +530,7 @@ if not full_screen and right is not None:
         if section == "01 · Introducción":
             section_header(
                 "1",
-                "Entrar al estudio",
+                "Adentrémonos en el estudio",
                 "Antes de hablar de modelos, conozcamos qué estudiaron los autores y dónde ocurrió.",
             )
             a, b = st.columns(2)
