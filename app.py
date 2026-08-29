@@ -10,7 +10,7 @@ from streamlit_pdf_viewer import pdf_viewer
 # CONFIGURACIÓN DE PÁGINA
 # ============================================================
 st.set_page_config(
-    page_title="Del artículo a la evidencia | Intento suicida",
+    page_title="Intento suicida",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -341,11 +341,11 @@ def fmt_num(x):
 # BARRA LATERAL (NAVEGACIÓN)
 # ============================================================
 with st.sidebar:
-    st.markdown("## 📊 DEL ARTÍCULO A LA EVIDENCIA")
-    st.caption("Presentación interactiva del estudio")
+    st.markdown("## 📊 MODELOS LINEALES GENERALIZADOS")
+    st.caption("UNIVERSIDAD DEL TOLIMA")
 
     st.markdown("---")
-    st.markdown("### Navegación")
+    st.markdown("### Contenido:")
     section = st.radio(
         "Etapa de la exposición",
         [
@@ -430,7 +430,7 @@ st.markdown("---")
 # ============================================================
 # CONTROLES Y VISUALIZADOR DE PDF
 # ============================================================
-full_screen = st.checkbox("🔍 Expandir PDF a pantalla completa (Ocultar análisis en texto)")
+full_screen = st.checkbox("🔍 Expandir PDF a pantalla completa ")
 
 # Ajuste de columnas según el modo de pantalla
 if full_screen:
@@ -439,7 +439,7 @@ else:
     left, right = st.columns([1.1, 1.0], gap="large")
 
 with left:
-    st.markdown("### 📄 Visor del PDF")
+    st.markdown("### 📄 Articulo")
 
     # Barra superior de controles del visor
     ctrl_col1, ctrl_col2, ctrl_col3, ctrl_col4 = st.columns([1, 1, 2, 2])
@@ -558,7 +558,7 @@ if not full_screen and right is not None:
 
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown(
-                '<div class="interpretation"><b>Pregunta para abrir la exposición:</b><br>'
+                '<div class="interpretation"><b>Pregunta:</b><br>'
                 '¿Qué diferencias existen entre hombres y mujeres entre los casos de intento de suicidio registrados en Sogamoso y qué variables aparecen asociadas estadísticamente con el género?</div>',
                 unsafe_allow_html=True,
             )
