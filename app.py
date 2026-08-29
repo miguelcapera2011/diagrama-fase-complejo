@@ -389,9 +389,15 @@ def fmt_num(x):
 
 
 # ============================================================
-# CARGA DE PDF
+# CARGA DE PDF CON CONTROL DE ESTADO
 # ============================================================
 local_pdf = article_path()
+
+if "pdf_bytes" not in st.session_state:
+    if local_pdf is not None:
+        st.session_state["pdf_bytes"] = local_pdf.read_bytes()
+    else:
+        st.session_state["pdf_bytes"] = None
 
 with st.sidebar:
     st.markdown("## 📊 DEL ARTÍCULO A LA EVIDENCIA")
@@ -404,11 +410,9 @@ with st.sidebar:
     )
 
     if uploaded is not None:
-        pdf_bytes = uploaded.read()
-    elif local_pdf is not None:
-        pdf_bytes = local_pdf.read_bytes()
-    else:
-        pdf_bytes = None
+        st.session_state["pdf_bytes"] = uploaded.getvalue()
+
+    pdf_bytes = st.session_state["pdf_bytes"]
 
     st.markdown("---")
     st.markdown("### Navegación")
@@ -888,7 +892,7 @@ with right:
             """
             <div class="math-box">
             <b>La ventaja de la transformación Logit:</b><br>
-            Mientras que las probabilidades $p_i$ están acotadas estrictamente en la escala $[0, 1]$, la razón de posibilidades u odds $\\frac{p_i}{1-p_i}$ toma valores en $[0, \\infty)$, y el logaritmo de los odds $\\operatorname{logit}(p_i)$ se extiende libremente en $(-\\infty, +\\infty)$, permitiendo estimar un modelo lineal sin violar límites de probabilidad.
+            Mientras que las probabilidades $p_i$ están acotadas strictly en la escala $[0, 1]$, la razón de posibilidades u odds $\\frac{p_i}{1-p_i}$ toma valores en $[0, \\infty)$, y el logaritmo de los odds $\\operatorname{logit}(p_i)$ se extiende libremente en $(-\\infty, +\\infty)$, permitiendo estimar un modelo lineal sin violar límites de probabilidad.
             </div>
             """,
             unsafe_allow_html=True,
@@ -916,7 +920,6 @@ with right:
 
         st.dataframe(t2_display, use_container_width=True, hide_index=True)
 
-        # Gráfico Forest Plot de ORs
         forest_data = table2_df[table2_df["Variable"] != "Constante"].copy()
 
         fig = go.Figure()
