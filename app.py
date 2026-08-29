@@ -1,11 +1,9 @@
-import base64
 from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-import streamlit.components.v1 as components
 from streamlit_pdf_viewer import pdf_viewer
 
 
@@ -18,6 +16,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# Nombre exacto del archivo subido a la raíz de GitHub
+PDF_FILE_PATH = "intento_suicida.pdf"
 
 # Paleta sobria para una exposición académica
 RED = "#D7263D"
@@ -326,19 +327,6 @@ table2_df = pd.DataFrame(
 # ============================================================
 # FUNCIONES AUXILIARES
 # ============================================================
-def article_path():
-    candidates = [
-        Path("intento suicida(1).pdf"),
-        Path("intento_suicida.pdf"),
-        Path("articulo.pdf"),
-        Path("paper.pdf"),
-    ]
-    for p in candidates:
-        if p.exists():
-            return p
-    return None
-
-
 def source_box(text):
     st.markdown(f'<div class="source-box">📌 {text}</div>', unsafe_allow_html=True)
 
@@ -375,30 +363,11 @@ def fmt_num(x):
 
 
 # ============================================================
-# CARGA DE PDF CON CONTROL DE ESTADO
+# MENÚ LATERAL
 # ============================================================
-local_pdf = article_path()
-
-if "pdf_bytes" not in st.session_state:
-    if local_pdf is not None:
-        st.session_state["pdf_bytes"] = local_pdf.read_bytes()
-    else:
-        st.session_state["pdf_bytes"] = None
-
 with st.sidebar:
     st.markdown("## 📊 DEL ARTÍCULO A LA EVIDENCIA")
     st.caption("Presentación interactiva del estudio")
-
-    uploaded = st.file_uploader(
-        "Si no está en la carpeta, carga aquí el PDF",
-        type=["pdf"],
-        help="Carga el PDF para visualizarlo en vivo durante la exposición.",
-    )
-
-    if uploaded is not None:
-        st.session_state["pdf_bytes"] = uploaded.getvalue()
-
-    pdf_bytes = st.session_state["pdf_bytes"]
 
     st.markdown("---")
     st.markdown("### Navegación")
@@ -485,18 +454,20 @@ left, right = st.columns([1.02, 1.18], gap="large")
 with left:
     st.markdown("### 📄 Artículo original")
     st.caption(f"Página mostrada: {current_page} de 15")
-    if pdf_bytes is not None:
-        # VISOR DE PDF COMPATIBLE CON CHROME
+    
+    pdf_path = Path(PDF_FILE_PATH)
+    if pdf_path.exists():
+        # Llama a pdf_viewer pasándole la ruta como String (posicional)
         pdf_viewer(
-            input=pdf_bytes,
+            str(pdf_path),
             page_number=current_page,
             width=700,
             height=800,
             key=f"pdf_page_{current_page}"
         )
     else:
-        st.warning(
-            "No se encontró el PDF en la ruta local. Puedes cargarlo manualmente desde el menú lateral."
+        st.error(
+            f"No se encontró el archivo '{PDF_FILE_PATH}' en el repositorio. Asegúrate de haberlo subido a GitHub."
         )
 
 with right:
