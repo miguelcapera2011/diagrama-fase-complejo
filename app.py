@@ -1,4 +1,3 @@
-
 from pathlib import Path
 
 import pandas as pd
@@ -17,8 +16,12 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Ruta del archivo PDF en el proyecto
-PDF_FILE_PATH = "intento suicida.pdf"
+# ============================================================
+# LOCALIZACIÓN DINÁMICA DEL ARCHIVO PDF
+# ============================================================
+# Busca el archivo en la misma carpeta donde reside este script (app.py)
+BASE_DIR = Path(__file__).parent if "__file__" in globals() else Path.cwd()
+PDF_FILE_PATH = BASE_DIR / "intento suicida.pdf"
 
 # Paleta de colores sobria
 RED = "#D7263D"
@@ -400,23 +403,34 @@ with left:
     st.markdown("### 📄 Artículo original")
     st.caption(f"Página mostrada: {current_page} de 15")
     
-    pdf_path = Path(PDF_FILE_PATH)
-    if pdf_path.exists():
+    # Búsqueda flexible de archivos por si cambió el nombre exacto
+    possible_files = list(BASE_DIR.glob("*.pdf"))
+    target_pdf = None
+
+    if PDF_FILE_PATH.exists():
+        target_pdf = PDF_FILE_PATH
+    elif len(possible_files) > 0:
+        # Toma el primer PDF encontrado en el directorio si el nombre no coincide exactamente
+        target_pdf = possible_files[0]
+
+    if target_pdf and target_pdf.exists():
         try:
-            # Leer binario garantiza que pdf_viewer renderice correctamente
-            pdf_bytes = pdf_path.read_bytes()
+            # Leer los bytes garantiza que streamlit_pdf_viewer procese el archivo correctamente
+            pdf_bytes = target_pdf.read_bytes()
             pdf_viewer(
-                pdf_bytes,
+                input=pdf_bytes,
                 page_number=current_page,
                 width=700,
                 height=800,
                 key=f"pdf_page_{current_page}"
             )
         except Exception as e:
-            st.error(f"Error al cargar la vista previa del PDF: {e}")
+            st.error(f"Error al renderizar el archivo PDF: {e}")
     else:
         st.error(
-            f"No se encontró el archivo '{PDF_FILE_PATH}'. Asegúrate de ubicarlo en la misma carpeta que este script."
+            "⚠️ **No se encontró el archivo PDF.**\n\n"
+            "Verifica que el archivo exista en la misma carpeta que `app.py` "
+            "y que se llame exactamente `intento suicida.pdf`."
         )
 
 with right:
