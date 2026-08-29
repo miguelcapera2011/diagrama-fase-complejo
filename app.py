@@ -34,7 +34,7 @@ LIGHT = "#F8FAFC"
 BORDER = "#CBD5E1"
 
 # ============================================================
-# ESTILOS CSS (INCLUYE CORRECCIÓN PARA EL VISOR DE PDF)
+# ESTILOS CSS CON ADAPTABILIDAD AUTOMÁTICA DEL PDF
 # ============================================================
 st.markdown(
     f"""
@@ -142,11 +142,6 @@ st.markdown(
             font-weight: 800;
             color: {NAVY} !important;
         }}
-        .small-note {{
-            color: {GRAY} !important;
-            font-size: .85rem;
-            margin-top: 0.4rem;
-        }}
         .big-question {{
             font-size: 1.15rem;
             font-weight: 700;
@@ -167,14 +162,33 @@ st.markdown(
             color: {NAVY} !important;
         }}
         
-        /* AJUSTES PARA ELIMINAR LA FRANJA NEGRA DEL PDF */
-        iframe[title="streamlit_pdf_viewer.pdf_viewer"] {{
-            background-color: transparent !important;
-        }}
+        /* CORRECCIÓN AVANZADA: ADAPTACIÓN Y ELIMINACIÓN DE ESPACIOS SOBRANTES */
         div[data-testid="stCustomComponentV1"] {{
             background-color: transparent !important;
-            margin-bottom: 0px !important;
-            padding-bottom: 0px !important;
+            margin: 0px !important;
+            padding: 0px !important;
+            height: auto !important;
+            line-height: 0 !important;
+        }}
+        iframe[title="streamlit_pdf_viewer.pdf_viewer"] {{
+            background-color: transparent !important;
+            border: none !important;
+            margin: 0px !important;
+            padding: 0px !important;
+            display: block !important;
+        }}
+        .pdf-container-auto {{
+            width: 100%;
+            height: calc(80vh - 100px);
+            min-height: 500px;
+            max-height: 900px;
+            overflow-y: auto;
+            border: 1px solid {BORDER};
+            border-radius: 10px;
+            background: #525659;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }}
     </style>
     """,
@@ -374,11 +388,9 @@ page_map = {
     "11 · Conclusiones": 13,
 }
 
-# Inicialización de estado para la página del PDF
 if "pdf_page" not in st.session_state:
     st.session_state.pdf_page = page_map[section]
 
-# Sincronizar cuando el usuario cambia la sección en la barra lateral
 if "last_section" not in st.session_state or st.session_state.last_section != section:
     st.session_state.pdf_page = page_map[section]
     st.session_state.last_section = section
@@ -411,11 +423,10 @@ with c4:
 st.markdown("---")
 
 # ============================================================
-# CONTROLES Y VISUALIZADOR DE PDF
+# CONTROLES Y VISUALIZADOR DE PDF ADAPTABLE
 # ============================================================
 full_screen = st.checkbox("🔍 Expandir PDF a pantalla completa (Ocultar análisis en texto)")
 
-# Ajuste de columnas según el modo de pantalla
 if full_screen:
     left, right = st.container(), None
 else:
@@ -424,8 +435,7 @@ else:
 with left:
     st.markdown("### 📄 Visor del PDF")
 
-    # Barra superior de controles del visor
-    ctrl_col1, ctrl_col2, ctrl_col3, ctrl_col4 = st.columns([1, 1, 2, 2])
+    ctrl_col1, ctrl_col2, ctrl_col3 = st.columns([1, 1, 2])
 
     with ctrl_col1:
         if st.button("◀ Ant", use_container_width=True):
@@ -449,16 +459,6 @@ with left:
             label_visibility="collapsed",
         )
 
-    with ctrl_col4:
-        viewer_height = st.slider(
-            "Altura (px)",
-            min_value=400,
-            max_value=1200,
-            value=700,
-            step=50,
-            label_visibility="collapsed",
-        )
-
     possible_files = list(BASE_DIR.glob("*.pdf"))
     target_pdf = None
 
@@ -470,23 +470,23 @@ with left:
     if target_pdf and target_pdf.exists():
         try:
             pdf_bytes = target_pdf.read_bytes()
-            # Renderizado adaptativo según parámetros de versión de librería
+            # SE ENVUELVE EL VISOR EN UN CONTENEDOR FLEXIBLE CSS
+            st.markdown('<div class="pdf-container-auto">', unsafe_allow_html=True)
             try:
                 pdf_viewer(
                     input=pdf_bytes,
                     page_to_render=st.session_state.pdf_page,
                     width="100%",
-                    height=viewer_height,
-                    key=f"pdf_page_{st.session_state.pdf_page}_{viewer_height}",
+                    key=f"pdf_page_{st.session_state.pdf_page}",
                 )
             except TypeError:
                 pdf_viewer(
                     input=pdf_bytes,
                     pages_to_render=[st.session_state.pdf_page],
                     width="100%",
-                    height=viewer_height,
-                    key=f"pdf_page_{st.session_state.pdf_page}_{viewer_height}",
+                    key=f"pdf_page_{st.session_state.pdf_page}",
                 )
+            st.markdown('</div>', unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Error al renderizar el archivo PDF: {e}")
     else:
@@ -497,13 +497,10 @@ with left:
         )
 
 # ============================================================
-# COLUMNA DE CONTENIDO (ANALISIS)
+# COLUMNA DE CONTENIDO (ANÁLISIS)
 # ============================================================
 if not full_screen and right is not None:
     with right:
-        # --------------------------------------------------------
-        # 01 INTRODUCCIÓN
-        # --------------------------------------------------------
         if section == "01 · Introducción":
             section_header(
                 "1",
@@ -541,9 +538,6 @@ if not full_screen and right is not None:
             )
             source_box("Resumen y objetivo del artículo.")
 
-        # --------------------------------------------------------
-        # 02 CONTEXTO
-        # --------------------------------------------------------
         elif section == "02 · Contexto y pregunta":
             section_header(
                 "2",
@@ -584,9 +578,6 @@ if not full_screen and right is not None:
             )
             source_box("El artículo define género como la variable de interés.")
 
-        # --------------------------------------------------------
-        # 03 DATOS Y DISEÑO
-        # --------------------------------------------------------
         elif section == "03 · Datos y diseño":
             section_header(
                 "3",
@@ -637,9 +628,6 @@ if not full_screen and right is not None:
             )
             source_box("Materiales y métodos del artículo.")
 
-        # --------------------------------------------------------
-        # 04 PREVALENCIA
-        # --------------------------------------------------------
         elif section == "04 · Prevalencia":
             section_header(
                 "4",
@@ -726,9 +714,6 @@ if not full_screen and right is not None:
 
             source_box("Figura 1 y texto de resultados del artículo.")
 
-        # --------------------------------------------------------
-        # 05 TABLA 1
-        # --------------------------------------------------------
         elif section == "05 · Tabla 1 · Descriptivos":
             section_header(
                 "5",
@@ -780,9 +765,6 @@ if not full_screen and right is not None:
 
             source_box("Tabla 1 del artículo.")
 
-        # --------------------------------------------------------
-        # 06 MODELO LOGÍSTICO
-        # --------------------------------------------------------
         elif section == "06 · Modelo logístico":
             section_header(
                 "6",
@@ -832,9 +814,6 @@ if not full_screen and right is not None:
                 unsafe_allow_html=True,
             )
 
-        # --------------------------------------------------------
-        # 07 TABLA 2 - MODELO FINAL
-        # --------------------------------------------------------
         elif section == "07 · Tabla 2 · Modelo final":
             section_header(
                 "7",
@@ -854,9 +833,6 @@ if not full_screen and right is not None:
 
             source_box("Tabla 2 del artículo.")
 
-        # --------------------------------------------------------
-        # 08 INTERPRETACIÓN DEL OR
-        # --------------------------------------------------------
         elif section == "08 · Interpretación del OR":
             section_header(
                 "8",
@@ -883,9 +859,6 @@ if not full_screen and right is not None:
                 unsafe_allow_html=True,
             )
 
-        # --------------------------------------------------------
-        # 09 EVALUACIÓN DEL MODELO
-        # --------------------------------------------------------
         elif section == "09 · Evaluación del modelo":
             section_header(
                 "9",
@@ -909,9 +882,6 @@ if not full_screen and right is not None:
 
             source_box("Métodos de evaluación presentados en la discusión del texto.")
 
-        # --------------------------------------------------------
-        # 10 DISCUSIÓN
-        # --------------------------------------------------------
         elif section == "10 · Discusión":
             section_header(
                 "10",
@@ -931,9 +901,6 @@ if not full_screen and right is not None:
                 unsafe_allow_html=True,
             )
 
-        # --------------------------------------------------------
-        # 11 CONCLUSIONES
-        # --------------------------------------------------------
         elif section == "11 · Conclusiones":
             section_header(
                 "11",
