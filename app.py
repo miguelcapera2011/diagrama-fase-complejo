@@ -19,7 +19,6 @@ st.set_page_config(
 # ============================================================
 # LOCALIZACIÓN DINÁMICA DEL ARCHIVO PDF
 # ============================================================
-# Busca el archivo en la misma carpeta donde reside este script (app.py)
 BASE_DIR = Path(__file__).parent if "__file__" in globals() else Path.cwd()
 PDF_FILE_PATH = BASE_DIR / "intento suicida.pdf"
 
@@ -403,27 +402,34 @@ with left:
     st.markdown("### 📄 Artículo original")
     st.caption(f"Página mostrada: {current_page} de 15")
     
-    # Búsqueda flexible de archivos por si cambió el nombre exacto
     possible_files = list(BASE_DIR.glob("*.pdf"))
     target_pdf = None
 
     if PDF_FILE_PATH.exists():
         target_pdf = PDF_FILE_PATH
     elif len(possible_files) > 0:
-        # Toma el primer PDF encontrado en el directorio si el nombre no coincide exactamente
         target_pdf = possible_files[0]
 
     if target_pdf and target_pdf.exists():
         try:
-            # Leer los bytes garantiza que streamlit_pdf_viewer procese el archivo correctamente
             pdf_bytes = target_pdf.read_bytes()
-            pdf_viewer(
-                input=pdf_bytes,
-                page_number=current_page,
-                width=700,
-                height=800,
-                key=f"pdf_page_{current_page}"
-            )
+            # Intenta renderizar probando los nombres de parámetro compatibles según la versión
+            try:
+                pdf_viewer(
+                    input=pdf_bytes,
+                    page_to_render=current_page,
+                    width=700,
+                    height=800,
+                    key=f"pdf_page_{current_page}"
+                )
+            except TypeError:
+                pdf_viewer(
+                    input=pdf_bytes,
+                    pages_to_render=[current_page],
+                    width=700,
+                    height=800,
+                    key=f"pdf_page_{current_page}"
+                )
         except Exception as e:
             st.error(f"Error al renderizar el archivo PDF: {e}")
     else:
