@@ -162,7 +162,7 @@ st.markdown(
             color: {NAVY} !important;
         }}
 
-        /* ESTILOS PARA LOS BOTONES DE NAVEGACIÓN PDF (TEXTO BLANCO) */
+        /* ESTILOS PARA LOS BOTONES DE NAVEGACIÓN PDF (COLOR MODIFICADO CON ANCHO Y ALINEACIÓN CONSERVADOS) */
         .pdf-btn div[data-testid="stButton"] > button {{
             background-color: {NAVY} !important;
             color: #FFFFFF !important;
@@ -436,12 +436,12 @@ else:
 with left:
     st.markdown("### 📄 Visor del PDF")
 
-    # Barra superior de controles del visor
-    ctrl_col1, ctrl_col2, ctrl_col3 = st.columns([1.2, 1.2, 2])
+    # Control de la navegación con diseño estandarizado
+    ctrl_col1, ctrl_col2, ctrl_col3 = st.columns([1, 1, 2])
 
     with ctrl_col1:
         st.markdown('<div class="pdf-btn">', unsafe_allow_html=True)
-        if st.button("◀ Ant", use_container_width=True):
+        if st.button("◀ Ant", key="btn_pdf_ant", use_container_width=True):
             if st.session_state.pdf_page > 1:
                 st.session_state.pdf_page -= 1
                 st.rerun()
@@ -449,7 +449,7 @@ with left:
 
     with ctrl_col2:
         st.markdown('<div class="pdf-btn">', unsafe_allow_html=True)
-        if st.button("Sig ▶", use_container_width=True):
+        if st.button("Sig ▶", key="btn_pdf_sig", use_container_width=True):
             if st.session_state.pdf_page < 15:
                 st.session_state.pdf_page += 1
                 st.rerun()
@@ -476,7 +476,6 @@ with left:
     if target_pdf and target_pdf.exists():
         try:
             pdf_bytes = target_pdf.read_bytes()
-            # Renderizado adaptativo sin forzado de alto para eliminar franja negra inferior
             try:
                 pdf_viewer(
                     input=pdf_bytes,
@@ -826,58 +825,59 @@ if not full_screen and right is not None:
                 """
             )
 
+        # --------------------------------------------------------
+        # 07 TABLA 2
+        # --------------------------------------------------------
+        elif section == "07 · Tabla 2 · Modelo final":
+            section_header(
+                "7",
+                "Tabla 2: Modelo de Regresión Logística Final",
+                "Estimaciones multivariadas y significancia estadística.",
+            )
+
+            display_t2 = table2_df.copy()
+            display_t2["p"] = display_t2["p"].map(fmt_p)
+            display_t2["B"] = display_t2["B"].map(fmt_num)
+            display_t2["Wald"] = display_t2["Wald"].map(fmt_num)
+            display_t2["OR"] = display_t2["OR"].map(fmt_num)
+            display_t2["IC95% inf."] = display_t2["IC95% inf."].map(fmt_num)
+            display_t2["IC95% sup."] = display_t2["IC95% sup."].map(fmt_num)
+
+            st.dataframe(display_t2, use_container_width=True, hide_index=True)
+            source_box("Tabla 2 del artículo.")
+
+        # --------------------------------------------------------
+        # 08 INTERPRETACIÓN OR
+        # --------------------------------------------------------
+        elif section == "08 · Interpretación del OR":
+            section_header(
+                "8",
+                "Interpretación del Odds Ratio (OR)",
+                "Significado práctico de las estimaciones exponenciadas.",
+            )
+
             st.markdown(
                 """
                 <div class="math-box">
-                <b>La ventaja de la transformación Logit:</b><br>
-                Permite relacionar de forma lineal los predictores con el logaritmo de la ventaja (Odds), acotando la probabilidad final siempre entre 0 y 1.
+                <b>Definición:</b><br>
+                El Odds Ratio mide la asociación entre una variable independiente y el evento de interés.
+                <br><br>
+                $$\text{OR} = e^{\beta}$$
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-        # --------------------------------------------------------
-        # 07 TABLA 2 - MODELO FINAL
-        # --------------------------------------------------------
-        elif section == "07 · Tabla 2 · Modelo final":
-            section_header(
-                "7",
-                "Tabla 2: Modelo de Regresión Logística Multivariado",
-                "Variables finales seleccionadas en el modelo ajustado.",
-            )
-
-            df_display = table2_df.copy()
-            df_display["B"] = df_display["B"].map(fmt_num)
-            df_display["Wald"] = df_display["Wald"].map(fmt_num)
-            df_display["p"] = df_display["p"].map(fmt_p)
-            df_display["OR"] = df_display["OR"].map(fmt_num)
-            df_display["IC95% inf."] = df_display["IC95% inf."].map(fmt_num)
-            df_display["IC95% sup."] = df_display["IC95% sup."].map(fmt_num)
-
-            st.dataframe(df_display, use_container_width=True, hide_index=True)
-            source_box("Resultados del modelo multivariado expuestos en la Tabla 2.")
-
-        # --------------------------------------------------------
-        # 08 INTERPRETACIÓN DEL OR
-        # --------------------------------------------------------
-        elif section == "08 · Interpretación del OR":
-            section_header(
-                "8",
-                "Interpretación de Odds Ratio (OR)",
-                "¿Cómo interpretar los coeficientes exponenciados?",
-            )
-
             card(
-                "Consumo de alcohol (OR = 3.58)",
-                "Los hombres presentan una probabilidad (odds) <b>3.58 veces mayor</b> de registrar consumo de alcohol asociado al evento en comparación con las mujeres, ajustando por las demás variables.",
-                "🍺",
+                "Interpretación clave:",
+                "<ul>"
+                "<li><b>OR > 1:</b> Mayor oportunidad/asociación con ser Hombre.</li>"
+                "<li><b>OR < 1:</b> Menor oportunidad (asociación protectora o mayor en Mujeres).</li>"
+                "<li><b>OR = 1:</b> Sin asociación.</li>"
+                "</ul>",
+                "💡",
             )
-            st.markdown("<br>", unsafe_allow_html=True)
-            card(
-                "Adolescencia (OR = 0.35)",
-                "Estar en el grupo de adolescencia se asocia con un <b>OR de 0.35</b>, lo que indica que es menos probable que el caso corresponda a un hombre en comparación con el grupo de referencia (mayor presencia proporcional en mujeres).",
-                "🧒",
-            )
+            source_box("Sección de resultados y discusión del artículo.")
 
         # --------------------------------------------------------
         # 09 EVALUACIÓN DEL MODELO
@@ -885,14 +885,24 @@ if not full_screen and right is not None:
         elif section == "09 · Evaluación del modelo":
             section_header(
                 "9",
-                "Evaluación de Ajuste del Modelo",
-                "Métricas globales de bondad de ajuste del modelo.",
+                "Evaluación del Modelo",
+                "Criterios de ajuste e inferencia sobre el modelo.",
             )
+
             a, b = st.columns(2)
             with a:
-                card("Prueba de Hosmer-Lemeshow", "<b>p > 0.05</b> (Buen ajuste global)", "🧪")
+                card(
+                    "Prueba de Wald",
+                    "Evalúa si cada coeficiente de la regresión es estadísticamente diferente de cero.",
+                    "🧪",
+                )
             with b:
-                card("Capacidad de Clasificación", "Porcentaje global de clasificación correcta reportado en el estudio.", "🎯")
+                card(
+                    "Intervalos de Confianza (IC 95%)",
+                    "Permiten verificar la precisión de la estimación. Si el IC incluye al 1, la variable no es estadísticamente significativa.",
+                    "📏",
+                )
+            source_box("Discusión metodológica del estudio.")
 
         # --------------------------------------------------------
         # 10 DISCUSIÓN
@@ -901,11 +911,15 @@ if not full_screen and right is not None:
             section_header(
                 "10",
                 "Discusión",
-                "Contraste de los hallazgos con la literatura disponible.",
+                "Contraste de hallazgos con la literatura existente.",
             )
-            st.write(
-                "Los resultados concuerdan con la paradoja de género en la conducta suicida: las mujeres reportan una mayor frecuencia de intentos no fatales (especialmente en edades tempranas y mediante intoxicación por medicamentos), mientras que en los hombres existen factores de riesgo asociados como el consumo de alcohol."
+
+            card(
+                "Hallazgos Principales",
+                "Se evidencia una marcada diferencia de género tanto en desencadenantes como en patrones de consumo de alcohol. El consumo de alcohol incrementa significativamente la asociación con el sexo masculino, mientras que factores emocionales y dinámicas familiares se asociaron en mayor proporción con el sexo femenino.",
+                "💬",
             )
+            source_box("Sección de Discusión del artículo.")
 
         # --------------------------------------------------------
         # 11 CONCLUSIONES
@@ -913,13 +927,15 @@ if not full_screen and right is not None:
         elif section == "11 · Conclusiones":
             section_header(
                 "11",
-                "Conclusiones y Recomendaciones",
-                "Cierre de la exposición.",
+                "Conclusiones",
+                "Cierre de la investigación y recomendaciones.",
             )
+
             card(
-                "Puntos Clave",
-                "• La caracterización de factores asociados por sexo permite diseñar intervenciones diferenciadas en salud pública.<br>"
-                "• Los adolescentes representan un grupo prioritario de prevención en Sogamoso.<br>"
-                "• El consumo de alcohol requiere abordaje integral como determinante clave en los casos masculinos.",
+                "Conclusiones Clave",
+                "1. La regresión logística binaria permitió identificar patrones diferenciados entre hombres y mujeres.<br>"
+                "2. La focalización de intervenciones de salud pública debe considerar el ciclo vital y factores como el consumo de alcohol y dinámicas familiares.<br>"
+                "3. Los datos del SIVIGILA son un insumo valioso para la toma de decisiones en el ámbito municipal.",
                 "📌",
             )
+            source_box("Sección de Conclusiones del artículo.")
