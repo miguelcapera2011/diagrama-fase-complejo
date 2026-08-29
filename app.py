@@ -167,14 +167,31 @@ st.markdown(
             color: {NAVY} !important;
         }}
         
-        /* AJUSTES PARA ELIMINAR LA FRANJA NEGRA DEL PDF */
+        /* CORRECCIÓN PARA ELIMINAR EL BORDES Y LA FRANJA NEGRA DEL PDF */
         iframe[title="streamlit_pdf_viewer.pdf_viewer"] {{
             background-color: transparent !important;
+            width: 100% !important;
+            border: none !important;
         }}
         div[data-testid="stCustomComponentV1"] {{
             background-color: transparent !important;
             margin-bottom: 0px !important;
             padding-bottom: 0px !important;
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+        }}
+        .pdf-canvas-container, .pdf-viewer-container, .sdv-container {{
+            background-color: transparent !important;
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+        }}
+        canvas.pdf-canvas {{
+            max-width: 100% !important;
+            height: auto !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
         }}
     </style>
     """,
@@ -470,13 +487,16 @@ with left:
     if target_pdf and target_pdf.exists():
         try:
             pdf_bytes = target_pdf.read_bytes()
-            # Renderizado adaptativo según parámetros de versión de librería
+            
+            # Envoltura en un div personalizado para forzar el ajuste al 100% de ancho sin fondo negro
+            st.markdown('<div class="pdf-viewer-container">', unsafe_allow_html=True)
             try:
                 pdf_viewer(
                     input=pdf_bytes,
                     page_to_render=st.session_state.pdf_page,
                     width="100%",
                     height=viewer_height,
+                    render_text=False,
                     key=f"pdf_page_{st.session_state.pdf_page}_{viewer_height}",
                 )
             except TypeError:
@@ -485,8 +505,11 @@ with left:
                     pages_to_render=[st.session_state.pdf_page],
                     width="100%",
                     height=viewer_height,
+                    render_text=False,
                     key=f"pdf_page_{st.session_state.pdf_page}_{viewer_height}",
                 )
+            st.markdown('</div>', unsafe_allow_html=True)
+            
         except Exception as e:
             st.error(f"Error al renderizar el archivo PDF: {e}")
     else:
@@ -831,126 +854,3 @@ if not full_screen and right is not None:
                 """,
                 unsafe_allow_html=True,
             )
-
-        # --------------------------------------------------------
-        # 07 TABLA 2 - MODELO FINAL
-        # --------------------------------------------------------
-        elif section == "07 · Tabla 2 · Modelo final":
-            section_header(
-                "7",
-                "Tabla 2: Modelo de Regresión Logística Multivariado",
-                "Variables finales seleccionadas en el modelo ajustado.",
-            )
-
-            df_display = table2_df.copy()
-            df_display["B"] = df_display["B"].map(fmt_num)
-            df_display["Wald"] = df_display["Wald"].map(fmt_num)
-            df_display["p"] = df_display["p"].map(fmt_p)
-            df_display["OR"] = df_display["OR"].map(fmt_num)
-            df_display["IC95% inf."] = df_display["IC95% inf."].map(fmt_num)
-            df_display["IC95% sup."] = df_display["IC95% sup."].map(fmt_num)
-
-            st.dataframe(df_display, use_container_width=True, hide_index=True)
-
-            source_box("Tabla 2 del artículo.")
-
-        # --------------------------------------------------------
-        # 08 INTERPRETACIÓN DEL OR
-        # --------------------------------------------------------
-        elif section == "08 · Interpretación del OR":
-            section_header(
-                "8",
-                "Interpretación del Odds Ratio (OR)",
-                "Comprensión de los coeficientes de riesgo del modelo ajustado.",
-            )
-
-            card(
-                "¿Qué es el OR en regresión logística?",
-                "Mide cuánto cambian las probabilidades de que ocurra la respuesta (género masculino) en presencia de una variable independiente en comparación con su categoría de referencia.<br><br>"
-                "• <b>OR > 1:</b> Mayor asociación con el grupo masculino.<br>"
-                "• <b>OR < 1:</b> Menor asociación con el grupo masculino (mayor asociación con el femenino).",
-                "💡",
-            )
-
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(
-                """
-                <div class="math-box">
-                <b>Ejemplo clave (Consumo de alcohol):</b><br>
-                El consumo de alcohol presentó un <b>OR = 3.58</b> (IC 95%: 2.17 - 5.90, p < 0.001). Esto indica que los hombres tienen 3.58 veces más probabilidades que las mujeres de presentar consumo de alcohol asociado al intento de suicidio.
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        # --------------------------------------------------------
-        # 09 EVALUACIÓN DEL MODELO
-        # --------------------------------------------------------
-        elif section == "09 · Evaluación del modelo":
-            section_header(
-                "9",
-                "Evaluación y bondad de ajuste del modelo",
-                "Criterios utilizados para medir la capacidad explicativa y ajuste.",
-            )
-
-            a, b = st.columns(2)
-            with a:
-                card(
-                    "Prueba de Hosmer-Lemeshow",
-                    "Evalúa el ajuste global del modelo. Un valor p > 0.05 indica que los datos observados se ajustan adecuadamente al modelo predicho.",
-                    "📊",
-                )
-            with b:
-                card(
-                    "Estadístico de Wald",
-                    "Permite comprobar la significación de cada coeficiente individual (Beta) dentro del modelo.",
-                    "📈",
-                )
-
-            source_box("Métodos de evaluación presentados en la discusión del texto.")
-
-        # --------------------------------------------------------
-        # 10 DISCUSIÓN
-        # --------------------------------------------------------
-        elif section == "10 · Discusión":
-            section_header(
-                "10",
-                "Discusión",
-                "Contrastando hallazgos locales con la literatura internacional.",
-            )
-
-            st.markdown(
-                """
-                <div class="card">
-                <h4>🧠 Implicaciones principales</h4>
-                <p>
-                Los hallazgos muestran patrones diferenciales significativos entre hombres y mujeres. Mientras las mujeres tienden a concentrarse en edades más jóvenes (adolescencia) e intentos relacionados con conflictos familiares/pareja o intoxicaciones por medicamentos, los hombres presentan una mayor asociación con el consumo de alcohol y métodos con mayor letalidad.
-                </p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        # --------------------------------------------------------
-        # 11 CONCLUSIONES
-        # --------------------------------------------------------
-        elif section == "11 · Conclusiones":
-            section_header(
-                "11",
-                "Conclusiones y recomendaciones",
-                "Cierre de la exposición orientando la evidencia hacia la salud pública.",
-            )
-
-            a, b = st.columns(2)
-            with a:
-                card(
-                    "Enfoque de género",
-                    "Es indispensable que los programas de prevención diferencien estrategias entre hombres y mujeres dadas las diferencias en factores desencadenantes y conductas de riesgo.",
-                    "📌",
-                )
-            with b:
-                card(
-                    "Atención prioritaria",
-                    "Fortalecer la atención en adolescentes y jóvenes, así como el control y abordaje del consumo de sustancias y alcohol en la comunidad.",
-                    "🚨",
-                )
