@@ -34,7 +34,7 @@ LIGHT = "#F8FAFC"
 BORDER = "#CBD5E1"
 
 # ============================================================
-# ESTILOS CSS
+# ESTILOS CSS (INCLUYE CORRECCIÓN PARA EL VISOR DE PDF)
 # ============================================================
 st.markdown(
     f"""
@@ -165,6 +165,16 @@ st.markdown(
         }}
         div[data-testid="stMetric"] * {{
             color: {NAVY} !important;
+        }}
+        
+        /* AJUSTES PARA ELIMINAR LA FRANJA NEGRA DEL PDF */
+        iframe[title="streamlit_pdf_viewer.pdf_viewer"] {{
+            background-color: transparent !important;
+        }}
+        div[data-testid="stCustomComponentV1"] {{
+            background-color: transparent !important;
+            margin-bottom: 0px !important;
+            padding-bottom: 0px !important;
         }}
     </style>
     """,
@@ -442,10 +452,10 @@ with left:
     with ctrl_col4:
         viewer_height = st.slider(
             "Altura (px)",
-            min_value=600,
-            max_value=1400,
-            value=1000,
-            step=100,
+            min_value=400,
+            max_value=1200,
+            value=700,
+            step=50,
             label_visibility="collapsed",
         )
 
@@ -841,7 +851,8 @@ if not full_screen and right is not None:
             df_display["IC95% sup."] = df_display["IC95% sup."].map(fmt_num)
 
             st.dataframe(df_display, use_container_width=True, hide_index=True)
-            source_box("Resultados del modelo multivariado expuestos en la Tabla 2.")
+
+            source_box("Tabla 2 del artículo.")
 
         # --------------------------------------------------------
         # 08 INTERPRETACIÓN DEL OR
@@ -849,20 +860,27 @@ if not full_screen and right is not None:
         elif section == "08 · Interpretación del OR":
             section_header(
                 "8",
-                "Interpretación de Odds Ratio (OR)",
-                "¿Cómo interpretar los coeficientes exponenciados?",
+                "Interpretación del Odds Ratio (OR)",
+                "Comprensión de los coeficientes de riesgo del modelo ajustado.",
             )
 
             card(
-                "Consumo de alcohol (OR = 3.58)",
-                "Los hombres presentan una probabilidad (odds) <b>3.58 veces mayor</b> de registrar consumo de alcohol asociado al evento en comparación con las mujeres, ajustando por las demás variables.",
-                "🍺",
+                "¿Qué es el OR en regresión logística?",
+                "Mide cuánto cambian las probabilidades de que ocurra la respuesta (género masculino) en presencia de una variable independiente en comparación con su categoría de referencia.<br><br>"
+                "• <b>OR > 1:</b> Mayor asociación con el grupo masculino.<br>"
+                "• <b>OR < 1:</b> Menor asociación con el grupo masculino (mayor asociación con el femenino).",
+                "💡",
             )
+
             st.markdown("<br>", unsafe_allow_html=True)
-            card(
-                "Adolescencia (OR = 0.35)",
-                "Estar en el grupo de adolescencia se asocia con un <b>OR de 0.35</b>, lo que indica que es menos probable que el caso corresponda a un hombre en comparación con el grupo de referencia (mayor presencia proporcional en mujeres).",
-                "🧒",
+            st.markdown(
+                """
+                <div class="math-box">
+                <b>Ejemplo clave (Consumo de alcohol):</b><br>
+                El consumo de alcohol presentó un <b>OR = 3.58</b> (IC 95%: 2.17 - 5.90, p < 0.001). Esto indica que los hombres tienen 3.58 veces más probabilidades que las mujeres de presentar consumo de alcohol asociado al intento de suicidio.
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
 
         # --------------------------------------------------------
@@ -871,14 +889,25 @@ if not full_screen and right is not None:
         elif section == "09 · Evaluación del modelo":
             section_header(
                 "9",
-                "Evaluación de Ajuste del Modelo",
-                "Métricas globales de bondad de ajuste del modelo.",
+                "Evaluación y bondad de ajuste del modelo",
+                "Criterios utilizados para medir la capacidad explicativa y ajuste.",
             )
+
             a, b = st.columns(2)
             with a:
-                card("Prueba de Hosmer-Lemeshow", "<b>p > 0.05</b> (Buen ajuste global)", "🧪")
+                card(
+                    "Prueba de Hosmer-Lemeshow",
+                    "Evalúa el ajuste global del modelo. Un valor p > 0.05 indica que los datos observados se ajustan adecuadamente al modelo predicho.",
+                    "📊",
+                )
             with b:
-                card("Capacidad de Clasificación", "Porcentaje global de clasificación correcta reportado en el estudio.", "🎯")
+                card(
+                    "Estadístico de Wald",
+                    "Permite comprobar la significación de cada coeficiente individual (Beta) dentro del modelo.",
+                    "📈",
+                )
+
+            source_box("Métodos de evaluación presentados en la discusión del texto.")
 
         # --------------------------------------------------------
         # 10 DISCUSIÓN
@@ -887,10 +916,19 @@ if not full_screen and right is not None:
             section_header(
                 "10",
                 "Discusión",
-                "Contraste de los hallazgos con la literatura disponible.",
+                "Contrastando hallazgos locales con la literatura internacional.",
             )
-            st.write(
-                "Los resultados concuerdan con la paradoja de género en la conducta suicida: las mujeres reportan una mayor frecuencia de intentos no fatales (especialmente en edades tempranas y mediante intoxicación por medicamentos), mientras que en los hombres existen factores de riesgo asociados como el consumo de alcohol."
+
+            st.markdown(
+                """
+                <div class="card">
+                <h4>🧠 Implicaciones principales</h4>
+                <p>
+                Los hallazgos muestran patrones diferenciales significativos entre hombres y mujeres. Mientras las mujeres tienden a concentrarse en edades más jóvenes (adolescencia) e intentos relacionados con conflictos familiares/pareja o intoxicaciones por medicamentos, los hombres presentan una mayor asociación con el consumo de alcohol y métodos con mayor letalidad.
+                </p>
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
 
         # --------------------------------------------------------
@@ -899,13 +937,20 @@ if not full_screen and right is not None:
         elif section == "11 · Conclusiones":
             section_header(
                 "11",
-                "Conclusiones y Recomendaciones",
-                "Cierre de la exposición.",
+                "Conclusiones y recomendaciones",
+                "Cierre de la exposición orientando la evidencia hacia la salud pública.",
             )
-            card(
-                "Puntos Clave",
-                "• La caracterización de factores asociados por sexo permite diseñar intervenciones diferenciadas en salud pública.<br>"
-                "• Los adolescentes representan un grupo prioritario de prevención en Sogamoso.<br>"
-                "• El consumo de alcohol requiere abordaje integral como determinante clave en los casos masculinos.",
-                "📌",
-            )
+
+            a, b = st.columns(2)
+            with a:
+                card(
+                    "Enfoque de género",
+                    "Es indispensable que los programas de prevención diferencien estrategias entre hombres y mujeres dadas las diferencias en factores desencadenantes y conductas de riesgo.",
+                    "📌",
+                )
+            with b:
+                card(
+                    "Atención prioritaria",
+                    "Fortalecer la atención en adolescentes y jóvenes, así como el control y abordaje del consumo de sustancias y alcohol en la comunidad.",
+                    "🚨",
+                )
