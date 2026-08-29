@@ -30,7 +30,7 @@ GRAY = "#475569"
 LIGHT = "#F8FAFC"
 BORDER = "#CBD5E1"
 
-# ESTILOS CSS (AJUSTES DE TAMAÑO, ALINEACIÓN Y COLOR DE TEXTOS EN WIDGETS)
+# ESTILOS CSS (AJUSTES DE VISIBILIDAD DE CONTROLES, NAVEGACIÓN Y WIDGETS)
 st.markdown(
     f"""
     <style>
@@ -44,16 +44,35 @@ st.markdown(
             color: #0F172A !important;
         }}
         
-        /* VISIBILIDAD Y COLOR DE TEXTO DE WIDGETS (RADIO, SELECTBOX, CHECKBOX) */
-        div[data-testid="stRadio"] label span {{
+        /* FIX GENERAL DE VISIBILIDAD DE SELECTS, RADIOS Y LABLES EN EL CONTENIDO */
+        div[data-testid="stMarkdownContainer"] *,
+        div[data-testid="stWidgetLabel"] *,
+        div[data-testid="stSelectbox"] *,
+        div[data-testid="stRadio"] *,
+        div[aria-label="Forma de observar la Figura 1"] *,
+        div[data-baseweb="select"] * {{
             color: #0F172A !important;
             font-weight: 600 !important;
         }}
-        div[data-testid="stRadio"] p {{
-            color: #0F172A !important;
-            font-weight: 700 !important;
-        }}
         
+        /* ESTILO ESPECÍFICO PARA BOTONES DE NAVEGACIÓN (ANT Y SIG) */
+        div[data-testid="stColumn"] button {{
+            background-color: {NAVY} !important;
+            color: #FFFFFF !important;
+            border: 1px solid {BORDER} !important;
+            font-weight: 700 !important;
+            border-radius: 8px !important;
+            transition: all 0.2s ease;
+        }}
+        div[data-testid="stColumn"] button * {{
+            color: #FFFFFF !important;
+        }}
+        div[data-testid="stColumn"] button:hover {{
+            background-color: {BLUE} !important;
+            color: #FFFFFF !important;
+            border-color: {BLUE} !important;
+        }}
+
         [data-testid="stSidebar"] {{
             background: linear-gradient(180deg, #0F172A 0%, #172554 100%);
         }}
@@ -61,7 +80,7 @@ st.markdown(
             color: #F8FAFC !important;
         }}
         
-        /* ESTILO PARA LA BARRA LATERAL (ICONO Y TEXTOS PERFECTAMENTE CENTRADOS) */
+        /* ESTILO PARA LA BARRA LATERAL */
         .sidebar-header-box {{
             text-align: center;
             padding: 0.3rem 0 0.8rem 0;
@@ -99,7 +118,7 @@ st.markdown(
             width: 100%;
         }}
 
-        /* ESTILO PARA EL TÍTULO PRINCIPAL LIGERAMENTE MÁS PEQUEÑO Y CENTRADO */
+        /* ENCABEZADO PRINCIPAL */
         .title-container {{
             text-align: center;
             padding: 0.3rem 1rem 0.6rem 1rem;
@@ -230,7 +249,7 @@ st.markdown(
             color: {NAVY} !important;
         }}
         
-        /* CORRECCIÓN PARA ELIMINAR EL BORDES Y LA FRANJA NEGRA DEL PDF */
+        /* CORRECCIÓN VISOR PDF */
         iframe[title="streamlit_pdf_viewer.pdf_viewer"] {{
             background-color: transparent !important;
             width: 100% !important;
