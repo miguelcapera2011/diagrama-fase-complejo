@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # Nombre exacto del archivo subido a la raíz de GitHub
-PDF_FILE_PATH = "intento_suicida.pdf"
+PDF_FILE_PATH = "intento suicida.pdf"
 
 # Paleta sobria para una exposición académica
 RED = "#D7263D"
