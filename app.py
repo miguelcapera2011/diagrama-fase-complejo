@@ -6,9 +6,8 @@ import plotly.graph_objects as go
 import streamlit as st
 from streamlit_pdf_viewer import pdf_viewer
 
-# ============================================================
+
 # CONFIGURACIÓN DE PÁGINA
-# ============================================================
 st.set_page_config(
     page_title="Intento suicida",
     page_icon="📊",
@@ -16,9 +15,8 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ============================================================
 # LOCALIZACIÓN DINÁMICA DEL ARCHIVO PDF
-# ============================================================
+
 BASE_DIR = Path(__file__).parent if "__file__" in globals() else Path.cwd()
 PDF_FILE_PATH = BASE_DIR / "intento suicida.pdf"
 
@@ -33,9 +31,8 @@ GRAY = "#475569"
 LIGHT = "#F8FAFC"
 BORDER = "#CBD5E1"
 
-# ============================================================
 # ESTILOS CSS (INCLUYE CORRECCIÓN PARA EL VISOR DE PDF)
-# ============================================================
+
 st.markdown(
     f"""
     <style>
@@ -198,9 +195,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ============================================================
 # ESTRUCTURAS DE DATOS DE TABLAS Y PREVALENCIA
-# ============================================================
+
 age_groups = [
     "5 a 9", "10 a 14", "15 a 19", "20 a 24", "25 a 29",
     "30 a 34", "35 a 39", "40 a 44", "45 a 49", "50 a 54",
@@ -299,9 +295,9 @@ table2_df = pd.DataFrame(
     columns=["Variable", "Categoría", "B", "Wald", "p", "OR", "IC95% inf.", "IC95% sup."]
 )
 
-# ============================================================
+
 # FUNCIONES AUXILIARES
-# ============================================================
+
 def source_box(text):
     st.markdown(f'<div class="source-box">📌 {text}</div>', unsafe_allow_html=True)
 
@@ -337,9 +333,8 @@ def fmt_num(x):
     return f"{x:.2f}".replace(".", ",")
 
 
-# ============================================================
 # BARRA LATERAL (NAVEGACIÓN)
-# ============================================================
+
 with st.sidebar:
     st.markdown("## 📊 MODELOS LINEALES GENERALIZADOS")
     st.caption("UNIVERSIDAD DEL TOLIMA")
@@ -400,9 +395,8 @@ if "last_section" not in st.session_state or st.session_state.last_section != se
     st.session_state.pdf_page = page_map[section]
     st.session_state.last_section = section
 
-# ============================================================
 # ENCABEZADO PRINCIPAL
-# ============================================================
+
 st.markdown(
     '<div class="main-title">Intento suicida: un análisis municipal de factores asociados 2012–2017</div>',
     unsafe_allow_html=True,
@@ -427,9 +421,8 @@ with c4:
 
 st.markdown("---")
 
-# ============================================================
 # CONTROLES Y VISUALIZADOR DE PDF
-# ============================================================
+
 full_screen = st.checkbox("🔍 Expandir PDF a pantalla completa ")
 
 # Ajuste de columnas según el modo de pantalla
@@ -519,14 +512,14 @@ with left:
             "y que se llame exactamente `intento suicida.pdf`."
         )
 
-# ============================================================
+
 # COLUMNA DE CONTENIDO (ANALISIS)
 # ============================================================
 if not full_screen and right is not None:
     with right:
-        # --------------------------------------------------------
+    
         # 01 INTRODUCCIÓN
-        # --------------------------------------------------------
+       
         if section == "01 · Introducción":
             section_header(
                 "1",
@@ -564,7 +557,7 @@ if not full_screen and right is not None:
             )
             source_box("Resumen y objetivo del artículo.")
 
-        # --------------------------------------------------------
+  
         # 02 CONTEXTO
         # --------------------------------------------------------
         elif section == "02 · Contexto y pregunta":
@@ -607,7 +600,7 @@ if not full_screen and right is not None:
             )
             source_box("El artículo define género como la variable de interés.")
 
-        # --------------------------------------------------------
+        
         # 03 DATOS Y DISEÑO
         # --------------------------------------------------------
         elif section == "03 · Datos y diseño":
@@ -660,7 +653,7 @@ if not full_screen and right is not None:
             )
             source_box("Materiales y métodos del artículo.")
 
-        # --------------------------------------------------------
+         
         # 04 PREVALENCIA
         # --------------------------------------------------------
         elif section == "04 · Prevalencia":
@@ -749,7 +742,7 @@ if not full_screen and right is not None:
 
             source_box("Figura 1 y texto de resultados del artículo.")
 
-        # --------------------------------------------------------
+       
         # 05 TABLA 1
         # --------------------------------------------------------
         elif section == "05 · Tabla 1 · Descriptivos":
@@ -803,7 +796,6 @@ if not full_screen and right is not None:
 
             source_box("Tabla 1 del artículo.")
 
-        # --------------------------------------------------------
         # 06 MODELO LOGÍSTICO
         # --------------------------------------------------------
         elif section == "06 · Modelo logístico":
