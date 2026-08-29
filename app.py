@@ -30,7 +30,7 @@ GRAY = "#475569"
 LIGHT = "#F8FAFC"
 BORDER = "#CBD5E1"
 
-# ESTILOS CSS (INCLUYE MEJORAS ESTÉTICAS)
+# ESTILOS CSS (AJUSTES DE TAMAÑO Y ALINEACIÓN DE ICONO)
 st.markdown(
     f"""
     <style>
@@ -50,66 +50,72 @@ st.markdown(
             color: #F8FAFC !important;
         }}
         
-        /* ESTILO PARA LA BARRA LATERAL (CENTRADOS) */
+        /* ESTILO PARA LA BARRA LATERAL (ICONO A UN LADO Y LETRA AJUSTADA) */
         .sidebar-header-box {{
             text-align: center;
-            padding: 0.5rem 0 1rem 0;
+            padding: 0.3rem 0 0.8rem 0;
+        }}
+        .sidebar-title-wrapper {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }}
         .sidebar-icon {{
-            font-size: 2.5rem;
-            margin-bottom: 0.3rem;
-            display: inline-block;
+            font-size: 1.35rem;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
         }}
         .sidebar-title {{
-            font-size: 1.15rem;
+            font-size: 0.95rem;
             font-weight: 800;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.5px;
             color: #FFFFFF !important;
             text-transform: uppercase;
             margin: 0;
-            line-height: 1.3;
+            line-height: 1.2;
+            text-align: left;
         }}
         .sidebar-subtitle {{
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: #93C5FD !important;
-            letter-spacing: 1px;
-            margin-top: 0.3rem;
+            letter-spacing: 0.8px;
+            margin-top: 0.4rem;
             text-transform: uppercase;
         }}
 
-        /* ESTILO PARA EL TÍTULO PRINCIPAL CENTRADO */
+        /* ESTILO PARA EL TÍTULO PRINCIPAL LIGERAMENTE MÁS PEQUEÑO Y CENTRADO */
         .title-container {{
             text-align: center;
-            padding: 0.5rem 1rem 0.8rem 1rem;
-            margin-bottom: 0.5rem;
+            padding: 0.3rem 1rem 0.6rem 1rem;
+            margin-bottom: 0.3rem;
         }}
         .main-title {{
-            font-size: 2.2rem;
+            font-size: 1.85rem;
             font-weight: 800;
             color: {NAVY} !important;
-            line-height: 1.2;
-            letter-spacing: -0.5px;
+            line-height: 1.25;
+            letter-spacing: -0.3px;
             margin: 0 auto;
-            max-width: 950px;
+            max-width: 900px;
         }}
         .subtitle {{
             color: {GRAY} !important;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             font-weight: 600;
-            margin-top: 0.4rem;
+            margin-top: 0.3rem;
             letter-spacing: 0.2px;
         }}
         
         .section-title {{
-            font-size: 1.45rem;
+            font-size: 1.35rem;
             font-weight: 800;
             color: {NAVY} !important;
             margin-top: 0.2rem;
         }}
         .section-subtitle {{
             color: {GRAY} !important;
+            font-size: 0.9rem;
             margin-bottom: 0.8rem;
         }}
         .card {{
@@ -190,13 +196,13 @@ st.markdown(
             margin-top: 0.4rem;
         }}
         .big-question {{
-            font-size: 1.15rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: {NAVY} !important;
             background: #FFFFFF;
             border-radius: 14px;
             border: 1px solid {BORDER};
-            padding: 1rem 1.2rem;
+            padding: 0.9rem 1.1rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }}
         div[data-testid="stMetric"] {{
@@ -376,13 +382,15 @@ def fmt_num(x):
     return f"{x:.2f}".replace(".", ",")
 
 
-# BARRA LATERAL (NAVEGACIÓN CON MEJORAS ESTÉTICAS)
+# BARRA LATERAL (NAVEGACIÓN)
 with st.sidebar:
     st.markdown(
         """
         <div class="sidebar-header-box">
-            <div class="sidebar-icon">📈</div>
-            <div class="sidebar-title">Modelos Lineales Generalizados</div>
+            <div class="sidebar-title-wrapper">
+                <span class="sidebar-icon">📈</span>
+                <span class="sidebar-title">Modelos Lineales Generalizados</span>
+            </div>
             <div class="sidebar-subtitle">Universidad del Tolima</div>
         </div>
         """,
