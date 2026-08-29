@@ -142,6 +142,11 @@ st.markdown(
             font-weight: 800;
             color: {NAVY} !important;
         }}
+        .small-note {{
+            color: {GRAY} !important;
+            font-size: .85rem;
+            margin-top: 0.4rem;
+        }}
         .big-question {{
             font-size: 1.15rem;
             font-weight: 700;
@@ -160,33 +165,6 @@ st.markdown(
         }}
         div[data-testid="stMetric"] * {{
             color: {NAVY} !important;
-        }}
-
-        /* ESTILOS PARA LOS BOTONES DE NAVEGACIÓN PDF (TEXTO BLANCO) */
-        .pdf-btn div[data-testid="stButton"] > button {{
-            background-color: {NAVY} !important;
-            color: #FFFFFF !important;
-            border-radius: 8px !important;
-            border: none !important;
-            font-weight: 600 !important;
-        }}
-        .pdf-btn div[data-testid="stButton"] > button:hover {{
-            background-color: {BLUE} !important;
-            color: #FFFFFF !important;
-        }}
-        .pdf-btn div[data-testid="stButton"] > button p {{
-            color: #FFFFFF !important;
-        }}
-
-        /* AJUSTE DEL CONTENEDOR DEL VISOR PDF PARA ELIMINAR FONDO SOBRANTE */
-        iframe[title="streamlit_pdf_viewer.pdf_viewer"] {{
-            background-color: transparent !important;
-        }}
-        div[data-testid="stCustomComponentV1"] {{
-            display: flex;
-            justify-content: center;
-            background-color: transparent !important;
-            overflow: hidden !important;
         }}
     </style>
     """,
@@ -437,23 +415,19 @@ with left:
     st.markdown("### 📄 Visor del PDF")
 
     # Barra superior de controles del visor
-    ctrl_col1, ctrl_col2, ctrl_col3 = st.columns([1.2, 1.2, 2])
+    ctrl_col1, ctrl_col2, ctrl_col3, ctrl_col4 = st.columns([1, 1, 2, 2])
 
     with ctrl_col1:
-        st.markdown('<div class="pdf-btn">', unsafe_allow_html=True)
         if st.button("◀ Ant", use_container_width=True):
             if st.session_state.pdf_page > 1:
                 st.session_state.pdf_page -= 1
                 st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
 
     with ctrl_col2:
-        st.markdown('<div class="pdf-btn">', unsafe_allow_html=True)
         if st.button("Sig ▶", use_container_width=True):
             if st.session_state.pdf_page < 15:
                 st.session_state.pdf_page += 1
                 st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
 
     with ctrl_col3:
         st.session_state.pdf_page = st.number_input(
@@ -462,6 +436,16 @@ with left:
             max_value=15,
             value=st.session_state.pdf_page,
             step=1,
+            label_visibility="collapsed",
+        )
+
+    with ctrl_col4:
+        viewer_height = st.slider(
+            "Altura (px)",
+            min_value=600,
+            max_value=1400,
+            value=1000,
+            step=100,
             label_visibility="collapsed",
         )
 
@@ -476,20 +460,22 @@ with left:
     if target_pdf and target_pdf.exists():
         try:
             pdf_bytes = target_pdf.read_bytes()
-            # Renderizado adaptativo sin forzado de alto para eliminar franja negra inferior
+            # Renderizado adaptativo según parámetros de versión de librería
             try:
                 pdf_viewer(
                     input=pdf_bytes,
-                    pages_to_render=[st.session_state.pdf_page],
-                    render_text=True,
-                    key=f"pdf_page_{st.session_state.pdf_page}",
+                    page_to_render=st.session_state.pdf_page,
+                    width="100%",
+                    height=viewer_height,
+                    key=f"pdf_page_{st.session_state.pdf_page}_{viewer_height}",
                 )
             except TypeError:
                 pdf_viewer(
                     input=pdf_bytes,
-                    page_to_render=st.session_state.pdf_page,
-                    render_text=True,
-                    key=f"pdf_page_{st.session_state.pdf_page}",
+                    pages_to_render=[st.session_state.pdf_page],
+                    width="100%",
+                    height=viewer_height,
+                    key=f"pdf_page_{st.session_state.pdf_page}_{viewer_height}",
                 )
         except Exception as e:
             st.error(f"Error al renderizar el archivo PDF: {e}")
@@ -501,7 +487,7 @@ with left:
         )
 
 # ============================================================
-# COLUMNA DE CONTENIDO (ANÁLISIS)
+# COLUMNA DE CONTENIDO (ANALISIS)
 # ============================================================
 if not full_screen and right is not None:
     with right:
