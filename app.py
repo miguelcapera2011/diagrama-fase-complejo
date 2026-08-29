@@ -16,7 +16,6 @@ st.set_page_config(
 )
 
 # LOCALIZACIÓN DINÁMICA DEL ARCHIVO PDF
-
 BASE_DIR = Path(__file__).parent if "__file__" in globals() else Path.cwd()
 PDF_FILE_PATH = BASE_DIR / "intento suicida.pdf"
 
@@ -31,11 +30,15 @@ GRAY = "#475569"
 LIGHT = "#F8FAFC"
 BORDER = "#CBD5E1"
 
-# ESTILOS CSS (INCLUYE CORRECCIÓN PARA EL VISOR DE PDF)
-
+# ESTILOS CSS (INCLUYE MEJORAS ESTÉTICAS)
 st.markdown(
     f"""
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        
+        * {{
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }}
         .stApp {{
             background: {LIGHT};
             color: #0F172A !important;
@@ -46,17 +49,59 @@ st.markdown(
         [data-testid="stSidebar"] * {{
             color: #F8FAFC !important;
         }}
+        
+        /* ESTILO PARA LA BARRA LATERAL (CENTRADOS) */
+        .sidebar-header-box {{
+            text-align: center;
+            padding: 0.5rem 0 1rem 0;
+        }}
+        .sidebar-icon {{
+            font-size: 2.5rem;
+            margin-bottom: 0.3rem;
+            display: inline-block;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }}
+        .sidebar-title {{
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            color: #FFFFFF !important;
+            text-transform: uppercase;
+            margin: 0;
+            line-height: 1.3;
+        }}
+        .sidebar-subtitle {{
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #93C5FD !important;
+            letter-spacing: 1px;
+            margin-top: 0.3rem;
+            text-transform: uppercase;
+        }}
+
+        /* ESTILO PARA EL TÍTULO PRINCIPAL CENTRADO */
+        .title-container {{
+            text-align: center;
+            padding: 0.5rem 1rem 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+        }}
         .main-title {{
-            font-size: 2.0rem;
+            font-size: 2.2rem;
             font-weight: 800;
             color: {NAVY} !important;
-            margin-bottom: 0.1rem;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+            margin: 0 auto;
+            max-width: 950px;
         }}
         .subtitle {{
             color: {GRAY} !important;
-            font-size: 1rem;
-            margin-bottom: 1rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-top: 0.4rem;
+            letter-spacing: 0.2px;
         }}
+        
         .section-title {{
             font-size: 1.45rem;
             font-weight: 800;
@@ -196,7 +241,6 @@ st.markdown(
 )
 
 # ESTRUCTURAS DE DATOS DE TABLAS Y PREVALENCIA
-
 age_groups = [
     "5 a 9", "10 a 14", "15 a 19", "20 a 24", "25 a 29",
     "30 a 34", "35 a 39", "40 a 44", "45 a 49", "50 a 54",
@@ -297,7 +341,6 @@ table2_df = pd.DataFrame(
 
 
 # FUNCIONES AUXILIARES
-
 def source_box(text):
     st.markdown(f'<div class="source-box">📌 {text}</div>', unsafe_allow_html=True)
 
@@ -333,11 +376,18 @@ def fmt_num(x):
     return f"{x:.2f}".replace(".", ",")
 
 
-# BARRA LATERAL (NAVEGACIÓN)
-
+# BARRA LATERAL (NAVEGACIÓN CON MEJORAS ESTÉTICAS)
 with st.sidebar:
-    st.markdown("## 📊 MODELOS LINEALES GENERALIZADOS")
-    st.caption("UNIVERSIDAD DEL TOLIMA")
+    st.markdown(
+        """
+        <div class="sidebar-header-box">
+            <div class="sidebar-icon">📈</div>
+            <div class="sidebar-title">Modelos Lineales Generalizados</div>
+            <div class="sidebar-subtitle">Universidad del Tolima</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown("---")
     st.markdown("### Contenido:")
@@ -395,14 +445,20 @@ if "last_section" not in st.session_state or st.session_state.last_section != se
     st.session_state.pdf_page = page_map[section]
     st.session_state.last_section = section
 
-# ENCABEZADO PRINCIPAL
+# ENCABEZADO PRINCIPAL CENTRADO
+sub_html = (
+    '<div class="subtitle">Sogamoso, Boyacá · Una lectura del artículo desde la estadística</div>'
+    if section == "01 · Introducción"
+    else ""
+)
 
 st.markdown(
-    '<div class="main-title">Intento suicida: un análisis municipal de factores asociados 2012–2017</div>',
-    unsafe_allow_html=True,
-)
-st.markdown(
-    '<div class="subtitle">Sogamoso, Boyacá · Una lectura del artículo desde la estadística</div>',
+    f"""
+    <div class="title-container">
+        <div class="main-title">Intento suicida: un análisis municipal de factores asociados 2012–2017</div>
+        {sub_html}
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
@@ -424,7 +480,6 @@ if section == "01 · Introducción":
 st.markdown("---")
 
 # CONTROLES Y VISUALIZADOR DE PDF
-
 full_screen = st.checkbox("🔍 Expandir PDF a pantalla completa ")
 
 # Ajuste de columnas según el modo de pantalla
@@ -434,7 +489,7 @@ else:
     left, right = st.columns([1.1, 1.0], gap="large")
 
 with left:
-    st.markdown("### 📄 Articulo")
+    st.markdown("### 📄 Artículo")
 
     # Barra superior de controles del visor
     ctrl_col1, ctrl_col2, ctrl_col3, ctrl_col4 = st.columns([1, 1, 2, 2])
@@ -483,7 +538,7 @@ with left:
         try:
             pdf_bytes = target_pdf.read_bytes()
             
-            # Envoltura en un div personalizado para forzar el ajuste al 100% de ancho sin fondo negro
+            # Envoltura en un div personalizado para forzar el ajuste al 100% de ancho
             st.markdown('<div class="pdf-viewer-container">', unsafe_allow_html=True)
             try:
                 pdf_viewer(
@@ -514,14 +569,11 @@ with left:
             "y que se llame exactamente `intento suicida.pdf`."
         )
 
-
-# COLUMNA DE CONTENIDO (ANALISIS)
-# ============================================================
+# COLUMNA DE CONTENIDO (ANÁLISIS)
 if not full_screen and right is not None:
     with right:
     
         # 01 INTRODUCCIÓN
-       
         if section == "01 · Introducción":
             section_header(
                 "1",
@@ -559,9 +611,7 @@ if not full_screen and right is not None:
             )
             source_box("Resumen y objetivo del artículo.")
 
-  
         # 02 CONTEXTO
-        # --------------------------------------------------------
         elif section == "02 · Contexto y pregunta":
             section_header(
                 "2",
@@ -602,9 +652,7 @@ if not full_screen and right is not None:
             )
             source_box("El artículo define género como la variable de interés.")
 
-        
         # 03 DATOS Y DISEÑO
-        # --------------------------------------------------------
         elif section == "03 · Datos y diseño":
             section_header(
                 "3",
@@ -655,9 +703,7 @@ if not full_screen and right is not None:
             )
             source_box("Materiales y métodos del artículo.")
 
-          
         # 04 PREVALENCIA
-        # --------------------------------------------------------
         elif section == "04 · Prevalencia":
             section_header(
                 "4",
@@ -744,9 +790,7 @@ if not full_screen and right is not None:
 
             source_box("Figura 1 y texto de resultados del artículo.")
 
-        
         # 05 TABLA 1
-        # --------------------------------------------------------
         elif section == "05 · Tabla 1 · Descriptivos":
             section_header(
                 "5",
@@ -799,7 +843,6 @@ if not full_screen and right is not None:
             source_box("Tabla 1 del artículo.")
 
         # 06 MODELO LOGÍSTICO
-        # --------------------------------------------------------
         elif section == "06 · Modelo logístico":
             section_header(
                 "6",
