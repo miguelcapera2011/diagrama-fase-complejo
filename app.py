@@ -30,6 +30,19 @@ GRAY = "#475569"
 LIGHT = "#F8FAFC"
 BORDER = "#CBD5E1"
 
+# COLECCIÓN DE ÍCONOS SVG PROFESIONALES (HEROICONS DE TAMAÑO CONTROLADO)
+SVG_ICONS = {
+    "chart": '<svg style="width:20px;height:20px;vertical-align:middle;display:inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>',
+    "target": '<svg style="width:20px;height:20px;vertical-align:middle;display:inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>',
+    "pin": '<svg style="width:20px;height:20px;vertical-align:middle;display:inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>',
+    "calendar": '<svg style="width:20px;height:20px;vertical-align:middle;display:inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>',
+    "users": '<svg style="width:20px;height:20px;vertical-align:middle;display:inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>',
+    "math": '<svg style="width:20px;height:20px;vertical-align:middle;display:inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>',
+    "inbox": '<svg style="width:20px;height:20px;vertical-align:middle;display:inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>',
+    "arrow_down": '<svg style="width:20px;height:20px;vertical-align:middle;display:inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>',
+    "check": '<svg style="width:20px;height:20px;vertical-align:middle;display:inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+}
+
 # ESTILOS CSS (AJUSTES DE TAMAÑO, ALINEACIÓN Y COLOR DE TEXTO EN RADIO BUTTONS)
 st.markdown(
     f"""
@@ -70,8 +83,10 @@ st.markdown(
             width: 100%;
         }}
         .sidebar-icon {{
-            font-size: 1.35rem;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #93C5FD;
         }}
         .sidebar-title {{
             font-size: 0.95rem;
@@ -141,6 +156,9 @@ st.markdown(
             margin: 0 0 .45rem 0;
             color: {NAVY} !important;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }}
         .card p, .card div, .card span, .card b {{
             color: #1E293B !important;
@@ -214,6 +232,9 @@ st.markdown(
             border: 1px solid {BORDER};
             padding: 0.9rem 1.1rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }}
         div[data-testid="stMetric"] {{
             background: #FFFFFF;
@@ -268,7 +289,7 @@ prevalence = {
     2013: [0.0, 9.6, 23.5, 21.4, 16.3, 6.8, 5.9, 5.1, 3.1, 2.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
     2014: [0.0, 0.4, 16.9, 15.9, 11.7, 10.8, 5.0, 0.9, 0.0, 0.7, 2.2, 0.0, 0.0, 0.0, 0.0, 0.0],
     2015: [0.0, 4.2, 16.2, 17.0, 8.9, 5.9, 3.0, 0.9, 1.5, 0.7, 0.0, 0.0, 0.8, 0.0, 0.0, 0.0],
-    2016: [0.0, 9.4, 26.8, 15.2, 5.0, 2.0, 4.0, 0.0, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7],
+    2016: [0.0, 9.4, 26.8, 15.2, 5.0, 2.0, 4.0, 0.0, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7],
     2017: [0.0, 4.3, 21.0, 19.1, 9.0, 8.1, 5.0, 3.8, 3.1, 0.7, 2.0, 0.0, 0.0, 0.0, 0.0, 0.7],
 }
 
@@ -361,11 +382,12 @@ def source_box(text):
     st.markdown(f'<div class="source-box">📌 {text}</div>', unsafe_allow_html=True)
 
 
-def card(title, body, icon=""):
+def card(title, body, icon_key=""):
+    icon_html = SVG_ICONS.get(icon_key, "")
     st.markdown(
         f"""
         <div class="card">
-            <h4>{icon} {title}</h4>
+            <h4>{icon_html} {title}</h4>
             <div>{body}</div>
         </div>
         """,
@@ -395,10 +417,10 @@ def fmt_num(x):
 # BARRA LATERAL (NAVEGACIÓN)
 with st.sidebar:
     st.markdown(
-        """
+        f"""
         <div class="sidebar-header-box">
             <div class="sidebar-title-wrapper">
-                <span class="sidebar-icon">📈</span>
+                <span class="sidebar-icon">{SVG_ICONS["chart"]}</span>
                 <span class="sidebar-title">Modelos Lineales Generalizados</span>
             </div>
             <div class="sidebar-subtitle">Universidad del Tolima</div>
@@ -491,7 +513,7 @@ if section == "01 · Introducción":
         st.metric("Hombres", "188")
     with c4:
         st.markdown(
-            '<div class="big-question">🎯 Idea de la exposición: reconstruir el camino desde los datos hasta la evidencia estadística.</div>',
+            f'<div class="big-question"><span>{SVG_ICONS["target"]}</span> <span>Idea de la exposición: reconstruir el camino desde los datos hasta la evidencia estadística.</span></div>',
             unsafe_allow_html=True,
         )
 
@@ -603,23 +625,23 @@ if not full_screen and right is not None:
                 card(
                     "¿Qué investigaron?",
                     "El comportamiento epidemiológico del intento de suicidio y las diferencias entre género y variables sociodemográficas, psicosociales y específicas durante 2012–2017.",
-                    "🎯",
+                    "target",
                 )
             with b:
                 card(
                     "¿Dónde?",
                     "Municipio de <b>Sogamoso, Boyacá, Colombia</b>. El estudio utilizó casos reportados al SIVIGILA.",
-                    "📍",
+                    "pin",
                 )
 
             st.markdown("<br>", unsafe_allow_html=True)
             a, b, c = st.columns(3)
             with a:
-                card("Periodo", "<b>2012–2017</b>", "📅")
+                card("Periodo", "<b>2012–2017</b>", "calendar")
             with b:
-                card("Casos analizados", "<b>524</b>", "👥")
+                card("Casos analizados", "<b>524</b>", "users")
             with c:
-                card("Modelo", "<b>Regresión logística binaria</b>", "📐")
+                card("Modelo", "<b>Regresión logística binaria</b>", "math")
 
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown(
@@ -637,9 +659,9 @@ if not full_screen and right is not None:
                 "La investigación nace de un contexto territorial concreto.",
             )
             st.markdown(
-                """
+                f"""
                 <div class="card">
-                <h4>🌎 ¿Por qué Sogamoso?</h4>
+                <h4>{SVG_ICONS["pin"]} ¿Por qué Sogamoso?</h4>
                 <p>
                 El artículo señala que Sogamoso reportaba, desde 2010, el mayor número de
                 casos dentro del departamento y plantea la necesidad de caracterizar y
@@ -653,7 +675,7 @@ if not full_screen and right is not None:
 
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown(
-                '<div class="big-question">🔎 ¿Qué queremos explicar estadísticamente?</div>',
+                f'<div class="big-question"><span>{SVG_ICONS["target"]}</span> <span>¿Qué queremos explicar estadísticamente?</span></div>',
                 unsafe_allow_html=True,
             )
 
@@ -701,11 +723,11 @@ if not full_screen and right is not None:
             st.markdown("<br>", unsafe_allow_html=True)
             a, b, c = st.columns(3)
             with a:
-                card("Casos potenciales", "<b>579</b>", "📥")
+                card("Casos potenciales", "<b>579</b>", "inbox")
             with b:
-                card("Excluidos", "<b>55</b>", "↘️")
+                card("Excluidos", "<b>55</b>", "arrow_down")
             with c:
-                card("Analizados", "<b>524</b>", "✅")
+                card("Analizados", "<b>524</b>", "check")
 
             st.markdown(
                 '<div class="interpretation"><b>Importante:</b> los 55 casos excluidos correspondieron a personas que no residían en Sogamoso o casos sin seguimiento.</div>',
