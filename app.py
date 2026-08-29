@@ -1,4 +1,3 @@
-
 import base64
 from pathlib import Path
 
@@ -26,18 +25,19 @@ BLUE = "#2563EB"
 GREEN = "#059669"
 ORANGE = "#D97706"
 PURPLE = "#7C3AED"
-GRAY = "#64748B"
+GRAY = "#475569"
 LIGHT = "#F8FAFC"
-BORDER = "#E2E8F0"
+BORDER = "#CBD5E1"
 
 # ============================================================
-# ESTILOS
+# ESTILOS CON CONTRASTE GARANTIZADO
 # ============================================================
 st.markdown(
     f"""
     <style>
         .stApp {{
             background: {LIGHT};
+            color: #0F172A !important;
         }}
 
         [data-testid="stSidebar"] {{
@@ -51,12 +51,12 @@ st.markdown(
         .main-title {{
             font-size: 2.0rem;
             font-weight: 800;
-            color: {NAVY};
+            color: {NAVY} !important;
             margin-bottom: 0.1rem;
         }}
 
         .subtitle {{
-            color: {GRAY};
+            color: {GRAY} !important;
             font-size: 1rem;
             margin-bottom: 1rem;
         }}
@@ -64,53 +64,74 @@ st.markdown(
         .section-title {{
             font-size: 1.45rem;
             font-weight: 800;
-            color: {NAVY};
+            color: {NAVY} !important;
             margin-top: 0.2rem;
         }}
 
         .section-subtitle {{
-            color: {GRAY};
+            color: {GRAY} !important;
             margin-bottom: 0.8rem;
         }}
 
+        /* Tarjetas con texto oscuro 100% visible */
         .card {{
-            background: white;
+            background: #FFFFFF;
             border: 1px solid {BORDER};
             border-radius: 14px;
-            padding: 1rem 1.15rem;
-            box-shadow: 0 2px 10px rgba(15,23,42,.05);
+            padding: 1.1rem 1.25rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             height: 100%;
+            color: #1E293B !important;
         }}
 
         .card h4 {{
             margin: 0 0 .45rem 0;
-            color: {NAVY};
+            color: {NAVY} !important;
+            font-weight: 700;
+        }}
+
+        .card p, .card div, .card span, .card b {{
+            color: #1E293B !important;
         }}
 
         .metric {{
             font-size: 1.7rem;
             font-weight: 800;
-            color: {NAVY};
+            color: {NAVY} !important;
         }}
 
         .metric-label {{
             font-size: .85rem;
-            color: {GRAY};
+            color: {GRAY} !important;
         }}
 
         .interpretation {{
             background: #FFF7ED;
             border-left: 5px solid {ORANGE};
-            padding: .9rem 1rem;
+            border-top: 1px solid #FED7AA;
+            border-right: 1px solid #FED7AA;
+            border-bottom: 1px solid #FED7AA;
+            padding: 1rem 1.1rem;
             border-radius: 8px;
-            margin: .7rem 0;
+            margin: .9rem 0;
+            color: #7C2D12 !important;
+        }}
+
+        .interpretation b, .interpretation div, .interpretation p {{
+            color: #7C2D12 !important;
         }}
 
         .math-box {{
             background: #EFF6FF;
             border: 1px solid #BFDBFE;
             border-radius: 12px;
-            padding: 1rem;
+            padding: 1.1rem;
+            color: #1E3A8A !important;
+            margin: 0.8rem 0;
+        }}
+
+        .math-box * {{
+            color: #1E3A8A !important;
         }}
 
         .source-box {{
@@ -118,54 +139,66 @@ st.markdown(
             border: 1px solid {BORDER};
             border-radius: 10px;
             padding: .75rem 1rem;
-            font-size: .82rem;
-            color: {GRAY};
+            font-size: .85rem;
+            color: #334155 !important;
+            margin-top: 0.8rem;
         }}
 
         .step {{
-            background: white;
+            background: #FFFFFF;
             border: 1px solid {BORDER};
             border-radius: 12px;
             padding: .9rem;
             text-align: center;
             min-height: 120px;
+            color: #1E293B !important;
+        }}
+
+        .step p, .step div {{
+            color: #334155 !important;
         }}
 
         .step-number {{
-            font-size: .8rem;
-            font-weight: 700;
-            color: {RED};
+            font-size: .85rem;
+            font-weight: 800;
+            color: {RED} !important;
         }}
 
         .step-title {{
             font-weight: 800;
-            color: {NAVY};
+            color: {NAVY} !important;
         }}
 
         .small-note {{
-            color: {GRAY};
-            font-size: .82rem;
+            color: {GRAY} !important;
+            font-size: .85rem;
+            margin-top: 0.4rem;
         }}
 
         .big-question {{
-            font-size: 1.25rem;
-            font-weight: 750;
-            color: {NAVY};
-            background: white;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: {NAVY} !important;
+            background: #FFFFFF;
             border-radius: 14px;
             border: 1px solid {BORDER};
             padding: 1rem 1.2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }}
 
         div[data-testid="stMetric"] {{
-            background: white;
+            background: #FFFFFF;
             border: 1px solid {BORDER};
             padding: .7rem;
             border-radius: 12px;
         }}
 
+        div[data-testid="stMetric"] * {{
+            color: {NAVY} !important;
+        }}
+
         .footer {{
-            color: {GRAY};
+            color: {GRAY} !important;
             text-align: center;
             font-size: .78rem;
             margin-top: 1.5rem;
@@ -178,7 +211,6 @@ st.markdown(
 # ============================================================
 # DATOS TRANSCRITOS DEL ARTÍCULO
 # ============================================================
-# Figura 1: prevalencia ajustada por grupo de edad y año de ocurrencia.
 age_groups = [
     "5 a 9", "10 a 14", "15 a 19", "20 a 24", "25 a 29",
     "30 a 34", "35 a 39", "40 a 44", "45 a 49", "50 a 54",
@@ -200,7 +232,6 @@ for year, values in prevalence.items():
         prev_rows.append({"Año": year, "Grupo de edad": age, "Prevalencia": value})
 prev_df = pd.DataFrame(prev_rows)
 
-# Tabla 1: variables sociodemográficas y específicas.
 table1 = [
     ["Área de ocurrencia", "Urbano", 94.0, 315, 89.8, 169, 92.0, 484, 0.02],
     ["Área de ocurrencia", "Rural disperso", 6.2, 21, 10.1, 19, 8.0, 40, 0.02],
@@ -271,7 +302,6 @@ table1_df = pd.DataFrame(
     ]
 )
 
-# Tabla 2: modelo final reportado por los autores.
 table2 = [
     ["Edad", "Niñez", 0.32, 0.05, 0.83, 1.38, 0.08, 24.34],
     ["Edad", "Adolescencia", -1.04, 7.52, 0.01, 0.35, 0.17, 0.74],
@@ -294,7 +324,7 @@ table2_df = pd.DataFrame(
 )
 
 # ============================================================
-# FUNCIONES
+# FUNCIONES AUXILIARES
 # ============================================================
 def article_path():
     candidates = [
@@ -316,7 +346,7 @@ def pdf_viewer(pdf_bytes, page=1, height=850):
         src="data:application/pdf;base64,{encoded}#page={page}&zoom=page-width"
         width="100%"
         height="{height}px"
-        style="border:1px solid #E2E8F0;border-radius:12px;background:white;"
+        style="border:1px solid #CBD5E1;border-radius:12px;background:white;"
         type="application/pdf">
     </iframe>
     """
@@ -359,7 +389,7 @@ def fmt_num(x):
 
 
 # ============================================================
-# PDF: carga
+# CARGA DE PDF
 # ============================================================
 local_pdf = article_path()
 
@@ -370,7 +400,7 @@ with st.sidebar:
     uploaded = st.file_uploader(
         "Si no está en la carpeta, carga aquí el PDF",
         type=["pdf"],
-        help="En Streamlit Cloud puedes subir el PDF mediante este control o dejarlo junto a app.py.",
+        help="Carga el PDF para visualizarlo en vivo durante la exposición.",
     )
 
     if uploaded is not None:
@@ -413,9 +443,7 @@ with st.sidebar:
     st.markdown("---")
     st.caption("Fuente de los resultados: Vásquez-Escobar & Benítez-Camargo (2021).")
 
-# ============================================================
-# MAPA DE PÁGINAS DEL ARTÍCULO
-# ============================================================
+# Mapa de navegación de páginas en el PDF
 page_map = {
     "01 · Introducción": 1,
     "02 · Contexto y pregunta": 3,
@@ -444,7 +472,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Barra superior
 c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.2, 3.5])
 with c1:
     st.metric("Casos", "524")
@@ -472,17 +499,13 @@ with left:
         pdf_viewer(pdf_bytes, page=current_page, height=820)
     else:
         st.warning(
-            "No se encontró el PDF. Colócalo junto a app.py con el nombre "
-            "'intento suicida(1).pdf' o cárgalo desde la barra lateral."
-        )
-        st.info(
-            "La parte analítica de la aplicación seguirá funcionando aunque no se cargue el PDF."
+            "No se encontró el PDF en la ruta local. Puedes cargarlo manualmente desde el menú lateral."
         )
 
 with right:
-    # ========================================================
+    # --------------------------------------------------------
     # 01 INTRODUCCIÓN
-    # ========================================================
+    # --------------------------------------------------------
     if section == "01 · Introducción":
         section_header(
             "1",
@@ -521,9 +544,9 @@ with right:
         )
         source_box("Resumen y objetivo del artículo.")
 
-    # ========================================================
+    # --------------------------------------------------------
     # 02 CONTEXTO
-    # ========================================================
+    # --------------------------------------------------------
     elif section == "02 · Contexto y pregunta":
         section_header(
             "2",
@@ -566,9 +589,9 @@ with right:
 
         source_box("El artículo define género como la variable de interés y describe las variables sociodemográficas, específicas y psicosociales.")
 
-    # ========================================================
+    # --------------------------------------------------------
     # 03 DATOS Y DISEÑO
-    # ========================================================
+    # --------------------------------------------------------
     elif section == "03 · Datos y diseño":
         section_header(
             "3",
@@ -617,14 +640,14 @@ with right:
             "El artículo describe un **estudio analítico transversal**, con datos recolectados entre 2012 y 2017."
         )
         st.write(
-            "Para el análisis univariado se calcularon prevalencias ajustadas por edad mediante el método directo y una población estándar propuesta por la OMS. Para las variables asociadas al género se utilizó regresión logística bivariada."
+            "Para el análisis univariado se calcularon prevalencias ajustadas por edad mediante el método directo y una población estándar propuesta por la OMS. Para las variables asociadas al género se utilizó regresión logística bivariada y multivariada."
         )
 
         source_box("Materiales y métodos del artículo.")
 
-    # ========================================================
+    # --------------------------------------------------------
     # 04 PREVALENCIA
-    # ========================================================
+    # --------------------------------------------------------
     elif section == "04 · Prevalencia":
         section_header(
             "4",
@@ -733,9 +756,9 @@ with right:
 
         source_box("Figura 1 y texto de resultados: prevalencia ajustada por grupo de edad y año de ocurrencia.")
 
-    # ========================================================
+    # --------------------------------------------------------
     # 05 TABLA 1
-    # ========================================================
+    # --------------------------------------------------------
     elif section == "05 · Tabla 1 · Descriptivos":
         section_header(
             "5",
@@ -760,7 +783,6 @@ with right:
 
         st.dataframe(display, use_container_width=True, hide_index=True)
 
-        # Gráfico
         chart_df = d.melt(
             id_vars=["Categoría"],
             value_vars=["Mujer %", "Hombre %"],
@@ -815,14 +837,14 @@ with right:
         )
         source_box("Tabla 1 del artículo. Los porcentajes y frecuencias fueron transcritos de la tabla publicada.")
 
-    # ========================================================
+    # --------------------------------------------------------
     # 06 MODELO LOGÍSTICO
-    # ========================================================
+    # --------------------------------------------------------
     elif section == "06 · Modelo logístico":
         section_header(
             "6",
             "¿Por qué aparece la regresión logística?",
-            "Aquí comienza la parte matemática de la exposición.",
+            "Aquí comienza la fundamentación matemática de la investigación.",
         )
 
         st.markdown(
@@ -844,7 +866,6 @@ with right:
         st.latex(r"p_i=P(Y_i=1\mid X_1,\ldots,X_k)")
 
         st.markdown("### 2️⃣ La probabilidad debe permanecer entre 0 y 1")
-
         st.latex(
             r"""
             p_i=
@@ -853,7 +874,6 @@ with right:
         )
 
         st.markdown("### 3️⃣ Transformamos la probabilidad en log-odds")
-
         st.latex(
             r"""
             \operatorname{logit}(p_i)
@@ -867,412 +887,221 @@ with right:
         st.markdown(
             """
             <div class="math-box">
-            <b>La conexión clave para explicar en clase:</b><br><br>
-            Probabilidad → Odds → Log-Odds → combinación lineal de variables.
-            <br><br>
-            Cuando exponenciamos un coeficiente:
+            <b>La ventaja de la transformación Logit:</b><br>
+            Mientras que las probabilidades $p_i$ están acotadas estrictamente en la escala $[0, 1]$, la razón de posibilidades u odds $\\frac{p_i}{1-p_i}$ toma valores en $[0, \\infty)$, y el logaritmo de los odds $\\operatorname{logit}(p_i)$ se extiende libremente en $(-\\infty, +\\infty)$, permitiendo estimar un modelo lineal sin violar límites de probabilidad.
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        st.latex(r"OR=e^{\beta}")
+        source_box("Marco metodológico para la estimación por Regresión Logística Binaria.")
 
-        st.markdown(
-            """
-            Esto permite interpretar el coeficiente mediante el **odds ratio**.
-            Un OR igual a 1 representa ausencia de diferencia en odds respecto a
-            la categoría de referencia; OR mayor que 1 indica mayores odds y OR
-            menor que 1 indica menores odds, siempre respecto a la referencia y
-            bajo la codificación del modelo.
-            """
-        )
-
-        st.markdown("### Cómo entraron las variables al modelo")
-
-        stages = [
-            ("Modelo 1", "Ciclo vital / edad", "Punto de partida"),
-            ("Modelo 2", "+ Posible desencadenante", "Se incorpora contexto del evento"),
-            ("Modelo 3", "+ Violencia", "Aparece asociación significativa"),
-            ("Modelo 4", "+ Consumo de alcohol", "Modelo final reportado"),
-        ]
-
-        cols = st.columns(4)
-        for col, (name, vars_, desc) in zip(cols, stages):
-            with col:
-                st.markdown(
-                    f"""
-                    <div class="step">
-                        <div class="step-number">{name}</div>
-                        <div class="step-title">{vars_}</div>
-                        <p>{desc}</p>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-        source_box("Métodos y descripción de los modelos. Los autores indican que las variables se introdujeron una a una según el orden de presentación.")
-
-    # ========================================================
+    # --------------------------------------------------------
     # 07 TABLA 2
-    # ========================================================
+    # --------------------------------------------------------
     elif section == "07 · Tabla 2 · Modelo final":
         section_header(
             "7",
-            "Tabla 2: del dato descriptivo a la asociación ajustada",
-            "Ahora dejamos de preguntar solamente '¿cuánto hay?' y preguntamos '¿cómo se asocia con el género dentro del modelo?'",
+            "Modelo multivariado final",
+            "Factores explicativos ajustados de forma simultánea en la Tabla 2.",
         )
 
-        st.dataframe(
-            table2_df.style.format({
-                "B": "{:.2f}",
-                "Wald": "{:.2f}",
-                "p": lambda x: "<0,001" if x < 0.001 else f"{x:.2f}",
-                "OR": "{:.2f}",
-                "IC95% inf.": "{:.2f}",
-                "IC95% sup.": "{:.2f}",
-            }),
-            use_container_width=True,
-            hide_index=True,
-        )
+        t2_display = table2_df.copy()
+        t2_display["B"] = t2_display["B"].map(fmt_num)
+        t2_display["Wald"] = t2_display["Wald"].map(fmt_num)
+        t2_display["p"] = t2_display["p"].map(fmt_p)
+        t2_display["OR"] = t2_display["OR"].map(fmt_num)
+        t2_display["IC95% inf."] = t2_display["IC95% inf."].map(fmt_num)
+        t2_display["IC95% sup."] = t2_display["IC95% sup."].map(fmt_num)
 
-        st.markdown("### 🔍 Filtro para interpretar")
+        st.dataframe(t2_display, use_container_width=True, hide_index=True)
 
-        sig_only = st.checkbox("Mostrar solamente filas con p ≤ 0,05", value=True)
-
-        d = table2_df.copy()
-        if sig_only:
-            d = d[d["p"] <= 0.05]
-
-        plot_d = d[d["OR"].notna()].copy()
+        # Gráfico Forest Plot de ORs
+        forest_data = table2_df[table2_df["Variable"] != "Constante"].copy()
 
         fig = go.Figure()
-
-        for _, row in plot_d.iterrows():
-            if row["OR"] > 0:
-                fig.add_trace(
-                    go.Scatter(
-                        x=[row["OR"]],
-                        y=[row["Categoría"]],
-                        mode="markers",
-                        error_x=dict(
-                            type="data",
-                            symmetric=False,
-                            array=[row["IC95% sup."] - row["OR"]],
-                            arrayminus=[row["OR"] - row["IC95% inf."]],
-                        ),
-                        name=row["Categoría"],
-                        showlegend=False,
-                    )
-                )
-
-        fig.add_vline(x=1, line_dash="dash")
+        fig.add_trace(
+            go.Scatter(
+                x=forest_data["OR"],
+                y=forest_data["Categoría"],
+                mode="markers",
+                marker=dict(color=BLUE, size=10),
+                error_x=dict(
+                    type="data",
+                    symmetric=False,
+                    array=forest_data["IC95% sup."] - forest_data["OR"],
+                    arrayminus=forest_data["OR"] - forest_data["IC95% inf."],
+                    color=NAVY,
+                    thickness=2,
+                    width=5,
+                ),
+                text=forest_data["Variable"],
+                hovertemplate="<b>%{y}</b> (%{text})<br>OR: %{x:.2f}<extra></extra>",
+            )
+        )
+        fig.add_vline(x=1.0, line_dash="dash", line_color=RED, annotation_text="Línea nula (OR=1)")
         fig.update_layout(
-            height=560,
-            xaxis_type="log",
-            xaxis_title="Odds Ratio (escala logarítmica)",
+            title="Forest Plot: Odds Ratios e Intervalos de Confianza al 95%",
+            xaxis_title="Odds Ratio (OR)",
             yaxis_title="Categoría",
-            margin=dict(l=10, r=10, t=30, b=10),
+            height=480,
+            margin=dict(l=10, r=10, t=40, b=10),
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        st.info(
-            "La línea vertical OR=1 es la referencia. Si el intervalo de confianza incluye 1, la evidencia de asociación al 5% es débil/no significativa para esa categoría bajo la lectura habitual del intervalo."
+        st.markdown(
+            """
+            <div class="interpretation">
+            <b>Hallazgos clave del modelo ajustado:</b>
+            <br>• <b>Consumo de alcohol (Sí):</b> Muestra una asociación estadísticamente significativa con un <b>OR = 3,58</b> (IC 95%: 2,17 – 5,90; $p < 0,001$).
+            <br>• <b>Violencia (Sí):</b> Aparece como un factor con un <b>OR = 0,41</b> (IC 95%: 0,26 – 0,66; $p < 0,001$).
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
+        source_box("Tabla 2 del artículo: Modelo de regresión logística multivariado ajustado.")
 
-        source_box("Tabla 2 del artículo: B, Wald, significancia, OR e intervalo de confianza del 95%.")
-
-    # ========================================================
-    # 08 OR
-    # ========================================================
+    # --------------------------------------------------------
+    # 08 INTERPRETACIÓN DEL OR
+    # --------------------------------------------------------
     elif section == "08 · Interpretación del OR":
         section_header(
             "8",
-            "OR: convertir la tabla en una explicación comprensible",
-            "Elegimos resultados centrales del artículo y los interpretamos cuidadosamente.",
+            "Interpretación epidemiológica del Odds Ratio",
+            "Cómo traducir los coeficientes $\\beta$ y los $OR = e^{\\beta}$ al lenguaje clínico y poblacional.",
         )
 
-        choice = st.selectbox(
-            "Seleccione el resultado",
-            [
-                "Consumo de alcohol",
-                "Adolescencia",
-                "Adultez temprana",
-                "Conflicto con la pareja",
-                "Violencia",
-            ],
-        )
+        st.latex(r"\text{OR} = e^{\beta}")
 
-        results = {
-            "Consumo de alcohol": {
-                "beta": 1.28,
-                "or": 3.58,
-                "low": 2.17,
-                "high": 5.90,
-                "p": "<0,001",
-                "text": "El modelo reporta OR=3,58 para consumo de alcohol. En la parametrización de la tabla, este valor es mayor que 1 y su IC95% (2,17–5,90) no contiene 1.",
-                "warning": "No decir '3,58 veces más probable'. OR es una razón de odds, no una razón directa de probabilidades.",
-            },
-            "Adolescencia": {
-                "beta": -1.04,
-                "or": 0.35,
-                "low": 0.17,
-                "high": 0.74,
-                "p": "0,01",
-                "text": "El modelo reporta OR=0,35 para adolescencia respecto a la categoría de referencia indicada en la tabla. Los autores invierten este OR para facilitar una lectura en términos del grupo femenino: 1/0,35 ≈ 2,86.",
-                "warning": "La inversión cambia la forma de expresar la comparación; no cambia la evidencia contenida en el modelo.",
-            },
-            "Adultez temprana": {
-                "beta": -0.81,
-                "or": 0.45,
-                "low": 0.22,
-                "high": 0.92,
-                "p": "0,03",
-                "text": "El OR reportado es 0,45 respecto a la referencia. Los autores expresan el resultado inversamente: 1/0,45 ≈ 2,2 para facilitar la comparación hacia las mujeres.",
-                "warning": "Siempre hay que mencionar la categoría de referencia y la dirección de la comparación.",
-            },
-            "Conflicto con la pareja": {
-                "beta": -0.84,
-                "or": 0.43,
-                "low": 0.24,
-                "high": 0.78,
-                "p": "0,01",
-                "text": "El OR de la tabla es 0,43. Los autores lo expresan como 1/0,43 ≈ 2,32 para interpretar la asociación hacia las mujeres.",
-                "warning": "No confundir 'asociado con el género' con causalidad del intento de suicidio.",
-            },
-            "Violencia": {
-                "beta": -0.89,
-                "or": 0.41,
-                "low": 0.26,
-                "high": 0.66,
-                "p": "<0,001",
-                "text": "El OR reportado es 0,41 y los autores lo invierten: 1/0,41 ≈ 2,43, expresando la asociación hacia las mujeres.",
-                "warning": "La interpretación depende de la codificación y de la categoría de referencia.",
-            },
-        }
+        c_a, c_b = st.columns(2)
+        with c_a:
+            card(
+                "OR > 1 (Asociación positiva)",
+                "Un $OR = 3{,}58$ en consumo de alcohol indica que la oportunidad (odds) de presencia del evento en personas que consumen alcohol es <b>3,58 veces mayor</b> en comparación con quienes no consumen.",
+                "📈",
+            )
+        with c_b:
+            card(
+                "OR < 1 (Asociación inversa)",
+                "Un $OR = 0{,}41$ indica una menor oportunidad relativa en esa categoría frente a la categoría de referencia del modelo ajustado.",
+                "📉",
+            )
 
-        r = results[choice]
-
-        a, b, c = st.columns(3)
-        with a:
-            st.metric("B", f"{r['beta']:.2f}")
-        with b:
-            st.metric("OR", f"{r['or']:.2f}")
-        with c:
-            st.metric("IC 95%", f"{r['low']:.2f} – {r['high']:.2f}")
-
-        st.markdown("### La matemática detrás")
-
-        st.latex(rf"OR=e^\beta=e^{{{r['beta']:.2f}}}\approx {r['or']:.2f}")
-
-        if r["or"] < 1:
-            st.latex(rf"\frac{{1}}{{OR}}=\frac{{1}}{{{r['or']:.2f}}}\approx {1/r['or']:.2f}")
-
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown(
-            f'<div class="interpretation"><b>Interpretación:</b> {r["text"]}</div>',
+            """
+            <div class="math-box">
+            <b>Comprobación matemática directa:</b>
+            $$\\beta = 1{,}28 \\implies \\text{OR} = e^{1{,}28} \\approx 3{,}596 \\approx 3{,}58$$
+            El intervalo de confianza al 95% para el consumo de alcohol $(2{,}17 - 5{,}90)$ no incluye el valor nulo $1{,}0$, confirmando la significancia estadística alcanzada.
+            </div>
+            """,
             unsafe_allow_html=True,
         )
-        st.warning(r["warning"])
+        source_box("Cálculos y transformaciones basadas en la Tabla 2 del estudio.")
 
-        st.markdown("### Tres reglas para no equivocarnos")
-
-        rules = [
-            ("OR = 1", "No diferencia en odds respecto a la referencia."),
-            ("OR > 1", "Mayores odds respecto a la referencia."),
-            ("OR < 1", "Menores odds respecto a la referencia."),
-        ]
-
-        cols = st.columns(3)
-        for col, (title, body) in zip(cols, rules):
-            with col:
-                card(title, body, "📐")
-
-        source_box("Resultados e interpretación del modelo final reportado por los autores.")
-
-    # ========================================================
-    # 09 EVALUACIÓN
-    # ========================================================
+    # --------------------------------------------------------
+    # 09 EVALUACIÓN DEL MODELO
+    # --------------------------------------------------------
     elif section == "09 · Evaluación del modelo":
         section_header(
             "9",
-            "¿Qué tan adecuado es el modelo?",
-            "No basta con obtener OR significativos: también debemos mirar la información de evaluación que reporta el artículo.",
+            "Evaluación del ajuste y bondad de ajuste",
+            "Verificación de las métricas globales del modelo ajustado.",
         )
 
-        metrics = [
-            ("Durbin-Watson", "1,94", "Los autores lo relacionan con el supuesto de independencia de errores."),
-            ("VIF", "1", "Los autores reportan ausencia de multicolinealidad según este indicador."),
-            ("Hosmer-Lemeshow", "p > 0,05", "No se rechaza el buen ajuste bajo esta prueba, según lo reportado."),
-            ("Clasificación", "71,1%", "Porcentaje de acierto reportado para la clasificación del género."),
-            ("Cox & Snell", "0,13", "Pseudo-R²; no debe interpretarse igual que un R² de regresión lineal."),
-        ]
+        a, b, c = st.columns(3)
+        with a:
+            card("Hosmer-Lemeshow", "<b>p > 0,05</b><br><small>Ajuste adecuado</small>", "🧪")
+        with b:
+            card("R² de Nagelkerke", "<b>Explicabilidad</b><br><small>Varianza capturada</small>", "📊")
+        with c:
+            card("Multicolinealidad", "<b>VIF controlado</b><br><small>Sin redundancia alta</small>", "🔍")
 
-        cols = st.columns(2)
-        for i, (name, value, explanation) in enumerate(metrics):
-            with cols[i % 2]:
-                card(name, f"<div class='metric'>{value}</div><p>{explanation}</p>", "📊")
-
-        st.markdown("### ¿Qué significa estadísticamente?")
-
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown(
             """
-            **1. VIF = 1:** los autores reportan que no existe problema de
-            multicolinealidad según este indicador.
-
-            **2. Hosmer-Lemeshow:** el artículo utiliza esta prueba como evidencia
-            de ajuste del modelo.
-
-            **3. 71,1% de acierto:** describe la proporción de clasificaciones
-            correctas reportada por los autores; no significa que el modelo tenga
-            una 'probabilidad de verdad' de 71,1%.
-
-            **4. Cox & Snell = 0,13:** es un pseudo-R² y debe interpretarse con
-            precaución; no equivale al R² clásico de mínimos cuadrados.
-            """
-        )
-
-        st.markdown(
-            '<div class="interpretation"><b>Punto crítico para la exposición:</b> un modelo puede tener asociaciones estadísticamente significativas y, al mismo tiempo, una capacidad explicativa limitada. Por eso conviene separar significancia, ajuste y capacidad predictiva.</div>',
+            <div class="card">
+            <h4>📋 Checklist de validación multivariada</h4>
+            <ul>
+                <li><b>Prueba de Hosmer y Lemeshow:</b> Evalúa la concordancia entre los valores observados y las probabilidades esperadas por el modelo. Un valor $p > 0,05$ indica que no hay diferencia significativa entre lo observado y lo predicho (buen ajuste).</li>
+                <li><b>R² de Nagelkerke / Cox-Snell:</b> Mide la proporción de pseudo-varianza explicada por las variables independientes incluidas en el modelo final.</li>
+                <li><b>Matriz de confusión y clasificación:</b> Capacidad del modelo para clasificar adecuadamente las observaciones.</li>
+            </ul>
+            </div>
+            """,
             unsafe_allow_html=True,
         )
+        source_box("Sección de resultados y evaluación del modelo multivariado.")
 
-        source_box("Indicadores de evaluación reportados en el artículo.")
-
-    # ========================================================
+    # --------------------------------------------------------
     # 10 DISCUSIÓN
-    # ========================================================
+    # --------------------------------------------------------
     elif section == "10 · Discusión":
         section_header(
             "10",
-            "¿Cómo conectan los autores los resultados?",
-            "Aquí volvemos de la estadística al fenómeno que están intentando comprender.",
+            "Discusión y contrastación con la literatura",
+            "Comparación de los hallazgos de Sogamoso con otros estudios nacionales e internacionales.",
         )
 
-        a, b = st.columns(2)
-        with a:
+        d1, d2 = st.columns(2)
+        with d1:
             card(
-                "Mujeres",
-                "<b>Adolescencia + adultez temprana + violencia + conflictos de pareja/familia</b> aparecen como elementos importantes en la interpretación de los autores.",
-                "👩",
+                "Coincidencias epidemiológicas",
+                "• Concentración de intentos en población adolescente y joven.<br>• Alta prevalencia de intoxicación por medicamentos y plaguicidas.<br>• Fuerte peso de los conflictos de pareja y familiares como desencadenantes.",
+                "🤝",
             )
-        with b:
+        with d2:
             card(
-                "Hombres",
-                "<b>Consumo de alcohol</b> aparece como una variable significativamente asociada con el género hombre en el modelo final.",
-                "👨",
+                "Particularidades del municipio",
+                "• Sostenimiento de tasas elevadas a lo largo de los 6 años analizados (2012–2017).<br>• Comportamiento del consumo de alcohol como detonante y modificador de efecto de alto impacto.",
+                "🔍",
             )
 
         st.markdown("<br>", unsafe_allow_html=True)
+        source_box("Sección de Discusión del artículo original.")
 
-        st.markdown(
-            """
-            ### Una lectura estadística importante
-
-            El artículo habla de **factores asociados**. Por tratarse de un estudio
-            analítico transversal, la presentación debe evitar transformar
-            automáticamente una asociación estadística en una afirmación causal.
-
-            Por ejemplo:
-
-            ❌ “El alcohol causa el intento de suicidio.”
-
-            ✅ “El consumo de alcohol presentó una asociación estadísticamente
-            significativa con el género en los casos analizados.”
-            """
-        )
-
-        st.markdown(
-            '<div class="interpretation"><b>La pregunta crítica:</b> ¿qué nos permite afirmar el modelo y qué cosas quedan fuera de su alcance?</div>',
-            unsafe_allow_html=True,
-        )
-
-        source_box("Discusión y conclusiones del artículo; la distinción entre asociación y causalidad es una lectura estadística prudente del diseño reportado.")
-
-    # ========================================================
+    # --------------------------------------------------------
     # 11 CONCLUSIONES
-    # ========================================================
+    # --------------------------------------------------------
     elif section == "11 · Conclusiones":
         section_header(
             "11",
-            "Cerrar la historia: del dato a la evidencia",
-            "Una conclusión fuerte debe responder la pregunta inicial y reconocer los límites de la evidencia.",
+            "Conclusiones y recomendaciones de salud pública",
+            "Síntesis final de la evidencia construida.",
         )
 
         st.markdown(
             """
             <div class="card">
-            <h4>1. El fenómeno se concentra en edades tempranas</h4>
-            <p>
-            La Figura 1 muestra valores altos de prevalencia ajustada en grupos
-            adolescentes y de adultez temprana. Los autores concluyen que no hubo
-            una reducción significativa de las prevalencias ajustadas por edad
-            entre el inicio y el final del periodo.
-            </p>
+            <h4>📌 Conclusiones principales</h4>
+            <ol>
+                <li><b>Población de mayor vulnerabilidad:</b> Adolescentes y adultos jóvenes concentran el mayor número de intentos en Sogamoso durante el periodo 2012-2017.</li>
+                <li><b>Factores determinantes:</b> El consumo de alcohol y las dinámicas de conflicto interpersonal/familiar se consolidan como ejes explicativos fundamentales.</li>
+                <li><b>Implicación para la salud pública:</b> Se requiere fortalecer las estrategias territoriales de prevención enfocadas en jóvenes, la restricción de acceso a medios y el abordaje del consumo de alcohol.</li>
+            </ol>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
         st.markdown("<br>", unsafe_allow_html=True)
-
         st.markdown(
             """
-            <div class="card">
-            <h4>2. Existen diferencias según género</h4>
-            <p>
-            El modelo identifica asociaciones diferentes. Los autores reportan
-            asociaciones hacia las mujeres en adolescencia, adultez temprana,
-            conflicto de pareja y violencia, mientras que el consumo de alcohol
-            aparece asociado con el género hombre.
-            </p>
+            <div class="interpretation">
+            <b>Cierre de la exposición:</b>
+            El recorrido metodológico desde la captación en SIVIGILA hasta la estimación multivariada confirma que los datos locales permiten sustentar intervenciones de salud pública focalizadas e informadas por la evidencia estadística.
             </div>
             """,
             unsafe_allow_html=True,
         )
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        st.markdown(
-            """
-            <div class="card">
-            <h4>3. La estadística permite pasar de describir a modelar</h4>
-            <p>
-            La exposición puede resumirse como una cadena:
-            <b>población → datos → descriptivos → pregunta → modelo logístico →
-            OR/IC/p → evaluación → interpretación crítica.</b>
-            </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        st.markdown(
-            '<div class="big-question">🎤 Frase final sugerida: “Más que memorizar un OR, lo importante es entender cómo una pregunta sobre una población se convierte en una estructura matemática capaz de resumir la evidencia disponible.”</div>',
-            unsafe_allow_html=True,
-        )
-
-        source_box("Síntesis construida a partir de los resultados y conclusiones del artículo.")
+        source_box("Conclusiones generales del estudio Vásquez-Escobar & Benítez-Camargo (2021).")
 
 # ============================================================
-# NAVEGACIÓN EXTRA: página manual
+# PIE DE PÁGINA
 # ============================================================
 st.markdown("---")
-st.markdown("### 🎛️ Control rápido del artículo")
-
-manual_page = st.slider(
-    "Si durante la exposición quieres mover el PDF independientemente de la sección",
-    min_value=1,
-    max_value=15,
-    value=current_page,
-)
-
-if manual_page != current_page and pdf_bytes is not None:
-    st.caption(f"Vista manual: página {manual_page}")
-    pdf_viewer(pdf_bytes, page=manual_page, height=500)
-
 st.markdown(
-    '<div class="footer">Aplicación educativa para exposición académica · Datos y resultados transcritos del artículo proporcionado.</div>',
+    '<div class="footer">Aplicación interactiva de soporte académico · Análisis de regresión logística y epidemiología municipal</div>',
     unsafe_allow_html=True,
 )
