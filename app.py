@@ -406,18 +406,20 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.2, 3.5])
-with c1:
-    st.metric("Casos", "524")
-with c2:
-    st.metric("Mujeres", "336")
-with c3:
-    st.metric("Hombres", "188")
-with c4:
-    st.markdown(
-        '<div class="big-question">🎯 Idea de la exposición: reconstruir el camino desde los datos hasta la evidencia estadística.</div>',
-        unsafe_allow_html=True,
-    )
+# SECCIÓN DE MÉTRICAS E IDEA DE LA EXPOSICIÓN (SOLO EN INTRODUCCIÓN)
+if section == "01 · Introducción":
+    c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.2, 3.5])
+    with c1:
+        st.metric("Casos", "524")
+    with c2:
+        st.metric("Mujeres", "336")
+    with c3:
+        st.metric("Hombres", "188")
+    with c4:
+        st.markdown(
+            '<div class="big-question">🎯 Idea de la exposición: reconstruir el camino desde los datos hasta la evidencia estadística.</div>',
+            unsafe_allow_html=True,
+        )
 
 st.markdown("---")
 
@@ -653,7 +655,7 @@ if not full_screen and right is not None:
             )
             source_box("Materiales y métodos del artículo.")
 
-         
+          
         # 04 PREVALENCIA
         # --------------------------------------------------------
         elif section == "04 · Prevalencia":
@@ -742,7 +744,7 @@ if not full_screen and right is not None:
 
             source_box("Figura 1 y texto de resultados del artículo.")
 
-       
+        
         # 05 TABLA 1
         # --------------------------------------------------------
         elif section == "05 · Tabla 1 · Descriptivos":
