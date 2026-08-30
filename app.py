@@ -286,7 +286,6 @@ table2_df = pd.DataFrame(
 # CARGA DEL ARCHIVO PDF LOCAL
 # ============================================================
 def article_path():
-    # Nombre actualizado del archivo PDF
     candidates = [
         Path("intento suicida.pdf"),
         Path("intento_suicida.pdf"),
@@ -301,16 +300,20 @@ def article_path():
 local_pdf = article_path()
 pdf_bytes = local_pdf.read_bytes() if local_pdf is not None else None
 
-def pdf_viewer(bytes_data, page=1, height=850):
+def pdf_viewer(bytes_data, page=1, height=750):
     encoded = base64.b64encode(bytes_data).decode("utf-8")
+    # Estructura compatible con Chrome para evitar bloqueos
     html = f"""
-    <iframe
-        src="data:application/pdf;base64,{encoded}#page={page}&zoom=page-width"
+    <object
+        data="data:application/pdf;base64,{encoded}#page={page}&zoom=page-width"
+        type="application/pdf"
         width="100%"
-        height="{height}px"
-        style="border:1px solid #E2E8F0;border-radius:12px;background:white;"
-        type="application/pdf">
-    </iframe>
+        height="{height}px">
+        <embed src="data:application/pdf;base64,{encoded}#page={page}&zoom=page-width" type="application/pdf" />
+        <p style="padding: 1rem; color: #000;">
+            Tu navegador ha restringido la vista embebida. Puedes abrirlo directamente usando el botón superior de descarga.
+        </p>
+    </object>
     """
     components.html(html, height=height + 15, scrolling=False)
 
@@ -431,12 +434,21 @@ left, right = st.columns([1.02, 1.18], gap="large")
 
 with left:
     st.markdown("### 📄 Artículo original")
-    st.caption(f"Página mostrada: {current_page} de 15")
+    st.caption(f"Página de referencia estimada: {current_page} de 15")
+    
     if pdf_bytes is not None:
-        pdf_viewer(pdf_bytes, page=current_page, height=820)
+        # Botón nativo de Streamlit sin bloqueos
+        st.download_button(
+            label="📥 Abrir / Descargar PDF del estudio",
+            data=pdf_bytes,
+            file_name="intento_suicida.pdf",
+            mime="application/pdf",
+            use_container_width=True
+        )
+        pdf_viewer(pdf_bytes, page=current_page, height=750)
     else:
         st.error(
-            "⚠️ No se encontró el archivo 'intento suicida.pdf' en el directorio. Asegúrate de que el archivo PDF se encuentre en la misma carpeta que este script."
+            "⚠️ No se encontró el archivo 'intento suicida.pdf' en el directorio. Asegúrate de que se encuentre en la misma carpeta que este script."
         )
 
 with right:
