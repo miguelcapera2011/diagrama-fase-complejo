@@ -30,7 +30,7 @@ GRAY = "#475569"
 LIGHT = "#F8FAFC"
 BORDER = "#CBD5E1"
 
-# ESTILOS CSS (AJUSTES DE TAMAÑO, ALINEACIÓN Y COLOR DE TEXTO EN RADIO BUTTONS)
+# ESTILOS CSS (AJUSTES DE TAMAÑO Y ALINEACIÓN DE ICONO)
 st.markdown(
     f"""
     <style>
@@ -48,12 +48,6 @@ st.markdown(
         }}
         [data-testid="stSidebar"] * {{
             color: #F8FAFC !important;
-        }}
-        
-        /* ESTILO ESPECÍFICO PARA LAS LETRAS DE LOS RADIO BUTTONS PRINCIPALES (SECCIÓN PREVALENCIA Y OTROS EN MAIN) */
-        [data-testid="stMainBlockContainer"] div[role="radiogroup"] label p {{
-            color: #0F172A !important;
-            font-weight: 600;
         }}
         
         /* ESTILO PARA LA BARRA LATERAL (ICONO Y TEXTOS PERFECTAMENTE CENTRADOS) */
@@ -225,7 +219,7 @@ st.markdown(
             color: {NAVY} !important;
         }}
         
-        /* CORRECCIÓN PARA ELIMINAR LOS BORDES Y LA FRANJA NEGRA DEL PDF */
+        /* CORRECCIÓN PARA ELIMINAR EL BORDES Y LA FRANJA NEGRA DEL PDF */
         iframe[title="streamlit_pdf_viewer.pdf_viewer"] {{
             background-color: transparent !important;
             width: 100% !important;
