@@ -394,8 +394,8 @@ def fmt_num(x):
 # BARRA LATERAL (NAVEGACIÓN)
 # ============================================================
 with st.sidebar:
-    st.markdown("## 📊 DEL ARTÍCULO A LA EVIDENCIA")
-    st.caption("Presentación interactiva del estudio")
+    st.markdown("## 📊 MODELOS LINEALES GENERALIZADOS")
+    st.caption("UNIVERSIDAD DEL TOLIMA")
 
     st.markdown("---")
     st.markdown("### Navegación")
@@ -471,7 +471,7 @@ with c3:
     st.metric("Hombres", "188")
 with c4:
     st.markdown(
-        '<div class="big-question">🎯 Idea de la exposición: reconstruir el camino desde los datos hasta la evidencia estadística.</div>',
+        '<div class="big-question">🎯 Idea de la exposicion: reconstruir el camino desde los datos hasta la evidencia estadística.</div>',
         unsafe_allow_html=True,
     )
 
@@ -489,7 +489,7 @@ with left:
         pdf_viewer(pdf_bytes, page=current_page, height=820)
     else:
         st.error(
-            "⚠️ No se encontró el archivo PDF en el repositorio. Asegúrate de incluir 'intento suicida(1).pdf' junto al archivo app.py."
+            "⚠️ No se encontró el archivo PDF en el repositorio. Asegúrate de incluir 'intento suicida.pdf' junto al archivo app.py."
         )
 
 with right:
