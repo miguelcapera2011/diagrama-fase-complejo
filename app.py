@@ -50,18 +50,16 @@ st.markdown(
             color: #F8FAFC !important;
         }}
         
-        /* ESTILO PARA LA BARRA LATERAL (ICONO Y TEXTOS PERFECTAMENTE CENTRADOS) */
+        /* ESTILO PARA LA BARRA LATERAL (ICONO A UN LADO Y LETRA AJUSTADA) */
         .sidebar-header-box {{
             text-align: center;
             padding: 0.3rem 0 0.8rem 0;
-            width: 100%;
         }}
         .sidebar-title-wrapper {{
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            width: 100%;
         }}
         .sidebar-icon {{
             font-size: 1.35rem;
@@ -84,8 +82,6 @@ st.markdown(
             letter-spacing: 0.8px;
             margin-top: 0.4rem;
             text-transform: uppercase;
-            text-align: center;
-            width: 100%;
         }}
 
         /* ESTILO PARA EL TÍTULO PRINCIPAL LIGERAMENTE MÁS PEQUEÑO Y CENTRADO */
@@ -754,7 +750,7 @@ if not full_screen and right is not None:
                 st.markdown(
                     """
                     <div class="interpretation">
-                    <b>Interpretación resultado:</b>
+                    <b>Lectura estadística:</b>
                     el patrón más marcado aparece en edades tempranas. El grupo de
                     <b>15–19 años</b> presenta valores elevados a lo largo del periodo.
                     </div>
