@@ -1041,4 +1041,4 @@ with right:
                 "🏛️",
             )
 
-        source_box("Sección de Conclusiones y rec
+        source_box("Sección de Conclusiones y recomendaciones del artículo.")
