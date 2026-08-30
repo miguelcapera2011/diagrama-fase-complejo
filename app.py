@@ -473,24 +473,27 @@ st.markdown(
     '<div class="main-title">Intento suicida: un análisis municipal de factores asociados 2012–2017</div>',
     unsafe_allow_html=True,
 )
-st.markdown(
-    '<div class="subtitle">Sogamoso, Boyacá · Una lectura del artículo desde la estadística</div>',
-    unsafe_allow_html=True,
-)
 
-# Barra superior con métricas
-c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.2, 3.5])
-with c1:
-    st.metric("Casos", "524")
-with c2:
-    st.metric("Mujeres", "336")
-with c3:
-    st.metric("Hombres", "188")
-with c4:
+# MOSTRAR SUBTÍTULO Y MÉTRICAS SOLO SI ESTÁ EN LA INTRODUCCIÓN
+if section == "01 · Introducción":
     st.markdown(
-        '<div class="big-question">🎯 Idea de la exposición: reconstruir el camino desde los datos hasta la evidencia estadística.</div>',
+        '<div class="subtitle">Sogamoso, Boyacá · Una lectura del artículo desde la estadística</div>',
         unsafe_allow_html=True,
     )
+
+    # Barra superior con métricas
+    c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.2, 3.5])
+    with c1:
+        st.metric("Casos", "524")
+    with c2:
+        st.metric("Mujeres", "336")
+    with c3:
+        st.metric("Hombres", "188")
+    with c4:
+        st.markdown(
+            '<div class="big-question">🎯 Idea de la exposición: reconstruir el camino desde los datos hasta la evidencia estadística.</div>',
+            unsafe_allow_html=True,
+        )
 
 st.markdown("---")
 
@@ -849,127 +852,81 @@ with right:
             r"""
             Y_i =
             \begin{cases}
-            1 & \text{si la observación pertenece a la categoría codificada como 1}\\
-            0 & \text{si pertenece a la categoría codificada como 0}
+            1 & \text{si el caso es Hombre} \\
+            0 & \text{si el caso es Mujer}
             \end{cases}
             """
         )
 
-        st.markdown("### 1️⃣ Queremos una probabilidad")
-        st.latex(r"p_i=P(Y_i=1\mid X_1,\ldots,X_k)")
+        st.markdown("#### Expresión del modelo logístico")
+        st.latex(r"\ln\left(\frac{p}{1-p}\right) = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \dots + \beta_k X_k")
 
-        st.markdown("### 2️⃣ La probabilidad debe permanecer entre 0 y 1")
+        st.markdown("#### Relación con los Odds Ratios (OR)")
+        st.latex(r"OR = e^{\beta}")
 
-        st.latex(
-            r"""
-            p_i=
-            \frac{1}{1+e^{-(\beta_0+\beta_1X_{i1}+\cdots+\beta_kX_{ik})}}
-            """
-        )
-
-        st.markdown("### 3️⃣ Transformamos la probabilidad en log-odds")
-
-        st.latex(
-            r"""
-            \operatorname{logit}(p_i)
-            =
-            \ln\left(\frac{p_i}{1-p_i}\right)
-            = \beta_0 + \beta_1 X_{i1} + \dots + \beta_k X_{ik}
-            """
-        )
+        source_box("Fundamento teórico de la regresión logística binaria aplicada en el artículo.")
 
     elif section == "07 · Tabla 2 · Modelo final":
         section_header(
             "7",
-            "Tabla 2: El modelo final estimado por los autores",
-            "Resultados de los coeficientes, estadístico de Wald y Odds Ratios.",
+            "Tabla 2: Variables del modelo multivariado final",
+            "Resultados de la regresión logística binaria ajustada.",
         )
 
-        t2 = table2_df.copy()
-        t2["B"] = t2["B"].map(fmt_num)
-        t2["Wald"] = t2["Wald"].map(fmt_num)
-        t2["p"] = t2["p"].map(fmt_p)
-        t2["OR"] = t2["OR"].map(fmt_num)
-        t2["IC95% inf."] = t2["IC95% inf."].map(fmt_num)
-        t2["IC95% sup."] = t2["IC95% sup."].map(fmt_num)
+        st.dataframe(table2_df, use_container_width=True, hide_index=True)
 
-        st.dataframe(t2, use_container_width=True, hide_index=True)
-        source_box("Tabla 2 transcrita tal como aparece publicada en el artículo.")
+        source_box("Tabla 2 transcrita del artículo original.")
 
     elif section == "08 · Interpretación del OR":
         section_header(
             "8",
-            "¿Cómo interpretar los Odds Ratio (OR)?",
-            "Comprensión práctica de los OR e intervalos de confianza.",
+            "Interpretación de los Odds Ratios (OR)",
+            "¿Cómo leer los coeficientes en el contexto del problema?",
         )
 
-        st.markdown(
-            """
-            <div class="card">
-            <h4>💡 Regla del Odds Ratio</h4>
-            <ul>
-                <li><b>OR > 1:</b> Mayor oportunidad de presentar el evento en esa categoría respecto a la referencia.</li>
-                <li><b>OR = 1:</b> Sin diferencia de oportunidad.</li>
-                <li><b>OR < 1:</b> Menor oportunidad de presentar el evento respecto a la referencia.</li>
-            </ul>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        card(
+            "Consumo de alcohol (OR = 3.58)",
+            "Los hombres presentan 3.58 veces más probabilidad (odds) de registrar consumo de alcohol asociado al intento en comparación con las mujeres.",
+            "🍺"
         )
-
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown(
-            '<div class="interpretation">Ejemplo destacado: <b>Consumo de alcohol (OR = 3,58)</b><br>'
-            'Aparece fuertemente asociado con mayor oportunidad de pertenecer al grupo de hombres en comparación con no consumir alcohol.</div>',
-            unsafe_allow_html=True,
+        card(
+            "Violencia (OR = 0.41)",
+            "Las mujeres presentan mayor asociación con antecedentes de violencia que los hombres (OR < 1 indica menor odds en hombres).",
+            "⚠️"
         )
+
+        source_box("Interpretación epidemiológica basada en los resultados de la Tabla 2.")
 
     elif section == "09 · Evaluación del modelo":
         section_header(
             "9",
-            "Evaluación estadística y bondad de ajuste",
-            "Indicadores clave reportados para evaluar la calidad del modelo.",
+            "Evaluación de la bondad de ajuste del modelo",
+            "Pruebas estadísticamente significativas para la validación.",
         )
 
-        a, b, c = st.columns(3)
-        with a:
-            card("Prueba de Hosmer-Lemeshow", "<b>p > 0.05</b><br>Buen ajuste global", "📉")
-        with b:
-            card("R² de Nagelkerke", "<b>Explicación</b><br>Varianza explicada", "📊")
-        with c:
-            card("Clasificación correcta", "<b>Matriz</b><br>Capacidad predictiva", "🎯")
+        st.write("Prueba de Hosmer-Lemeshow, R² de Nagelkerke y porcentaje de clasificación correcta.")
+
+        source_box("Métricas de ajuste del modelo según el artículo.")
 
     elif section == "10 · Discusión":
         section_header(
             "10",
-            "Discusión epidemiológica",
-            "Interpretación cualitativa y comparación con la literatura previa.",
+            "Discusión y contraste con la literatura",
+            "Puntos clave de discusión entre los hallazgos y otros estudios.",
         )
 
-        st.markdown(
-            """
-            <div class="card">
-            <h4>🗣️ Implicaciones principales</h4>
-            <p>
-            Los hallazgos reafirman patrones sociodemográficos identificados en otros municipios del país, destacando el impacto de desencadenantes asociados a conflictos interpersonales en mujeres y un perfil con mayor frecuencia de consumo de alcohol en hombres.
-            </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.write("Discusión sobre factores de riesgo, género y diferencias observadas en Sogamoso.")
+
+        source_box("Sección de Discusión del artículo.")
 
     elif section == "11 · Conclusiones":
         section_header(
             "11",
-            "Conclusiones de la exposición",
-            "Síntesis de los puntos estadísticos y epidemiológicos más valiosos.",
+            "Conclusiones e implicaciones de salud pública",
+            "Cierre de la presentación y recomendaciones principales.",
         )
 
-        card(
-            "Conclusión principal",
-            "El estudio demuestra cómo la regresión logística permite diferenciar perfiles y factores asociados según el género, entregando información cuantitativa clave para priorizar estrategias focalizadas de intervención en salud pública.",
-            "🏁",
-        )
+        st.write("Conclusiones generales del estudio y recomendaciones estratégicas.")
 
-# Pie de página
-st.markdown('<div class="footer">Aplicación de exposición académica · Sogamoso (2012–2017)</div>', unsafe_allow_html=True)
+        source_box("Sección de Conclusiones del artículo.")
