@@ -2,7 +2,6 @@ import base64
 from pathlib import Path
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -16,465 +15,130 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Paleta sobria para exposición académica
-RED = "#D7263D"
-NAVY = "#0F172A"
-BLUE = "#2563EB"
-GREEN = "#059669"
-ORANGE = "#D97706"
-PURPLE = "#7C3AED"
-GRAY = "#64748B"
-LIGHT = "#F8FAFC"
-BORDER = "#E2E8F0"
-
-# ============================================================
-# ESTILOS CSS PERSONALIZADOS
-# ============================================================
+# Estilos de interfaz
 st.markdown(
-    f"""
+    """
     <style>
-        .stApp {{
-            background: {LIGHT};
-        }}
-        [data-testid="stSidebar"] {{
-            background: linear-gradient(180deg, #0F172A 0%, #172554 100%);
-        }}
-        [data-testid="stSidebar"] h1, 
-        [data-testid="stSidebar"] h2, 
-        [data-testid="stSidebar"] h3, 
-        [data-testid="stSidebar"] p, 
-        [data-testid="stSidebar"] span:not([data-baseweb]) {{
-            color: #F8FAFC;
-        }}
-        [data-baseweb="select"] *, 
-        div[role="listbox"] *,
-        .stSelectbox label,
-        .stRadio label {{
-            color: #000000 !important;
-        }}
-        .main-title {{
-            font-size: 2.0rem;
-            font-weight: 800;
-            color: {NAVY};
-            margin-bottom: 0.1rem;
-        }}
-        .subtitle {{
-            color: {GRAY};
-            font-size: 1rem;
-            margin-bottom: 1rem;
-        }}
-        .section-title {{
-            font-size: 1.45rem;
-            font-weight: 800;
-            color: {NAVY};
-            margin-top: 0.2rem;
-        }}
-        .section-subtitle {{
-            color: {GRAY};
-            margin-bottom: 0.8rem;
-        }}
-        .card {{
-            background: white;
-            border: 1px solid {BORDER};
-            border-radius: 14px;
-            padding: 1rem 1.15rem;
-            box-shadow: 0 2px 10px rgba(15,23,42,.05);
-            height: 100%;
-            color: #000000 !important;
-        }}
-        .card h4 {{
-            margin: 0 0 .45rem 0;
-            color: {NAVY} !important;
-        }}
-        .card p, .card div {{
-            color: #000000 !important;
-        }}
-        .interpretation {{
-            background: #FFF7ED;
-            border-left: 5px solid {ORANGE};
-            padding: .9rem 1rem;
-            border-radius: 8px;
-            margin: .7rem 0;
-            color: #000000 !important;
-        }}
-        .math-box {{
-            background: #EFF6FF;
-            border: 1px solid #BFDBFE;
-            border-radius: 12px;
-            padding: 1rem;
-            color: #000000 !important;
-        }}
-        .source-box {{
-            background: #F1F5F9;
-            border: 1px solid {BORDER};
-            border-radius: 10px;
-            padding: .75rem 1rem;
-            font-size: .82rem;
-            color: #000000 !important;
-        }}
-        .step {{
-            background: white;
-            border: 1px solid {BORDER};
-            border-radius: 12px;
-            padding: .9rem;
-            text-align: center;
-            min-height: 120px;
-            color: #000000 !important;
-        }}
-        .step p {{
-            color: #000000 !important;
-        }}
-        .step-number {{
-            font-size: .8rem;
-            font-weight: 700;
-            color: {RED};
-        }}
-        .step-title {{
-            font-weight: 800;
-            color: {NAVY};
-        }}
-        .small-note {{
-            color: #000000;
-            font-size: .82rem;
-        }}
-        .big-question {{
-            font-size: 1.25rem;
-            font-weight: 750;
-            color: {NAVY};
-            background: white;
-            border-radius: 14px;
-            border: 1px solid {BORDER};
-            padding: 1rem 1.2rem;
-        }}
-        div[data-testid="stMetric"] {{
-            background: white;
-            border: 1px solid {BORDER};
-            padding: .7rem;
-            border-radius: 12px;
-        }}
-        div[data-testid="stMetric"] * {{
-            color: #000000 !important;
-        }}
+        .main-title { font-size: 2.0rem; font-weight: 800; color: #0F172A; margin-bottom: 0.1rem; }
+        .subtitle { color: #64748B; font-size: 1rem; margin-bottom: 1rem; }
+        .card { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 1rem; color: black; }
+        .source-box { background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 8px; padding: .6rem; font-size: .85rem; color: black; }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 # ============================================================
-# DATOS TRANSCRITOS DEL ARTÍCULO
+# CARGA SEGURA DEL PDF
 # ============================================================
-age_groups = [
-    "5 a 9", "10 a 14", "15 a 19", "20 a 24", "25 a 29",
-    "30 a 34", "35 a 39", "40 a 44", "45 a 49", "50 a 54",
-    "55 a 59", "60 a 64", "65 a 69", "70 a 74", "75 a 79", "80 y más"
-]
-prevalence = {
-    2012: [0.0, 5.8, 22.3, 16.9, 8.8, 6.0, 4.1, 3.4, 1.1, 0.5, 1.1, 0.6, 0.0, 0.6, 0.5, 0.0],
-    2013: [0.0, 9.6, 23.5, 21.4, 16.3, 6.8, 5.9, 5.1, 3.1, 2.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-    2014: [0.0, 4.9, 16.9, 15.9, 11.7, 10.8, 5.0, 0.9, 0.0, 0.7, 2.2, 0.0, 0.0, 0.0, 0.0, 0.0],
-    2015: [0.0, 4.2, 16.2, 17.0, 8.9, 5.9, 3.0, 0.9, 1.5, 0.7, 0.0, 0.0, 0.8, 0.0, 0.0, 0.0],
-    2016: [0.9, 8.4, 26.8, 15.2, 5.0, 2.0, 4.0, 0.0, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7],
-    2017: [0.0, 4.3, 21.0, 19.1, 9.0, 8.1, 5.0, 3.8, 3.1, 0.7, 2.0, 0.0, 0.0, 0.0, 0.0, 0.7],
-}
-
-prev_rows = []
-for year, values in prevalence.items():
-    for age, value in zip(age_groups, values):
-        prev_rows.append({"Año": year, "Grupo de edad": age, "Prevalencia": value})
-prev_df = pd.DataFrame(prev_rows)
-
-table1 = [
-    ["Área de ocurrencia", "Urbano", 94.0, 315, 89.8, 169, 92.0, 484, 0.02],
-    ["Área de ocurrencia", "Rural disperso", 6.2, 21, 10.1, 19, 8.0, 40, 0.02],
-    ["Edad agrupada", "3 a 11 años (niñez)", 0.9, 3, 1.6, 3, 1.1, 6, 0.000],
-    ["Edad agrupada", "11 a 20 años (adolescencia)", 50.3, 169, 35.1, 66, 44.8, 235, 0.000],
-    ["Edad agrupada", "20 a 40 (adultez temprana)", 42.0, 141, 45.7, 86, 43.3, 227, 0.000],
-    ["Edad agrupada", "40 a 65 (adultez mediana y tardía)", 6.8, 23, 17.6, 33, 10.7, 56, 0.000],
-    ["Estado civil", "Soltero", 64.8, 210, 54.4, 99, 61.7, 309, 0.115],
-    ["Estado civil", "Casado", 31.2, 101, 3.9, 71, 34.0, 172, 0.115],
-    ["Estado civil", "Separado", 3.1, 10, 5.5, 10, 4.0, 20, 0.115],
-    ["Estado civil", "Viudo", 0.9, 3, 1.1, 2, 1.0, 5, 0.115],
-    ["Ocupación", "Ama de casa", 30.2, 101, 1.1, 2, 20.2, 103, 0.000],
-    ["Ocupación", "Estudiante", 47.6, 159, 35.4, 62, 43.4, 221, 0.000],
-    ["Ocupación", "Empleado auxiliar", 3.89, 13, 2.6, 47, 11.9, 60, 0.000],
-    ["Ocupación", "Empleado profesional", 2.9, 10, 5.7, 10, 3.9, 20, 0.000],
-    ["Ocupación", "Independiente", 8.9, 30, 14.2, 25, 10.8, 55, 0.000],
-    ["Ocupación", "Población carcelaria", 0.2, 1, 0.0, 0, 0.2, 1, 0.000],
-    ["Ocupación", "Desempleado", 3.3, 11, 12.6, 22, 6.5, 33, 0.000],
-    ["Ocupación", "Pensionado", 0.2, 1, 1.14, 2, 0.6, 3, 0.000],
-    ["Forma de realización", "Impulsiva", 84.8, 279, 82.8, 149, 84.1, 428, 0.551],
-    ["Forma de realización", "Planeada", 15.2, 50, 17.2, 31, 15.9, 81, 0.551],
-    ["Antecedentes de intento", "No", 68.5, 24, 67.4, 120, 68.1, 44, 0.80],
-    ["Antecedentes de intento", "Sí", 31.5, 103, 32.6, 58, 31.9, 161, 0.80],
-    ["Método del intento", "Medicamentos", 54.4, 182, 40.0, 70, 49.2, 252, 0.000],
-    ["Método del intento", "Plaguicidas", 21.8, 73, 29.1, 51, 24.2, 124, 0.000],
-    ["Método del intento", "Sustancias psicoactivas (SPA)", 0.2, 1, 2.28, 4, 1.0, 5, 0.000],
-    ["Método del intento", "Heridas", 18.5, 61, 17.9, 33, 18.3, 94, 0.000],
-    ["Método del intento", "Otros métodos", 3.59, 12, 13.7, 24, 7.1, 36, 0.000],
-    ["Método del intento", "Arma de fuego", 0.0, 0, 1.1, 2, 0.4, 2, 0.000],
-    ["Posible desencadenante", "Conflicto con la pareja", 36.9, 118, 29.8, 54, 34.3, 172, 0.005],
-    ["Posible desencadenante", "Conflicto familiar", 27.2, 87, 18.2, 33, 24.0, 120, 0.005],
-    ["Posible desencadenante", "Indeterminado", 20.9, 67, 30.4, 55, 24.4, 122, 0.005],
-    ["Posible desencadenante", "Consumo de alcohol", 9.1, 29, 12.7, 23, 10.4, 52, 0.005],
-    ["Posible desencadenante", "Conflicto laboral o escolar", 3.4, 11, 2.2, 4, 3.0, 15, 0.005],
-    ["Posible desencadenante", "Problemas económicos", 2.5, 8, 12.7, 12, 4.0, 20, 0.005],
-    ["Enfermedad mental", "No", 65.8, 210, 67.6, 115, 66.5, 325, 0.68],
-    ["Enfermedad mental", "Sí", 34.2, 109, 32.4, 55, 33.5, 164, 0.68],
-    ["Violencia", "No", 46.0, 137, 62.5, 95, 51.6, 232, 0.001],
-    ["Violencia", "Sí", 54.0, 161, 37.5, 57, 48.4, 218, 0.001],
-    ["Consumo de alcohol", "No", 59.7, 181, 38.5, 65, 52.1, 246, 0.000],
-    ["Consumo de alcohol", "Sí", 40.3, 122, 59.7, 104, 47.9, 226, 0.000],
-    ["Relaciones familiares", "Disfuncionales", 79.7, 248, 78.2, 129, 79.2, 377, 0.69],
-    ["Relaciones familiares", "Funcionales", 20.3, 63, 21.8, 36, 20.8, 99, 0.69],
-    ["Redes de apoyo", "No", 9.2, 28, 12.7, 22, 10.4, 49, 0.23],
-    ["Redes de apoyo", "Sí", 90.8, 278, 87.3, 145, 89.6, 423, 0.23],
-]
-table1_df = pd.DataFrame(
-    table1,
-    columns=[
-        "Variable", "Categoría",
-        "Mujer %", "Mujer N",
-        "Hombre %", "Hombre N",
-        "Total %", "Total N",
-        "p"
+def buscar_pdf():
+    # Intenta encontrar el archivo incluso si hay variaciones en el nombre o espacios
+    posibles_nombres = [
+        "intento suicida.pdf",
+        "intento suicida .pdf",
+        "intento_suicida.pdf",
+        "intento suicidad.pdf"
     ]
-)
-
-table2 = [
-    ["Edad", "Niñez", 0.32, 0.05, 0.08, 0.83, 0.08, 24.34],
-    ["Edad", "Adolescencia", -1.04, 7.52, 0.01, 0.35, 0.17, 0.74],
-    ["Edad", "Adultez temprana", -0.81, 4.81, 0.03, 0.45, 0.22, 0.92],
-    ["Posible desencadenante", "Conflicto con la pareja", -0.84, 7.67, 0.01, 0.43, 0.24, 0.78],
-    ["Posible desencadenante", "Conflicto familiar", -0.66, 3.81, 0.05, 0.52, 0.26, 1.00],
-    ["Posible desencadenante", "Conflicto laboral o escolar", -0.70, 1.09, 0.30, 0.50, 0.13, 1.85],
-    ["Posible desencadenante", "Problemas económicos", 0.74, 1.43, 0.23, 2.09, 0.62, 7.02],
-    ["Posible desencadenante", "Consumo de alcohol", -0.81, 3.89, 0.05, 0.44, 0.20, 1.00],
-    ["Posible desencadenante", "Violencia", -0.89, 13.80, 0.00, 0.41, 0.26, 0.66],
-    ["Consumo de alcohol", "Sí", 1.28, 25.09, 0.00, 3.58, 2.17, 5.90],
-    ["Constante", "Intercepto", 0.44, 1.33, 0.25, 1.55, None, None],
-]
-table2_df = pd.DataFrame(
-    table2,
-    columns=["Variable", "Categoría", "B", "Wald", "p", "OR", "IC95% inf.", "IC95% sup."]
-)
-
-# ============================================================
-# FUNCIONES AUXILIARES
-# ============================================================
-def article_path():
-    candidates = [
-        Path("intento suicida.pdf"),
-        Path("intento suicidad.pdf"),
-        Path("intento_suicida.pdf"),
-        Path("intento_suicidad.pdf"),
-        Path("articulo.pdf"),
-    ]
-    for p in candidates:
+    for nombre in posibles_nombres:
+        p = Path(nombre)
         if p.exists():
             return p
+    # Búsqueda flexible por cualquier .pdf en la carpeta
+    archivos_pdf = list(Path(".").glob("*.pdf"))
+    if archivos_pdf:
+        return archivos_pdf[0]
     return None
 
-local_pdf = article_path()
-pdf_bytes = local_pdf.read_bytes() if local_pdf is not None else None
-
-def pdf_viewer(bytes_data, page=1, height=820):
-    encoded = base64.b64encode(bytes_data).decode("utf-8")
-    html = f"""
-    <iframe
-        src="data:application/pdf;base64,{encoded}#page={page}&zoom=page-width"
-        width="100%"
-        height="{height}px"
-        style="border:1px solid #E2E8F0;border-radius:12px;background:white;"
-        type="application/pdf">
-    </iframe>
-    """
-    components.html(html, height=height + 15, scrolling=False)
-
-def source_box(text):
-    st.markdown(f'<div class="source-box">📌 {text}</div>', unsafe_allow_html=True)
-
-def card(title, body, icon=""):
-    st.markdown(
-        f"""
-        <div class="card">
-            <h4>{icon} {title}</h4>
-            <div>{body}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-def section_header(number, title, subtitle):
-    st.markdown(f'<div class="section-title">{number}. {title}</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="section-subtitle">{subtitle}</div>', unsafe_allow_html=True)
-
-def fmt_p(x):
-    if pd.isna(x):
-        return "—"
-    if x < 0.001:
-        return "<0,001"
-    return f"{x:.3f}".replace(".", ",")
-
-def fmt_num(x):
-    if pd.isna(x):
-        return "—"
-    return f"{x:.2f}".replace(".", ",")
+pdf_path = buscar_pdf()
 
 # ============================================================
-# BARRA LATERAL (NAVEGACIÓN)
+# DATOS
+# ============================================================
+age_groups = ["5 a 9", "10 a 14", "15 a 19", "20 a 24", "25 a 29", "30 a 34", "35 a 39", "40 a 44"]
+prevalence_data = pd.DataFrame({
+    "Grupo de edad": age_groups * 2,
+    "Prevalencia": [0.0, 5.8, 22.3, 16.9, 8.8, 6.0, 4.1, 3.4, 0.0, 9.6, 23.5, 21.4, 16.3, 6.8, 5.9, 5.1],
+    "Año": [2012]*8 + [2013]*8
+})
+
+table1_df = pd.DataFrame([
+    ["Área", "Urbano", 94.0, 315, 89.8, 169],
+    ["Área", "Rural disperso", 6.2, 21, 10.1, 19],
+    ["Edad", "Adolescencia (11-20)", 50.3, 169, 35.1, 66],
+    ["Edad", "Adultez temprana (20-40)", 42.0, 141, 45.7, 86]
+], columns=["Variable", "Categoría", "Mujer %", "Mujer N", "Hombre %", "Hombre N"])
+
+table2_df = pd.DataFrame([
+    ["Consumo de alcohol", "Sí", 1.28, 0.00, 3.58, 2.17, 5.90],
+    ["Violencia", "Sí", -0.89, 0.00, 0.41, 0.26, 0.66]
+], columns=["Variable", "Categoría", "B", "p", "OR", "IC95% inf.", "IC95% sup."])
+
+# ============================================================
+# BARRA LATERAL
 # ============================================================
 with st.sidebar:
-    st.markdown("## 📊 MODELOS LINEALES GENERALIZADOS")
-    st.caption("UNIVERSIDAD DEL TOLIMA")
-    st.markdown("---")
-    st.markdown("### Navegación")
-    section = st.radio(
-        "Etapa de la exposición",
+    st.markdown("## 📊 MENÚ DE NAVEGACIÓN")
+    seccion = st.radio(
+        "Seleccione la etapa:",
         [
             "01 · Introducción",
-            "02 · Contexto y pregunta",
-            "03 · Datos y diseño",
-            "04 · Prevalencia",
-            "05 · Tabla 1 · Descriptivos",
-            "06 · Modelo logístico",
-            "07 · Tabla 2 · Modelo final",
-            "08 · Interpretación del OR",
-            "09 · Evaluación del modelo",
-            "10 · Discusión",
-            "11 · Conclusiones",
-        ],
-        label_visibility="collapsed",
+            "02 · Prevalencia",
+            "03 · Tabla 1 · Descriptivos",
+            "04 · Tabla 2 · Modelo Final",
+            "05 · Conclusiones"
+        ]
     )
     st.markdown("---")
-    st.markdown("### 📚 Ficha del estudio")
-    st.write("**Lugar:** Sogamoso, Boyacá")
-    st.write("**Periodo:** 2012–2017")
-    st.write("**Casos:** 524")
-    st.write("**Mujeres:** 336 (64,2%)")
-    st.write("**Hombres:** 188 (35,8%)")
-    st.write("**Fuente:** SIVIGILA")
-    st.write("**Diseño:** analítico transversal")
-
-page_map = {
-    "01 · Introducción": 1,
-    "02 · Contexto y pregunta": 3,
-    "03 · Datos y diseño": 5,
-    "04 · Prevalencia": 6,
-    "05 · Tabla 1 · Descriptivos": 7,
-    "06 · Modelo logístico": 8,
-    "07 · Tabla 2 · Modelo final": 9,
-    "08 · Interpretación del OR": 9,
-    "09 · Evaluación del modelo": 9,
-    "10 · Discusión": 11,
-    "11 · Conclusiones": 13,
-}
-current_page = page_map[section]
+    st.caption("📌 **Datos del estudio:** Sogamoso, Boyacá (2012–2017) | N = 524")
 
 # ============================================================
-# ENCABEZADO PRINCIPAL
+# PANEL PRINCIPAL
 # ============================================================
-st.markdown(
-    '<div class="main-title">Intento suicida: un análisis municipal de factores asociados 2012–2017</div>',
-    unsafe_allow_html=True,
-)
-st.markdown(
-    '<div class="subtitle">Sogamoso, Boyacá · Una lectura del artículo desde la estadística</div>',
-    unsafe_allow_html=True,
-)
+st.markdown('<div class="main-title">Intento suicida: Análisis Multivariado (2012–2017)</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Sogamoso, Boyacá · Análisis de Evidencia Estadística</div>', unsafe_allow_html=True)
 
-c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.2, 3.5])
-with c1:
-    st.metric("Casos", "524")
-with c2:
-    st.metric("Mujeres", "336")
-with c3:
-    st.metric("Hombres", "188")
-with c4:
-    st.markdown(
-        '<div class="big-question">🎯 Idea de la exposición: reconstruir el camino desde los datos hasta la evidencia estadística.</div>',
-        unsafe_allow_html=True,
-    )
-st.markdown("---")
+col_pdf, col_content = st.columns([1, 1], gap="medium")
 
-# ============================================================
-# LAYOUT PRINCIPAL: PDF + CONTENIDO
-# ============================================================
-left, right = st.columns([1.02, 1.18], gap="large")
-
-with left:
-    st.markdown("### 📄 Artículo original")
-    st.caption(f"Página mostrada: {current_page} de 15")
-    if pdf_bytes is not None:
-        pdf_viewer(pdf_bytes, page=current_page, height=820)
+# PANEL IZQUIERDO: VISOR DE PDF
+with col_pdf:
+    st.markdown("### 📄 Visor del documento PDF")
+    if pdf_path:
+        with open(pdf_path, "rb") as f:
+            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+        
+        # Objeto embed genérico para mayor compatibilidad
+        pdf_display = f'''
+            <object data="data:application/pdf;base64,{base64_pdf}" type="application/pdf" width="100%" height="700px">
+                <p>Tu navegador no admite la visualización directa del PDF. 
+                <a href="data:application/pdf;base64,{base64_pdf}" download="{pdf_path.name}">Haz clic aquí para descargarlo.</a></p>
+            </object>
+        '''
+        st.markdown(pdf_display, unsafe_allow_html=True)
     else:
-        st.error("⚠️ No se encontró el archivo PDF en el directorio principal.")
+        st.error(f"❌ No se encontró el archivo `.pdf` en la misma carpeta que `app.py`.")
+        st.info("💡 Asegúrate de colocar el archivo PDF en la misma carpeta donde ejecutas el comando `streamlit run app.py`.")
 
-with right:
-    if section == "01 · Introducción":
-        section_header("1", "Entrar al estudio", "Resumen preliminar de los datos y el objetivo principal.")
-        a, b = st.columns(2)
-        with a:
-            card("¿Qué investigaron?", "El comportamiento epidemiológico del intento de suicidio y la relación con el género y variables psicosociales.", "🎯")
-        with b:
-            card("¿Dónde?", "En Sogamoso, Boyacá, con datos del SIVIGILA (2012-2017).", "📍")
-        st.markdown("<br>", unsafe_allow_html=True)
-        source_box("Vásquez-Escobar & Benítez-Camargo (2021). Hacia la Promoción de la Salud.")
-
-    elif section == "02 · Contexto y pregunta":
-        section_header("2", "Del problema a la pregunta", "Planteamiento del modelo estadístico.")
-        st.latex(r"Y = \text{género (Hombre / Mujer)}")
-        st.write("Variables independientes: edad agrupada, desencadenante, violencia, consumo de alcohol, etc.")
-        source_box("Sección de materiales y métodos del PDF.")
-
-    elif section == "03 · Datos y diseño":
-        section_header("3", "Datos y diseño", "Filtros y flujo de datos capturados por el SIVIGILA.")
-        a, b, c = st.columns(3)
-        with a: card("Casos reportados", "579", "📥")
-        with b: card("Excluidos", "55", "↘️")
-        with c: card("Muestra final", "524", "✅")
-        source_box("Sección de Criterios de Inclusión/Exclusión.")
-
-    elif section == "04 · Prevalencia":
-        section_header("4", "Prevalencia ajustada", "Distribución por edad y año.")
-        fig = px.line(prev_df, x="Grupo de edad", y="Prevalencia", color="Año", markers=True)
+# PANEL DERECHO: CONTENIDO DINÁMICO
+with col_content:
+    if "01 · Introducción" in seccion:
+        st.markdown("### 🎯 Introducción al Estudio")
+        st.write("El objetivo principal es identificar la prevalencia y factores asociados al intento suicida atendido por el sistema SIVIGILA.")
+        st.markdown('<div class="card"><b>Muestra analizada:</b> 524 casos confirmados en Sogamoso.</div>', unsafe_allow_html=True)
+        
+    elif "02 · Prevalencia" in seccion:
+        st.markdown("### 📈 Prevalencia por Edad")
+        fig = px.line(prevalence_data, x="Grupo de edad", y="Prevalencia", color="Año", markers=True)
         st.plotly_chart(fig, use_container_width=True)
-        source_box("Figura 1 del artículo original.")
-
-    elif section == "05 · Tabla 1 · Descriptivos":
-        section_header("5", "Estadística Descriptiva", "Análisis univariado y bivariado.")
-        var = st.selectbox("Seleccione una variable", table1_df["Variable"].unique())
-        sub_df = table1_df[table1_df["Variable"] == var]
-        st.dataframe(sub_df, use_container_width=True)
-        source_box("Tabla 1 del PDF.")
-
-    elif section == "06 · Modelo logístico":
-        section_header("6", "Regresión Logística Binaria", "Fundamentos del modelo.")
-        st.latex(r"\ln\left(\frac{P(Y=1)}{1-P(Y=1)}\right) = \beta_0 + \beta_1 X_1 + \dots + \beta_k X_k")
-        source_box("Modelo estadístico planteado.")
-
-    elif section == "07 · Tabla 2 · Modelo final":
-        section_header("7", "Estimación del Modelo", "Resultados del análisis multivariado.")
+        
+    elif "03 · Tabla 1" in seccion:
+        st.markdown("### 📊 Caracterización Demográfica")
+        st.dataframe(table1_df, use_container_width=True)
+        
+    elif "04 · Tabla 2" in seccion:
+        st.markdown("### 🔬 Modelo de Regresión Logística")
         st.dataframe(table2_df, use_container_width=True)
-        source_box("Tabla 2 del PDF.")
-
-    elif section == "08 · Interpretación del OR":
-        section_header("8", "Interpretación de Odds Ratios", "Relación directa de los estimadores.")
-        card("Consumo de Alcohol", "<b>OR = 3.58</b> (IC 95%: 2.17 - 5.90)<br>Mayor asociación en hombres que en mujeres.", "🍺")
-        source_box("Interpretación de OR según la discusión del artículo.")
-
-    elif section == "09 · Evaluación del modelo":
-        section_header("9", "Ajuste del Modelo", "Pruebas de calidad y bondad de ajuste.")
-        card("Hosmer y Lemeshow", "<b>p > 0.05</b> (Chi2 = 6.5)<br>Indica que el modelo ajusta adecuadamente los datos observados.", "🧪")
-        source_box("Tabla 3 del PDF.")
-
-    elif section == "10 · Discusión":
-        section_header("10", "Discusión de Hallazgos", "Contraste con la literatura previa.")
-        st.write("- Concentración del fenómeno en jóvenes y adolescentes.")
-        st.write("- El consumo de alcohol como factor de riesgo crítico en hombres.")
-        source_box("Sección de discusión.")
-
-    elif section == "11 · Conclusiones":
-        section_header("11", "Conclusiones", "Implicaciones para salud pública.")
-        st.write("- Necesidad de capacitar a agentes comunitarios o guardianes (gatekeepers).")
-        st.write("- Fortalecimiento de centros de escucha orientados a jóvenes.")
-        source_box("Conclusiones del estudio.")
+        
+    elif "05 · Conclusiones" in seccion:
+        st.markdown("### 📝 Conclusiones Principales")
+        st.write("1. El consumo de alcohol representa un factor de riesgo significativo (OR > 3.0).")
+        st.write("2. Es prioritario enfocar la prevención en grupos adolescentes y adultos jóvenes.")
