@@ -326,7 +326,9 @@ table2_df = pd.DataFrame(
 # ============================================================
 def article_path():
     candidates = [
-        Path("intento suicida(1).pdf"),
+        Path("intento suicidad.pdf"),
+        Path("intento suicida.pdf"),
+        Path("intento_suicidad.pdf"),
         Path("intento_suicida.pdf"),
         Path("articulo.pdf"),
         Path("paper.pdf"),
@@ -489,7 +491,7 @@ with left:
         pdf_viewer(pdf_bytes, page=current_page, height=820)
     else:
         st.error(
-            "⚠️ No se encontró el archivo PDF en el repositorio. Asegúrate de incluir 'intento suicida.pdf' junto al archivo app.py."
+            "⚠️ No se encontró el archivo PDF en el repositorio. Asegúrate de incluir 'intento suicidad.pdf' junto al archivo app.py."
         )
 
 with right:
@@ -853,58 +855,71 @@ with right:
             """
         )
 
-        st.markdown("### 1️⃣ Queremos una probabilidad")
-        st.latex(r"p_i=P(Y_i=1\mid X_1,\ldots,X_k)")
-
-        st.markdown("### 2️⃣ La probabilidad debe permanecer entre 0 y 1")
-
-        st.latex(
-            r"""
-            p_i=
-            \frac{1}{1+e^{-(\beta_0+\beta_1X_{i1}+\cdots+\beta_kX_{ik})}}
-            """
-        )
-
-        st.markdown("### 3️⃣ Transformamos la probabilidad en log-odds")
-
-        st.latex(
-            r"""
-            \operatorname{logit}(p_i)
-            =
-            \ln\left(\frac{p_i}{1-p_i}\right)
-            =
-            \beta_0+\beta_1X_{i1}+\cdots+\beta_kX_{ik}
-            """
-        )
-
-        source_box("Fundamentos teóricos del modelo de regresión logística binaria aplicado en el estudio.")
-
-    # ========================================================
-    # 07 TABLA 2 MODELO FINAL
-    # ========================================================
-    elif section == "07 · Tabla 2 · Modelo final":
-        section_header(
-            "7",
-            "Tabla 2: Modelo de regresión logística multivariada",
-            "Resultados de la estimación multivariada reportados por los autores.",
-        )
-
-        st.dataframe(table2_df, use_container_width=True, hide_index=True)
+        st.markdown("### El vínculo o función ligamen (logit)")
+        st.latex(r"\pi_i = P(Y_i = 1 \mid X)")
+        st.latex(r"\text{logit}(\pi_i) = \ln\left(\frac{\pi_i}{1 - \pi_i}\right) = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + \dots + \beta_k X_{ki}")
 
         st.markdown(
             """
-            <div class="interpretation">
-            <b>Lectura de la tabla:</b><br>
-            • <b>B:</b> Coeficiente de regresión estimado en la escala logit.<br>
-            • <b>Wald:</b> Estadístico de prueba para la significancia individual.<br>
-            • <b>p:</b> Valor p asociado a la prueba de Wald.<br>
-            • <b>OR:</b> Odds Ratio ($e^B$).<br>
-            • <b>IC95%:</b> Intervalo de confianza al 95% para el Odds Ratio.
+            <div class="math-box">
+            <b>¿Por qué no usar regresión lineal simple?</b><br>
+            La regresión lineal clásica podría predecir probabilidades menores a 0 o mayores a 1.
+            La transformación logit mapea el rango de probabilidad (0, 1) a toda la recta real (-∞, +∞).
             </div>
             """,
             unsafe_allow_html=True,
         )
-        source_box("Tabla 2 transcrita directamente del artículo.")
+
+        source_box("Marco teórico del modelo lineal generalizado para respuesta binaria.")
+
+    # ========================================================
+    # 07 TABLA 2
+    # ========================================================
+    elif section == "07 · Tabla 2 · Modelo final":
+        section_header(
+            "7",
+            "Modelo multivariado final (Tabla 2)",
+            "Resultados estimados en el artículo para el modelo multivariado.",
+        )
+
+        display_t2 = table2_df.copy()
+        display_t2["p"] = display_t2["p"].map(fmt_p)
+        display_t2["B"] = display_t2["B"].map(fmt_num)
+        display_t2["Wald"] = display_t2["Wald"].map(fmt_num)
+        display_t2["OR"] = display_t2["OR"].map(fmt_num)
+        display_t2["IC95% inf."] = display_t2["IC95% inf."].map(fmt_num)
+        display_t2["IC95% sup."] = display_t2["IC95% sup."].map(fmt_num)
+
+        st.dataframe(display_t2, use_container_width=True, hide_index=True)
+
+        st.markdown("### Forest Plot de los Odds Ratio (OR)")
+
+        plot_data = table2_df[table2_df["Variable"] != "Constante"].copy()
+
+        fig = go.Figure()
+
+        for idx, row in plot_data.iterrows():
+            fig.add_trace(
+                go.Scatter(
+                    x=[row["IC95% inf."], row["OR"], row["IC95% sup."]],
+                    y=[f"{row['Variable']}: {row['Categoría']}"] * 3,
+                    mode="lines+markers",
+                    marker=dict(size=[6, 10, 6], color=BLUE),
+                    line=dict(color=GRAY, width=2),
+                    showlegend=False,
+                )
+            )
+
+        fig.add_vline(x=1.0, line_dash="dash", line_color=RED)
+        fig.update_layout(
+            title="Odds Ratio (OR) e Intervalos de Confianza del 95%",
+            xaxis_title="OR (Escala logarítmica sugerida para interpretación)",
+            height=480,
+            margin=dict(l=10, r=10, t=40, b=10),
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+        source_box("Tabla 2 del artículo: estimadores del modelo multivariado.")
 
     # ========================================================
     # 08 INTERPRETACIÓN DEL OR
@@ -912,27 +927,41 @@ with right:
     elif section == "08 · Interpretación del OR":
         section_header(
             "8",
-            "Interpretación del Odds Ratio (OR)",
-            "¿Cómo leer los resultados del modelo multivariado?",
+            "¿Cómo interpretar el Odds Ratio (OR)?",
+            "Relación entre el coeficiente estimado B y la razón de momios e interpretación práctica.",
         )
+
+        st.latex(r"\text{OR} = e^{\beta}")
 
         st.markdown(
             """
-            <div class="card">
-            <h4>💡 ¿Qué representa el Odds Ratio?</h4>
-            <p>
-            El <b>Odds Ratio (OR)</b> compara las posibilidades (odds) de que un evento ocurra en presencia de una condición en comparación con su ausencia (o categoría de referencia), manteniendo constantes las demás variables del modelo.
-            </p>
-            <ul>
-                <li><b>OR > 1:</b> Mayor asociación con la categoría de interés.</li>
-                <li><b>OR = 1:</b> Sin asociación.</li>
-                <li><b>OR < 1:</b> Menor asociación (efecto protector o inverso).</li>
-            </ul>
-            </div>
-            """,
-            unsafe_allow_html=True,
+            * **Si OR > 1:** La presencia de la característica incrementa los momios (odds) del evento en comparación con la categoría de referencia.
+            * **Si OR < 1:** La presencia de la característica disminuye los momios (odds) del evento en comparación con la categoría de referencia.
+            * **Si OR = 1:** No hay diferencia en los momios entre categorías.
+            """
         )
-        source_box("Conceptos clave para la interpretación de modelos logísticos.")
+
+        st.markdown("### Ejemplo directo del artículo:")
+
+        col_a, col_b = st.columns(2)
+        with col_a:
+            card(
+                "Consumo de Alcohol (Sí)",
+                "<b>B = 1.28</b><br><b>OR = e^(1.28) ≈ 3.58</b><br>"
+                "<i>(IC 95%: 2.17 – 5.90, p < 0.001)</i><br><br>"
+                "Los momios asociadas a la categoría de interés son 3.58 veces mayores cuando se reporta consumo de alcohol en comparación con quienes no consumieron.",
+                "🍺",
+            )
+        with col_b:
+            card(
+                "Edad: Adolescencia",
+                "<b>B = -1.04</b><br><b>OR = e^(-1.04) ≈ 0.35</b><br>"
+                "<i>(IC 95%: 0.17 – 0.74, p = 0.01)</i><br><br>"
+                "El OR menor que 1 indica una reducción significativa en los momios respecto a la categoría de referencia.",
+                "📉",
+            )
+
+        source_box("Interpretación metodológica del Odds Ratio.")
 
     # ========================================================
     # 09 EVALUACIÓN DEL MODELO
@@ -940,22 +969,27 @@ with right:
     elif section == "09 · Evaluación del modelo":
         section_header(
             "9",
-            "Evaluación de la bondad de ajuste",
-            "Pruebas de diagnóstico y ajuste global del modelo.",
+            "Evaluación de la bondad de ajuste del modelo",
+            "Pruebas estadísticas para verificar la validez del modelo multivariado.",
         )
 
-        st.markdown(
-            """
-            <div class="card">
-            <h4>📊 Diagnóstico del modelo multivariado</h4>
-            <p>
-            En el estudio se aplicaron pruebas de bondad de ajuste (como Hosmer-Lemeshow) para comprobar que la especificación del modelo sea adecuada respecto a los datos observados.
-            </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        source_box("Sección de resultados y bondad de ajuste del artículo.")
+        c_a, c_b = st.columns(2)
+        with c_a:
+            card(
+                "Prueba de Hosmer-Lemeshow",
+                "Evalúa la coincidencia entre las frecuencias observadas y esperadas por el modelo.<br><br>"
+                "Un valor p > 0.05 indica que no hay diferencia significativa entre lo observado y lo predicho, sugiriendo un <b>buen ajuste del modelo</b>.",
+                "🧪",
+            )
+        with c_b:
+            card(
+                "Estadístico de Wald",
+                "Evalúa la significancia individual de cada coeficiente beta en el modelo.<br><br>"
+                "Valores de p < 0.05 sugieren que la variable aporta significativamente a la predicción del modelo.",
+                "📊",
+            )
+
+        source_box("Diagnóstico y validación del modelo estadístico.")
 
     # ========================================================
     # 10 DISCUSIÓN
@@ -963,21 +997,24 @@ with right:
     elif section == "10 · Discusión":
         section_header(
             "10",
-            "Discusión",
-            "Contrastación de hallazgos con la literatura nacional e internacional.",
+            "Discusión e integración con la literatura",
+            "Comparación de los hallazgos con otros estudios epidemiológicos.",
         )
 
         st.markdown(
             """
             <div class="card">
-            <h4>💬 Puntos clave de la discusión</h4>
-            <p>
-            Los autores comparan la mayor prevalencia de intentos en mujeres jóvenes y las diferencias en métodos/desencadenantes con otros estudios epidemiológicos. Se enfatiza la diferencia entre ideación, intento y suicidio consumado según variables sociodemográficas.
-            </p>
+            <h4>💡 Puntos clave de discusión:</h4>
+            <ul>
+                <li><b>Concentración en adolescentes y jóvenes:</b> coincide con reportes nacionales e internacionales donde las conductas autolesivas se manifiestan marcadamente en el ciclo vital joven.</li>
+                <li><b>Consumo de alcohol como factor crítico:</b> actúa como desinhibidor e incrementa la vulnerabilidad en situaciones de crisis emocional.</li>
+                <li><b>Diferencias según disparadores psicosociales:</b> los conflictos de pareja y familiares son detonantes recurrentes expuestos en la caracterización epidemiológica.</li>
+            </ul>
             </div>
             """,
             unsafe_allow_html=True,
         )
+
         source_box("Sección de Discusión del artículo.")
 
     # ========================================================
@@ -986,21 +1023,22 @@ with right:
     elif section == "11 · Conclusiones":
         section_header(
             "11",
-            "Conclusiones",
-            "Implicaciones de salud pública y reflexiones finales.",
+            "Conclusiones y recomendaciones de salud pública",
+            "Implicaciones de la investigación para la toma de decisiones.",
         )
 
-        st.markdown(
-            """
-            <div class="card">
-            <h4>📌 Conclusiones principales</h4>
-            <p>
-            1. Se evidencian diferencias marcadas según género en las variables sociodemográficas y específicas analizadas.<br>
-            2. El modelo multivariado confirma que factores como la edad, desencadenantes específicos y el consumo de alcohol están significativamente asociados con el género en los casos de intento suicida.<br>
-            3. Se requiere diseñar estrategias de prevención focalizadas por grupo poblacional y género en el municipio.
-            </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        source_box("Conclusiones generales expresadas en el artículo.")
+        a, b = st.columns(2)
+        with a:
+            card(
+                "Conclusiones Estadísticas",
+                "El modelo multivariado permitió identificar que factores como la edad, el consumo de alcohol y ciertos desencadenantes psicosociales presentan asociaciones estadísticamente significativas.",
+                "📌",
+            )
+        with b:
+            card(
+                "Recomendaciones en Salud Pública",
+                "Strengthen preventive strategies targeted at adolescents and young adults, focusing on early intervention in alcohol consumption and family conflict resolution.",
+                "🏛️",
+            )
+
+        source_box("Sección de Conclusiones y recomendaciones del artículo.")
