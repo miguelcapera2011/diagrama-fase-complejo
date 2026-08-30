@@ -66,6 +66,28 @@ st.markdown(
             background-color: #FFFFFF !important;
         }}
 
+        /* ESTILOS ESPECÍFICOS PARA MÉTRICAS DE STREAMLIT (NUMEROS Y ETIQUETAS EN NEGRO) */
+        div[data-testid="stMetric"] {{
+            background: white !important;
+            border: 1px solid {BORDER} !important;
+            padding: .7rem !important;
+            border-radius: 12px !important;
+        }}
+
+        div[data-testid="stMetric"] * {{
+            color: #0F172A !important;
+        }}
+
+        div[data-testid="stMetricLabel"] {{
+            color: #0F172A !important;
+            font-weight: 600 !important;
+        }}
+
+        div[data-testid="stMetricValue"] {{
+            color: #0F172A !important;
+            font-weight: 800 !important;
+        }}
+
         [data-testid="stSidebar"] {{
             background: linear-gradient(180deg, #0F172A 0%, #172554 100%);
         }}
@@ -114,15 +136,19 @@ st.markdown(
             color: {NAVY};
         }}
 
+        .card * {{
+            color: #0F172A !important;
+        }}
+
         .metric {{
             font-size: 1.7rem;
             font-weight: 800;
-            color: {NAVY};
+            color: #0F172A !important;
         }}
 
         .metric-label {{
             font-size: .85rem;
-            color: {GRAY};
+            color: #0F172A !important;
         }}
 
         .interpretation {{
@@ -148,7 +174,7 @@ st.markdown(
             border-radius: 10px;
             padding: .75rem 1rem;
             font-size: .82rem;
-            color: {GRAY};
+            color: #0F172A !important;
         }}
 
         .step {{
@@ -161,15 +187,19 @@ st.markdown(
             color: #0F172A !important;
         }}
 
+        .step * {{
+            color: #0F172A !important;
+        }}
+
         .step-number {{
             font-size: .8rem;
             font-weight: 700;
-            color: {RED};
+            color: {RED} !important;
         }}
 
         .step-title {{
             font-weight: 800;
-            color: {NAVY};
+            color: {NAVY} !important;
         }}
 
         .small-note {{
@@ -180,18 +210,11 @@ st.markdown(
         .big-question {{
             font-size: 1.25rem;
             font-weight: 750;
-            color: {NAVY};
+            color: #0F172A !important;
             background: white;
             border-radius: 14px;
             border: 1px solid {BORDER};
             padding: 1rem 1.2rem;
-        }}
-
-        div[data-testid="stMetric"] {{
-            background: white;
-            border: 1px solid {BORDER};
-            padding: .7rem;
-            border-radius: 12px;
         }}
 
         .footer {{
@@ -208,7 +231,6 @@ st.markdown(
 # ============================================================
 # DATOS TRANSCRITOS DEL ARTÍCULO
 # ============================================================
-# Figura 1: prevalencia ajustada por grupo de edad y año de ocurrencia.
 age_groups = [
     "5 a 9", "10 a 14", "15 a 19", "20 a 24", "25 a 29",
     "30 a 34", "35 a 39", "40 a 44", "45 a 49", "50 a 54",
@@ -230,21 +252,17 @@ for year, values in prevalence.items():
         prev_rows.append({"Año": year, "Grupo de edad": age, "Prevalencia": value})
 prev_df = pd.DataFrame(prev_rows)
 
-# Tabla 1: variables sociodemográficas y específicas.
 table1 = [
     ["Área de ocurrencia", "Urbano", 94.0, 315, 89.8, 169, 92.0, 484, 0.02],
     ["Área de ocurrencia", "Rural disperso", 6.2, 21, 10.1, 19, 8.0, 40, 0.02],
-
     ["Edad agrupada", "3 a 11 años (niñez)", 0.9, 3, 1.6, 3, 1.1, 6, 0.000],
     ["Edad agrupada", "11 a 20 años (adolescencia)", 50.3, 169, 35.1, 66, 44.8, 235, 0.000],
     ["Edad agrupada", "20 a 40 (adultez temprana)", 42.0, 141, 45.7, 86, 43.3, 227, 0.000],
     ["Edad agrupada", "40 a 65 (adultez mediana y tardía)", 6.8, 23, 17.6, 33, 10.7, 56, 0.000],
-
     ["Estado civil", "Soltero", 64.8, 210, 54.4, 99, 61.7, 309, 0.115],
     ["Estado civil", "Casado", 31.2, 101, 3.9, 71, 34.0, 172, 0.115],
     ["Estado civil", "Separado", 3.1, 10, 5.5, 10, 4.0, 20, 0.115],
     ["Estado civil", "Viudo", 0.9, 3, 1.1, 2, 1.0, 5, 0.115],
-
     ["Ocupación", "Ama de casa", 30.2, 101, 1.1, 2, 20.2, 103, 0.000],
     ["Ocupación", "Estudiante", 47.6, 159, 35.4, 62, 43.4, 221, 0.000],
     ["Ocupación", "Empleado auxiliar", 3.89, 13, 2.6, 47, 11.9, 60, 0.000],
@@ -253,39 +271,30 @@ table1 = [
     ["Ocupación", "Población carcelaria", 0.2, 1, 0.0, 0, 0.2, 1, 0.000],
     ["Ocupación", "Desempleado", 3.3, 11, 12.6, 22, 6.5, 33, 0.000],
     ["Ocupación", "Pensionado", 0.2, 1, 1.14, 2, 0.6, 3, 0.000],
-
     ["Forma de realización", "Impulsiva", 84.8, 279, 82.8, 149, 84.1, 428, 0.551],
     ["Forma de realización", "Planeada", 15.2, 50, 17.2, 31, 15.9, 81, 0.551],
-
     ["Antecedentes de intento", "No", 68.5, 24, 67.4, 120, 68.1, 44, 0.80],
     ["Antecedentes de intento", "Sí", 31.5, 103, 32.6, 58, 31.9, 161, 0.80],
-
     ["Método del intento", "Medicamentos", 54.4, 182, 40.0, 70, 49.2, 252, 0.000],
     ["Método del intento", "Plaguicidas", 21.8, 73, 29.1, 51, 24.2, 124, 0.000],
     ["Método del intento", "Sustancias psicoactivas (SPA)", 0.2, 1, 2.28, 4, 1.0, 5, 0.000],
     ["Método del intento", "Heridas", 18.5, 61, 17.9, 33, 18.3, 94, 0.000],
     ["Método del intento", "Otros métodos", 3.59, 12, 13.7, 24, 7.1, 36, 0.000],
     ["Método del intento", "Arma de fuego", 0.0, 0, 1.1, 2, 0.4, 2, 0.000],
-
     ["Posible desencadenante", "Conflicto con la pareja", 36.9, 118, 29.8, 54, 34.3, 172, 0.005],
     ["Posible desencadenante", "Conflicto familiar", 27.2, 87, 18.2, 33, 24.0, 120, 0.005],
     ["Posible desencadenante", "Indeterminado", 20.9, 67, 30.4, 55, 24.4, 122, 0.005],
     ["Posible desencadenante", "Consumo de alcohol", 9.1, 29, 12.7, 23, 10.4, 52, 0.005],
     ["Posible desencadenante", "Conflicto laboral o escolar", 3.4, 11, 2.2, 4, 3.0, 15, 0.005],
     ["Posible desencadenante", "Problemas económicos", 2.5, 8, 12.7, 12, 4.0, 20, 0.005],
-
     ["Enfermedad mental", "No", 65.8, 210, 67.6, 115, 66.5, 325, 0.68],
     ["Enfermedad mental", "Sí", 34.2, 109, 32.4, 55, 33.5, 164, 0.68],
-
     ["Violencia", "No", 46.0, 137, 62.5, 95, 51.6, 232, 0.001],
     ["Violencia", "Sí", 54.0, 161, 37.5, 57, 48.4, 218, 0.001],
-
     ["Consumo de alcohol", "No", 59.7, 181, 38.5, 65, 52.1, 246, 0.000],
     ["Consumo de alcohol", "Sí", 40.3, 122, 59.7, 104, 47.9, 226, 0.000],
-
     ["Relaciones familiares", "Disfuncionales", 79.7, 248, 78.2, 129, 79.2, 377, 0.69],
     ["Relaciones familiares", "Funcionales", 20.3, 63, 21.8, 36, 20.8, 99, 0.69],
-
     ["Redes de apoyo", "No", 9.2, 28, 12.7, 22, 10.4, 49, 0.23],
     ["Redes de apoyo", "Sí", 90.8, 278, 87.3, 145, 89.6, 423, 0.23],
 ]
@@ -301,19 +310,16 @@ table1_df = pd.DataFrame(
     ]
 )
 
-# Tabla 2: modelo final reportado por los autores.
 table2 = [
     ["Edad", "Niñez", 0.32, 0.05, 0.83, 1.38, 0.08, 24.34],
     ["Edad", "Adolescencia", -1.04, 7.52, 0.01, 0.35, 0.17, 0.74],
     ["Edad", "Adultez temprana", -0.81, 4.81, 0.03, 0.45, 0.22, 0.92],
-
     ["Posible desencadenante", "Conflicto con la pareja", -0.84, 7.67, 0.01, 0.43, 0.24, 0.78],
     ["Posible desencadenante", "Conflicto familiar", -0.66, 3.81, 0.05, 0.52, 0.26, 1.00],
     ["Posible desencadenante", "Conflicto laboral o escolar", -0.70, 1.09, 0.30, 0.50, 0.13, 1.85],
     ["Posible desencadenante", "Problemas económicos", 0.74, 1.43, 0.23, 2.09, 0.62, 7.02],
     ["Posible desencadenante", "Consumo de alcohol", -0.81, 3.89, 0.05, 0.44, 0.20, 1.00],
     ["Posible desencadenante", "Violencia", -0.89, 13.80, 0.00, 0.41, 0.26, 0.66],
-
     ["Consumo de alcohol", "Sí", 1.28, 25.09, 0.00, 3.58, 2.17, 5.90],
     ["Constante", "Intercepto", 0.44, 1.33, 0.25, 1.55, None, None],
 ]
@@ -443,9 +449,7 @@ with st.sidebar:
     st.markdown("---")
     st.caption("Fuente de los resultados: Vásquez-Escobar & Benítez-Camargo (2021).")
 
-# ============================================================
 # MAPA DE PÁGINAS DEL ARTÍCULO
-# ============================================================
 page_map = {
     "01 · Introducción": 1,
     "02 · Contexto y pregunta": 3,
@@ -474,7 +478,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Barra superior
+# Barra superior con métricas
 c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.2, 3.5])
 with c1:
     st.metric("Casos", "524")
@@ -510,9 +514,6 @@ with left:
         )
 
 with right:
-    # ========================================================
-    # 01 INTRODUCCIÓN
-    # ========================================================
     if section == "01 · Introducción":
         section_header(
             "1",
@@ -551,9 +552,6 @@ with right:
         )
         source_box("Resumen y objetivo del artículo.")
 
-    # ========================================================
-    # 02 CONTEXTO
-    # ========================================================
     elif section == "02 · Contexto y pregunta":
         section_header(
             "2",
@@ -596,9 +594,6 @@ with right:
 
         source_box("El artículo define género como la variable de interés y describe las variables sociodemográficas, específicas y psicosociales.")
 
-    # ========================================================
-    # 03 DATOS Y DISEÑO
-    # ========================================================
     elif section == "03 · Datos y diseño":
         section_header(
             "3",
@@ -652,9 +647,6 @@ with right:
 
         source_box("Materiales y métodos del artículo.")
 
-    # ========================================================
-    # 04 PREVALENCIA
-    # ========================================================
     elif section == "04 · Prevalencia":
         section_header(
             "4",
@@ -763,9 +755,6 @@ with right:
 
         source_box("Figura 1 y texto de resultados: prevalencia ajustada por grupo de edad y año de ocurrencia.")
 
-    # ========================================================
-    # 05 TABLA 1
-    # ========================================================
     elif section == "05 · Tabla 1 · Descriptivos":
         section_header(
             "5",
@@ -790,7 +779,6 @@ with right:
 
         st.dataframe(display, use_container_width=True, hide_index=True)
 
-        # Gráfico
         chart_df = d.melt(
             id_vars=["Categoría"],
             value_vars=["Mujer %", "Hombre %"],
@@ -845,9 +833,6 @@ with right:
         )
         source_box("Tabla 1 del artículo. Los porcentajes y frecuencias fueron transcritos de la tabla publicada.")
 
-    # ========================================================
-    # 06 MODELO LOGÍSTICO
-    # ========================================================
     elif section == "06 · Modelo logístico":
         section_header(
             "6",
@@ -893,9 +878,6 @@ with right:
             """
         )
 
-    # ========================================================
-    # 07 TABLA 2
-    # ========================================================
     elif section == "07 · Tabla 2 · Modelo final":
         section_header(
             "7",
@@ -914,9 +896,6 @@ with right:
         st.dataframe(t2, use_container_width=True, hide_index=True)
         source_box("Tabla 2 transcrita tal como aparece publicada en el artículo.")
 
-    # ========================================================
-    # 08 INTERPRETACIÓN DEL OR
-    # ========================================================
     elif section == "08 · Interpretación del OR":
         section_header(
             "8",
@@ -945,9 +924,6 @@ with right:
             unsafe_allow_html=True,
         )
 
-    # ========================================================
-    # 09 EVALUACIÓN DEL MODELO
-    # ========================================================
     elif section == "09 · Evaluación del modelo":
         section_header(
             "9",
@@ -963,9 +939,6 @@ with right:
         with c:
             card("Clasificación correcta", "<b>Matriz</b><br>Capacidad predictiva", "🎯")
 
-    # ========================================================
-    # 10 DISCUSIÓN
-    # ========================================================
     elif section == "10 · Discusión":
         section_header(
             "10",
@@ -985,9 +958,6 @@ with right:
             unsafe_allow_html=True,
         )
 
-    # ========================================================
-    # 11 CONCLUSIONES
-    # ========================================================
     elif section == "11 · Conclusiones":
         section_header(
             "11",
