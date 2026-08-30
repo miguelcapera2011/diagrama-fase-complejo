@@ -322,7 +322,7 @@ table2_df = pd.DataFrame(
 )
 
 # ============================================================
-# FUNCIONES
+# FUNCIONES Y CARGA AUTOMÁTICA DEL PDF
 # ============================================================
 def article_path():
     candidates = [
@@ -337,8 +337,12 @@ def article_path():
     return None
 
 
-def pdf_viewer(pdf_bytes, page=1, height=850):
-    encoded = base64.b64encode(pdf_bytes).decode("utf-8")
+local_pdf = article_path()
+pdf_bytes = local_pdf.read_bytes() if local_pdf is not None else None
+
+
+def pdf_viewer(bytes_data, page=1, height=850):
+    encoded = base64.b64encode(bytes_data).decode("utf-8")
     html = f"""
     <iframe
         src="data:application/pdf;base64,{encoded}#page={page}&zoom=page-width"
@@ -387,26 +391,11 @@ def fmt_num(x):
 
 
 # ============================================================
-# PDF: carga
+# BARRA LATERAL (NAVEGACIÓN)
 # ============================================================
-local_pdf = article_path()
-
 with st.sidebar:
     st.markdown("## 📊 DEL ARTÍCULO A LA EVIDENCIA")
     st.caption("Presentación interactiva del estudio")
-
-    uploaded = st.file_uploader(
-        "Si no está en la carpeta, carga aquí el PDF",
-        type=["pdf"],
-        help="En Streamlit Cloud puedes subir el PDF mediante este control o dejarlo junto a app.py.",
-    )
-
-    if uploaded is not None:
-        pdf_bytes = uploaded.read()
-    elif local_pdf is not None:
-        pdf_bytes = local_pdf.read_bytes()
-    else:
-        pdf_bytes = None
 
     st.markdown("---")
     st.markdown("### Navegación")
@@ -499,12 +488,8 @@ with left:
     if pdf_bytes is not None:
         pdf_viewer(pdf_bytes, page=current_page, height=820)
     else:
-        st.warning(
-            "No se encontró el PDF. Colócalo junto a app.py con el nombre "
-            "'intento suicida(1).pdf' o cárgalo desde la barra lateral."
-        )
-        st.info(
-            "La parte analítica de la aplicación seguirá funcionando aunque no se cargue el PDF."
+        st.error(
+            "⚠️ No se encontró el archivo PDF en el repositorio. Asegúrate de incluir 'intento suicida(1).pdf' junto al archivo app.py."
         )
 
 with right:
