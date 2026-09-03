@@ -1,4 +1,11 @@
 streamlit
 pandas
+numpy
+matplotlib
+seaborn
+scikit-learn
+scipy
 plotly
-streamlit requests PyPDF2
+openpyxl
+umap-learn
+streamlit-plotly-events
