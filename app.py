@@ -1,4 +1,3 @@
-
 import html
 import re
 
@@ -8,11 +7,11 @@ import streamlit.components.v1 as components
 # ----------------------------------------------------------------------
 # CONFIGURACIÓN: edita aquí tus datos
 # ----------------------------------------------------------------------
-NOMBRE = ""  # Escribe tu nombre entre comillas. Si lo dejas vacío, no se muestra.
+NOMBRE = "Miguel Angel garatejo Capera"  # Escribe tu nombre entre comillas. Si lo dejas vacío, no se muestra.
 PROFESORA = "Gisou Díaz Rojo"
 UNIVERSIDAD = "Universidad del Tolima"
 SEMINARIO = "Seminario 1"
-PERSONAJE = "Profe Seminario 1"
+PERSONAJE = "Agente Seminario 1"
 
 # Lo que entendí, lo que no y mi reflexión: cámbialo por tus propias palabras.
 ENTENDI = [
@@ -20,38 +19,29 @@ ENTENDI = [
     "Sin ciencia propia, un país depende de otros en lo cultural y lo tecnológico.",
     "Los obstáculos son de tres tipos: dinero, organización y mentalidad.",
 ]
-
 DUDAS = [
     "Los datos son de 1977 y 1984: ¿cuánto habrá cambiado la situación hoy?",
     "¿Cómo se logra una libertad absoluta de pensamiento si la investigación depende de fondos externos?",
     "El texto se enfoca en ciencias exactas y naturales: ¿y las ciencias sociales y humanas?",
 ]
-
 REFLEXION = [
     "Quiero ver la investigación como una forma de pensar y de resolver problemas de mi entorno.",
     "Mi formación tiene un compromiso social: lo que aprendo debe servir a otros.",
     "Conocer lo que tenemos (nuestra región, nuestra gente) es el primer paso para cuidarlo.",
 ]
 
-# ----------------------------------------------------------------------
-# IMÁGENES
-# Enlaces directos a fotografías de Unsplash.
-# Se conserva exactamente la misma estructura de IMAGENES
-# para no modificar el resto de la aplicación.
-# ----------------------------------------------------------------------
+# Imágenes de internet por palabra clave (loremflickr.com). Puedes cambiar cualquier
+# enlace por una foto tuya: solo pega la URL completa en lugar de la que está aquí.
+def foto(palabras, n):
+    return f"https://loremflickr.com/720/360/{palabras}?lock={n}"
 
 IMAGENES = {
-    "lab": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=720&h=360",
-    
-    "universidad": "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=720&h=360",
-    
-    "selva": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=720&h=360",
-    
-    "biblioteca": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=720&h=360",
-    
-    "estudiantes": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=720&h=360",
-    
-    "microscopio": "https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=720&h=360",
+    "lab": foto("laboratory,science", 11),
+    "universidad": foto("university,campus", 12),
+    "selva": foto("rainforest,jungle", 13),
+    "biblioteca": foto("library,books", 14),
+    "estudiantes": foto("students,classroom", 15),
+    "microscopio": foto("microscope", 16),
 }
 
 # ----------------------------------------------------------------------
@@ -359,7 +349,6 @@ st.markdown(
     f'<div class="s">en línea · {html.escape(subtitulo)}</div></div></div>',
     unsafe_allow_html=True,
 )
-
 st.progress(min(paso / total, 1.0), text=f"Avance: {min(paso, total)} de {total}")
 
 with st.sidebar:
@@ -399,4 +388,3 @@ components.html(
     </script>""",
     height=0,
 )
-```
