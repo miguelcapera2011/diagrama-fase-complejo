@@ -361,7 +361,7 @@ st.markdown(
 st.progress(min(paso / total, 1.0), text=f"Avance: {min(paso, total)} de {total}")
 
 with st.sidebar:
-    st.markdown(f"**{PERSONAJE}**")
+    st.markdown(f"**{"MATESTAD"}**")
     if NOMBRE:
         st.write(f"Presenta: {NOMBRE}")
     st.write(f"Profesora: {PROFESORA}")
