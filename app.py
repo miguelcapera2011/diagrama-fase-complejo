@@ -388,7 +388,7 @@ if paso >= total:
     burbuja("¡Eso es todo! 🎉 Gracias por leer conmigo. Si quieres repasar, toca **Volver a empezar**.")
     st.button("Volver a empezar", key="fin", on_click=reiniciar, use_container_width=True)
     if NOMBRE:
-        burbuja(fmt(f"Presenta: **{NOMBRE}** · Profesora: {PROFESORA}"))
+        burbuja(fmt(f"**{"Hasta Pronto.. 👋"}**"))
 
 components.html(
     """<script>
