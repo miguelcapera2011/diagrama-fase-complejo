@@ -146,7 +146,7 @@ ESCENAS = [
     },
     {
         "msgs": [
-            ("t", "Ahora, ¿cómo estaba la investigación en la **universidad colombiana**? 🇨🇴"),
+            ("t", "Ahora, ¿cómo estaba la investigación en la **universidad colombiana**?"),
             ("img", "universidad", "Docencia e investigación, separadas."),
             ("ul", "El diagnóstico del autor", [
                 "Investigación y docencia están **separadas**: la docencia, como transmisión de conocimientos, ha sido la actividad fundamental.",
@@ -160,7 +160,7 @@ ESCENAS = [
     },
     {
         "msgs": [
-            ("t", "Estos son los datos del **estudio de Colciencias (1977)** que cita el autor 📊"),
+            ("t", "Estos son los datos del **estudio de Colciencias (1977)** que cita el autor "),
             ("stats", [("28", "universidades investigaban (19 públicas, 9 privadas)"), ("606", "proyectos en ejecución"), ("1.055", "investigadores"), ("23 %", "de tiempo completo"), ("51 %", "con estudios de posgrado"), ("2,5 %", "aporte del sector productivo")]),
             ("ul", "Más datos", [
                 "El 80 % de la investigación universitaria se hacía en universidades públicas (488 proyectos de 606).",
