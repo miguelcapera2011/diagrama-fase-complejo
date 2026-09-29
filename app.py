@@ -363,9 +363,10 @@ st.progress(min(paso / total, 1.0), text=f"Avance: {min(paso, total)} de {total}
 with st.sidebar:
     st.markdown(f"**{"MATESTAD"}**")
     if NOMBRE:
-        st.write(f"Presenta: {NOMBRE}")
-    st.write(f"Profesora: {PROFESORA}")
-    st.write(f"{UNIVERSIDAD} · {SEMINARIO}")
+        st.write(f"{NOMBRE}")
+    st.write(f"{PROFESORA}")
+    st.write(f"{UNIVERSIDAD}")
+     st.write(f"{SEMINARIO}")
     st.button("Volver a empezar", on_click=reiniciar)
 
 for i, escena in enumerate(ESCENAS):
