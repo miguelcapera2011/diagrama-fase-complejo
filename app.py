@@ -11,7 +11,7 @@ NOMBRE = "Miguel Angel garatejo Capera"  # Escribe tu nombre entre comillas. Si 
 PROFESORA = "Gisou Díaz Rojo"
 UNIVERSIDAD = "Universidad del Tolima"
 SEMINARIO = "Seminario 1"
-PERSONAJE = "Agente Seminario 1"
+PERSONAJE = "MATESTAD"
 
 # Lo que entendí, lo que no y mi reflexión: cámbialo por tus propias palabras.
 ENTENDI = [
@@ -59,7 +59,7 @@ IMAGENES = {
 #                   ("stats", [(cifra, etiqueta), ...]) · ("ul", título, [items])
 # ----------------------------------------------------------------------
 INTRO = [
-    ("t", f"¡Hola! Soy **{PERSONAJE}** 👋 Hoy te cuento el artículo **La investigación científica en la universidad colombiana**, de Gabriel Roldán P. (Revista de la Facultad de Ingeniería, Vol. 1, No. 1, 1984, pp. 139-148)."),
+    ("t", f"¡Hola! Soy  tu **{ Agente de Investigacion}** 👋 Hoy te cuento el artículo **La investigación científica en la universidad colombiana**, de Gabriel Roldán P. (Revista de la Facultad de Ingeniería, Vol. 1, No. 1, 1984, pp. 139-148)."),
     ("img", "lab", "Investigar es buscar respuestas con método."),
 ]
 
