@@ -59,7 +59,7 @@ IMAGENES = {
 #                   ("stats", [(cifra, etiqueta), ...]) · ("ul", título, [items])
 # ----------------------------------------------------------------------
 INTRO = [
-    ("t", f"¡Hola! Soy  tu **{ Agente de Investigacion}** 👋 Hoy te cuento el artículo **La investigación científica en la universidad colombiana**, de Gabriel Roldán P. (Revista de la Facultad de Ingeniería, Vol. 1, No. 1, 1984, pp. 139-148)."),
+    ("t", f"¡Hola! Soy  tu **{ "Agente de Investigacion"}** 👋 Hoy te cuento el artículo **La investigación científica en la universidad colombiana**, de Gabriel Roldán P. (Revista de la Facultad de Ingeniería, Vol. 1, No. 1, 1984, pp. 139-148)."),
     ("img", "lab", "Investigar es buscar respuestas con método."),
 ]
 
