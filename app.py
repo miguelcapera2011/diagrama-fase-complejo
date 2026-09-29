@@ -352,7 +352,7 @@ if "paso" not in st.session_state:
 paso = st.session_state.paso
 total = len(ESCENAS)
 
-subtitulo = f"{UNIVERSIDAD} · {SEMINARIO}"
+subtitulo = f"{" escribiendo..."}"
 st.markdown(
     f'<div class="top"><div class="avatar">🧑‍🏫</div><div><div class="n">{PERSONAJE}</div>'
     f'<div class="s">en línea · {html.escape(subtitulo)}</div></div></div>',
