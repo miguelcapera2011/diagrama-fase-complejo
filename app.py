@@ -352,10 +352,10 @@ if "paso" not in st.session_state:
 paso = st.session_state.paso
 total = len(ESCENAS)
 
-subtitulo = f"{" escribiendo..."}"
+subtitulo = f"{""}"
 st.markdown(
     f'<div class="top"><div class="avatar">🧑‍🏫</div><div><div class="n">{PERSONAJE}</div>'
-    f'<div class="s">en línea · {html.escape(subtitulo)}</div></div></div>',
+    f'<div class="s">en línea {html.escape(subtitulo)}</div></div></div>',
     unsafe_allow_html=True,
 )
 st.progress(min(paso / total, 1.0), text=f"Avance: {min(paso, total)} de {total}")
