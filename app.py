@@ -40,9 +40,9 @@ def foto(palabras, n):
 # ----------------------------------------------------------------------
 
 IMAGENES = {
-    "lab": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=720&h=360",
+    "lab": "https://hic.fcv.org/co/images/hic/laboratorios-y-banco-de-sangre/laboratorio-clinico-fcv.jpg",
     
-    "universidad": "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=720&h=360",
+    "universidad": "https://rtvc-informativo.s3.amazonaws.com/assets/public/2026-02/whatsapp-image-2026-02-27-at-12.44.52.jpeg",
     
     "selva": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=720&h=360",
     
