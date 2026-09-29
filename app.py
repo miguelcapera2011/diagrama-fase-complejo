@@ -366,7 +366,7 @@ with st.sidebar:
         st.write(f"{NOMBRE}")
     st.write(f"{PROFESORA}")
     st.write(f"{UNIVERSIDAD}")
-     st.write(f"{SEMINARIO}")
+    st.write(f"{SEMINARIO}")
     st.button("Volver a empezar", on_click=reiniciar)
 
 for i, escena in enumerate(ESCENAS):
