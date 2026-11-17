@@ -1,400 +1,356 @@
-import html
-import re
-
 import streamlit as st
-import streamlit.components.v1 as components
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import time
 
-# ----------------------------------------------------------------------
-# CONFIGURACIÓN: edita aquí tus datos
-# ----------------------------------------------------------------------
-NOMBRE = "Miguel Angel garatejo Capera"  # Escribe tu nombre entre comillas. Si lo dejas vacío, no se muestra.
-PROFESORA = "Gisou Díaz Rojo"
-UNIVERSIDAD = "Universidad del Tolima"
-SEMINARIO = "Seminario 1"
-PERSONAJE = "Agente de Investigacion MG"
+# ---------------------------------------------------------
+# CONFIGURACIÓN DE PÁGINA Y ESTILOS CSS ANIMADOS
+# ---------------------------------------------------------
+st.set_page_config(
+    page_title="Sustentación Anteproyecto | STATIS Colombia",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# Lo que entendí, lo que no y mi reflexión: cámbialo por tus propias palabras.
-ENTENDI = [
-    "Investigar y enseñar deben ir juntas: si solo se transmite información, se olvida rápido.",
-    "Sin ciencia propia, un país depende de otros en lo cultural y lo tecnológico.",
-    "Los obstáculos son de tres tipos: dinero, organización y mentalidad.",
-]
-DUDAS = [
-    "Los datos son de 1977 y 1984: ¿cuánto habrá cambiado la situación hoy?",
-    "¿Cómo se logra una libertad absoluta de pensamiento si la investigación depende de fondos externos?",
-    "El texto se enfoca en ciencias exactas y naturales: ¿y las ciencias sociales y humanas?",
-]
-REFLEXION = [
-    "Quiero ver la investigación como una forma de pensar y de resolver problemas de mi entorno.",
-    "Mi formación tiene un compromiso social: lo que aprendo debe servir a otros.",
-    "Conocer lo que tenemos (nuestra región, nuestra gente) es el primer paso para cuidarlo.",
-]
-
-# Imágenes de internet por palabra clave (loremflickr.com). Puedes cambiar cualquier
-# enlace por una foto tuya: solo pega la URL completa en lugar de la que está aquí.
-def foto(palabras, n):
-    return f"https://loremflickr.com/720/360/{palabras}?lock={n}"
-
-# ----------------------------------------------------------------------
-# IMÁGENES
-# ----------------------------------------------------------------------
-
-IMAGENES = {
-    "lab": "https://hic.fcv.org/co/images/hic/laboratorios-y-banco-de-sangre/laboratorio-clinico-fcv.jpg",
-    
-    "universidad": "https://rtvc-informativo.s3.amazonaws.com/assets/public/2026-02/whatsapp-image-2026-02-27-at-12.44.52.jpeg",
-    
-    "selva": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=720&h=360",
-    
-    "biblioteca": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=720&h=360",
-    
-    "estudiantes": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=720&h=360",
-    
-    "microscopio": "https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=720&h=360",
-}
-
-# ----------------------------------------------------------------------
-# CONTENIDO (basado solo en el artículo de Gabriel Roldán P., 1984)
-# Tipos de mensaje: ("t", texto) · ("img", clave, pie) · ("q", cita, página)
-#                   ("stats", [(cifra, etiqueta), ...]) · ("ul", título, [items])
-# ----------------------------------------------------------------------
-INTRO = [
-    ("t", f"¡Hola! Soy  tu **{ "Agente MG"}** 👋 Hoy te cuento el artículo **La investigación científica en la universidad colombiana**, de Gabriel Roldán P. (Revista de la Facultad de Ingeniería, Vol. 1, No. 1, 1984, pp. 139-148)."),
-    ("img", "lab", "Investigar es buscar respuestas con método."),
-]
-
-ESCENAS = [
-    {
-        "msgs": INTRO,
-        "replies": [("¡Empecemos!", None)],
-    },
-    {
-        "msgs": [
-            ("t", "Primero, la **idea general**: para el autor, la investigación científica es una **necesidad** para los países en desarrollo, no un lujo."),
-            ("ul", "¿Qué es investigar?", [
-                "Una búsqueda sistemática de nuevos conocimientos, con pasos ordenados y planeados, no un proceso al azar.",
-                "No consiste en repetir experimentos o recopilar datos, sino en **plantear problemas y buscar soluciones**.",
-                "Tener un instrumento sofisticado o un laboratorio no hace científico a nadie.",
-            ]),
-        ],
-        "replies": [("¿Y qué tipos hay?", None)],
-    },
-    {
-        "msgs": [
-            ("ul", "Tres tipos de investigación", [
-                "**Básica:** busca un conocimiento más completo del tema, no una aplicación práctica.",
-                "**Aplicada:** está orientada a la aplicación práctica del conocimiento, con objetivos específicos sobre productos y procesos.",
-                "**Desarrollo tecnológico:** uso sistemático del conocimiento científico para producir materiales, dispositivos, sistemas o métodos útiles.",
-            ]),
-            ("t", "Ojo: la investigación y el desarrollo tecnológico son parte de la investigación científica, y uno es el soporte del otro."),
-            ("t", "🧠 **Pregunta rápida:** una investigación que busca conocer más a fondo un tema, sin buscar una aplicación práctica, es…"),
-        ],
-        "replies": [("Básica", None), ("Aplicada", None), ("Desarrollo tecnológico", None)],
-        "quiz": {"correcto": 0, "explica": "La investigación básica busca conocer mejor la materia de estudio, no aplicarla de inmediato."},
-    },
-    {
-        "msgs": [
-            ("t", "El autor se pregunta si investigar es una **necesidad** o más bien un **lujo** en los países en vías de desarrollo. ¿Tú qué piensas?"),
-        ],
-        "replies": [
-            ("Es un lujo", "Es una respuesta común: el autor recuerda expresiones como «qué vamos a inventar lo que ya se ha inventado». Según él, solo reflejan que no se conoce la historia de la ciencia ni el desarrollo cultural de la humanidad."),
-            ("Es una necesidad", "¡Coincides con el autor! Para él la investigación científica es una actividad irrenunciable de un país, entre otras razones por su valor cultural."),
-        ],
-    },
-    {
-        "msgs": [
-            ("t", "Ahora las **ideas nuevas** que plantea el texto 💡"),
-            ("ul", "Lo que más llama la atención", [
-                "**La ciencia es cultura.** Un país culto es un país preparado para el desarrollo.",
-                "**Mide la dependencia.** La ciencia es una medida de la dependencia económica de otros países.",
-                "**Independencia intelectual.** Comprar una máquina no es comprar tecnología: a menudo significa más dependencia extranjera, por el manejo y los repuestos.",
-                "**Investigación propia.** Aleja el peligro de interpretar nuestras realidades con moldes foráneos.",
-                "**La básica también sirve.** Es base de la ciencia aplicada y culturiza al pueblo: quien conoce lo que tiene lo aprecia, lo conserva y lo mejora.",
-            ]),
-        ],
-        "replies": [("Cuéntame un ejemplo", None)],
-    },
-    {
-        "msgs": [
-            ("t", "El autor da un ejemplo: aún hay inmensas **selvas tropicales** en cuyos árboles es probable que existan miles de sustancias químicas cuyas propiedades no se conocen, con posibilidades para la medicina, la alimentación y la tecnología."),
-            ("img", "selva", "Las selvas guardan sustancias que aún no conocemos."),
-            ("t", "Y termina con una pregunta abierta: **¿quién apoyará su estudio?** ¿Qué respondes?"),
-        ],
-        "replies": [
-            ("El gobierno", "El autor dice que conocer los elementos químicos requirió un apoyo económico de valor incalculable a instituciones y personas dedicadas a buscar lo desconocido."),
-            ("Las universidades", "Para el autor la universidad es el lugar donde debe darse la libertad de pensamiento y de generación de ideas, y debe buscar también fuentes nacionales e internacionales de financiación."),
-            ("Las empresas", "Aquí el texto es crítico: el sector productivo ignora a la universidad y prefiere importar tecnología. En 1977 aportó solo el 2,5 % de los recursos."),
-        ],
-    },
-    {
-        "msgs": [
-            ("t", "Hablemos del **compromiso del investigador** 🎓"),
-            ("ul", "Según el texto", [
-                "Formar al investigador es un esfuerzo social considerable, mientras existen necesidades apremiantes como la desnutrición, el desempleo y la falta de educación.",
-                "Por eso el investigador debe ser consciente de su **compromiso social**.",
-                "Su responsabilidad es generar conocimientos que culturicen al pueblo y contribuyan a elevar su nivel de vida, física y mental.",
-                "Si no se toma conciencia de esa labor, el país dependerá cada vez más de los países más desarrollados.",
-            ]),
-        ],
-        "replies": [("¿Qué se necesita para investigar?", None)],
-    },
-    {
-        "msgs": [
-            ("ul", "Condiciones necesarias en la universidad", [
-                "**Programa a largo plazo:** continuidad garantizada y profesores estables.",
-                "**Sistema internacional:** la ciencia no tiene fronteras y sus resultados se miden con patrones internacionales.",
-                "**Libertad:** un ambiente universitario crítico y de diálogo abierto, con criterios de prioridad claros.",
-                "**Manejo adecuado:** que dependa de una Vicerrectoría o Director Académico, con un equipo técnico que apoye lo administrativo.",
-                "**Financiación:** las universidades deben buscar también otras fuentes nacionales e internacionales.",
-                "**Independencia intelectual:** el futuro de un país depende de que sus gentes aprendan a pensar y a producir.",
-            ]),
-            ("t", "🧠 **Pregunta rápida:** ¿qué porcentaje de su presupuesto deberían dedicar las universidades a la investigación?"),
-        ],
-        "replies": [("2 %", None), ("10 %", None), ("25 %", None)],
-        "quiz": {"correcto": 0, "explica": "Es el 2 % del presupuesto, pero el autor lo llama «letra muerta» en la mayoría de las universidades colombianas."},
-    },
-    {
-        "msgs": [
-            ("t", "Ahora, ¿cómo estaba la investigación en la **universidad colombiana**?"),
-            ("img", "universidad", "Docencia e investigación, separadas."),
-            ("ul", "El diagnóstico del autor", [
-                "Investigación y docencia están **separadas**: la docencia, como transmisión de conocimientos, ha sido la actividad fundamental.",
-                "Se hace énfasis en información que se olvida rápido y se descuida la formación del espíritu científico.",
-                "La universidad aporta muy poco al análisis y solución de los problemas del país, y el sector productivo la ignora.",
-                "La investigación universitaria sumaba apenas un 25 o 30 % del total del país.",
-                "Para el autor, esto revela un concepto distorsionado de la educación superior.",
-            ]),
-        ],
-        "replies": [("Muéstrame los datos", None)],
-    },
-    {
-        "msgs": [
-            ("t", "Estos son los datos del **estudio de Colciencias (1977)** que cita el autor "),
-            ("stats", [("28", "universidades investigaban (19 públicas, 9 privadas)"), ("606", "proyectos en ejecución"), ("1.055", "investigadores"), ("23 %", "de tiempo completo"), ("51 %", "con estudios de posgrado"), ("2,5 %", "aporte del sector productivo")]),
-            ("ul", "Más datos", [
-                "El 80 % de la investigación universitaria se hacía en universidades públicas (488 proyectos de 606).",
-                "Las universidades aportaron el 46 % de los gastos; el 54 % vino de otras fuentes.",
-                "El 82,9 % de los recursos fue a investigación aplicada.",
-                "Las ciencias básicas concentraban el 40 % de proyectos e investigadores y el 33 % de los recursos.",
-            ]),
-            ("t", "🧠 **Pregunta rápida:** ¿qué parte de la investigación universitaria se hacía en universidades públicas?"),
-        ],
-        "replies": [("20 %", None), ("50 %", None), ("80 %", None)],
-        "quiz": {"correcto": 2, "explica": "El 80 % se hacía en públicas, sobre todo en la Nacional, del Valle, de Antioquia e Industrial de Santander."},
-    },
-    {
-        "msgs": [
-            ("t", "¿Y qué frena la investigación? El autor resume **tres tipos de obstáculos** 🚧"),
-            ("ul", "Obstáculos", [
-                "**Financieros:** los más sobresalientes. Los incentivos salariales al investigador son mínimos.",
-                "**Institucionales:** la docencia pesa más que la investigación, hay pocos docentes investigadores de tiempo completo, laboratorios y bibliotecas deficientes, y poca difusión de los trabajos.",
-                "**Socioculturales:** falta de reconocimiento al investigador por parte de la sociedad y poca vinculación de la universidad con la comunidad.",
-            ]),
-        ],
-        "replies": [("¿Y qué propone?", None)],
-    },
-    {
-        "msgs": [
-            ("ul", "Recomendaciones del autor", [
-                "Crear **Comités de Investigación** en cada facultad.",
-                "Hacer una **reforma curricular**: menos asignaturas de información y más cursos prácticos y electivos.",
-                "Fortalecer la **carrera profesoral** con estabilidad, promoción y descarga académica.",
-                "Mejorar bibliotecas y laboratorios, y ampliar préstamos y becas para estudiantes.",
-                "Conseguir fondos que no comprometan la autonomía de la labor investigativa.",
-                "Mejorar la imagen de la universidad ante el país y el sector empresarial.",
-                "Crear fondos permanentes para la investigación y discutir los trabajos con otros investigadores.",
-            ]),
-        ],
-        "replies": [("¿Hay algún ejemplo?", None)],
-    },
-    {
-        "msgs": [
-            ("t", "Sí: el autor cuenta el caso de la **Facultad de Ciencias Exactas y Naturales** de la Universidad de Antioquia, donde el Centro de Investigaciones empezó en enero de 1981 🔬"),
-            ("img", "microscopio", "Un ejemplo de investigación en la universidad."),
-            ("stats", [("25", "proyectos inscritos"), ("57", "profesores en proyectos"), ("25 %", "de los profesores investigaban"), ("12", "publicaciones"), ("14", "presentaciones nacionales"), ("4", "presentaciones internacionales")]),
-            ("ul", "Dificultades que encontraron", [
-                "Falta de tiempo de algunos investigadores por exceso de cargas administrativas y docentes.",
-                "Lentitud en las compras por parte de la universidad.",
-                "Falta de mantenimiento de equipos.",
-                "Dificultades económicas de la universidad.",
-            ]),
-        ],
-        "replies": [("¿Cuáles son las conclusiones?", None)],
-    },
-    {
-        "msgs": [
-            ("ul", "Conclusiones del autor", [
-                "La investigación científica es una **necesidad** para los países en desarrollo: genera las bases de la investigación aplicada y crea cultura.",
-                "Debe ser una actividad **propia del profesor universitario**, no independiente de la docencia.",
-                "La universidad tiene la obligación moral y material de aportar el 2 % de su presupuesto.",
-                "En la Universidad de Antioquia la actividad creció mucho por el Sistema Universitario de Investigación.",
-                "Hace falta una **mayor relación entre la universidad y la comunidad**.",
-            ]),
-        ],
-        "replies": [("¿Con qué frase me quedo?", None)],
-    },
-    {
-        "msgs": [
-            ("t", "Una frase para llevarte 📌"),
-            ("q", "La ciencia no debe tener ni puede tener fronteras geográficas ni políticas.", "Roldán (1984), p. 142"),
-            ("ul", "Otras ideas para citar (con su página)", [
-                "Investigar es plantear problemas y buscar soluciones, no repetir experimentos (p. 139).",
-                "Conocer lo que se tiene hace que el pueblo lo aprecie, lo conserve y lo mejore (p. 141).",
-                "Comprar una máquina no es comprar tecnología (p. 143).",
-            ]),
-        ],
-        "replies": [("¿Qué entendí y qué no?", None)],
-    },
-    {
-        "msgs": [
-            ("ul", "✅ Lo que entendí", ENTENDI),
-            ("ul", "❓ Lo que me generó dudas", DUDAS),
-            ("ul", "🌱 Lo que me llevo para mi vida y mi trabajo", REFLEXION),
-        ],
-        "replies": [("Terminar", None)],
-    },
-]
-
-
-# ----------------------------------------------------------------------
-# DISEÑO
-# ----------------------------------------------------------------------
-CSS = """
+st.markdown("""
 <style>
-.stApp { background: #ECE5DD; }
-header[data-testid="stHeader"], footer { display: none; }
-.block-container { max-width: 720px; padding-top: 0.5rem; padding-bottom: 6rem; }
-.top { background:#075E54; color:#fff; padding:12px 16px; border-radius:0 0 14px 14px;
-       display:flex; align-items:center; gap:12px; margin-bottom:8px; }
-.avatar { width:42px; height:42px; border-radius:50%; background:#FAC775; display:flex;
-          align-items:center; justify-content:center; font-size:22px; }
-.top .n { font-weight:600; font-size:16px; line-height:1.2; }
-.top .s { font-size:12px; color:#CDEBE4; }
-.row { display:flex; margin:6px 0; }
-.row.me { justify-content:flex-end; }
-.bubble { max-width:88%; padding:9px 12px; border-radius:12px; font-size:15px; line-height:1.5;
-          box-shadow:0 1px 1px rgba(0,0,0,.12); color:#1f2a2e; }
-.bot { background:#fff; border-top-left-radius:2px; }
-.me .bubble { background:#DCF8C6; border-top-right-radius:2px; }
-.bubble ul { margin:6px 0 0 0; padding-left:18px; }
-.bubble li { margin-bottom:5px; }
-.bubble h4 { margin:0 0 2px 0; font-size:15px; color:#075E54; }
-.bubble img { width:100%; border-radius:8px; margin-top:6px; display:block; background:#D9E8E4; min-height:90px; }
-.cap { font-size:12px; color:#667781; margin-top:3px; }
-.quote { border-left:4px solid #F2A541; padding-left:10px; font-style:italic; font-size:16px; }
-.pg { font-size:12px; color:#667781; margin-top:4px; }
-.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; margin-top:4px; }
-.stat { background:#E7F3F1; border-radius:10px; padding:8px; text-align:center; }
-.stat b { display:block; font-size:22px; color:#075E54; }
-.stat span { font-size:12px; color:#3b4a50; }
-div.stButton > button { border-radius:18px; border:1.5px solid #1D9E75; background:#fff; color:#075E54; font-weight:500; }
-div.stButton > button:hover { background:#E1F5EE; border-color:#075E54; color:#075E54; }
+    /* Animación suave de entrada */
+    @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(15px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .stApp {
+        background-color: #0E1117;
+    }
+    .card {
+        background: linear-gradient(135deg, #1E2530 0%, #161B22 100%);
+        padding: 22px;
+        border-radius: 14px;
+        border-left: 5px solid #00D4FF;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        margin-bottom: 18px;
+        animation: fadeIn 0.6s ease-out;
+    }
+    .card-accent {
+        background: linear-gradient(135deg, #1A2A3A 0%, #111927 100%);
+        padding: 22px;
+        border-radius: 14px;
+        border-left: 5px solid #FF4B4B;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        margin-bottom: 18px;
+        animation: fadeIn 0.8s ease-out;
+    }
+    .card-title {
+        color: #00D4FF;
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .highlight-text {
+        color: #F8FAFC;
+        font-size: 1.05rem;
+        line-height: 1.6;
+    }
+    .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background-color: rgba(0, 212, 255, 0.15);
+        color: #00D4FF;
+        margin-right: 8px;
+    }
 </style>
-"""
+""", unsafe_allow_html=True)
 
+# ---------------------------------------------------------
+# BARRA LATERAL DE NAVEGACIÓN
+# ---------------------------------------------------------
+st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_Colombia.svg/320px-Flag_of_Colombia.svg.png", width=60)
+st.sidebar.title("🎓 Socialización Anteproyecto")
+st.sidebar.caption("Universidad del Tolima | GINVAE-UT")
+st.sidebar.markdown("---")
 
-def fmt(texto):
-    t = html.escape(texto)
-    return re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
-
-
-def mensaje_html(m):
-    tipo = m[0]
-    if tipo == "t":
-        return fmt(m[1])
-    if tipo == "img":
-        url = IMAGENES.get(m[1], m[1])
-        return f'<img src="{html.escape(url)}" alt="{html.escape(m[2])}"><div class="cap">{fmt(m[2])}</div>'
-    if tipo == "q":
-        return f'<div class="quote">“{fmt(m[1])}”</div><div class="pg">{fmt(m[2])}</div>'
-    if tipo == "stats":
-        celdas = "".join(f'<div class="stat"><b>{fmt(a)}</b><span>{fmt(b)}</span></div>' for a, b in m[1])
-        return f'<div class="stats">{celdas}</div>'
-    if tipo == "ul":
-        items = "".join(f"<li>{fmt(i)}</li>" for i in m[2])
-        return f"<h4>{fmt(m[1])}</h4><ul>{items}</ul>"
-    return ""
-
-
-def burbuja(contenido, lado="bot"):
-    clase = "row me" if lado == "me" else "row"
-    caja = "bubble" if lado == "me" else "bubble bot"
-    st.markdown(f'<div class="{clase}"><div class="{caja}">{contenido}</div></div>', unsafe_allow_html=True)
-
-
-def respuesta_bot(escena, j):
-    quiz = escena.get("quiz")
-    if quiz:
-        ok = j == quiz["correcto"]
-        return ("✅ ¡Correcto! " if ok else "🤔 Casi. ") + quiz["explica"]
-    return escena["replies"][j][1]
-
-
-def elegir(i, j):
-    st.session_state.elegidas[i] = j
-    st.session_state.paso = i + 1
-
-
-def reiniciar():
-    st.session_state.paso = 0
-    st.session_state.elegidas = {}
-
-
-# ----------------------------------------------------------------------
-# APP
-# ----------------------------------------------------------------------
-st.set_page_config(page_title=f"{PERSONAJE} · Investigación científica", page_icon="🔬", layout="centered")
-st.markdown(CSS, unsafe_allow_html=True)
-
-if "paso" not in st.session_state:
-    reiniciar()
-
-paso = st.session_state.paso
-total = len(ESCENAS)
-
-subtitulo = f"{""}"
-st.markdown(
-    f'<div class="top"><div class="avatar">🧑‍🏫</div><div><div class="n">{PERSONAJE}</div>'
-    f'<div class="s">en línea {html.escape(subtitulo)}</div></div></div>',
-    unsafe_allow_html=True,
+seccion = st.sidebar.radio(
+    "📌 Selecciona una sección para desplegar:",
+    [
+        "1. Título e Identificación",
+        "2. Planteamiento del Problema",
+        "3. Justificación y Vacío Científico",
+        "4. Objetivos",
+        "5. Diseño Metodológico (STATIS)",
+        "6. Cronograma y Resultados Esperados"
+    ]
 )
-st.progress(min(paso / total, 1.0), text=f"Avance: {min(paso, total)} de {total}")
 
-with st.sidebar:
-    st.markdown(f"**{"MATESTAD"}**")
-    if NOMBRE:
-        st.write(f"{NOMBRE}")
-    st.write(f"{PROFESORA}")
-    st.write(f"{UNIVERSIDAD}")
-    st.write(f"{SEMINARIO}")
-    st.button("Volver a empezar", on_click=reiniciar)
+st.sidebar.markdown("---")
+st.sidebar.info("💡 **Tip de exposición:** Haz clic en las pestañas y desplegables de cada vista para ir revelando la explicación paso a paso.")
 
-for i, escena in enumerate(ESCENAS):
-    if i > paso:
-        break
-    for m in escena["msgs"]:
-        burbuja(mensaje_html(m))
-    if i < paso:
-        j = st.session_state.elegidas.get(i, 0)
-        burbuja(fmt(escena["replies"][j][0]), "me")
-        texto = respuesta_bot(escena, j)
-        if texto:
-            burbuja(fmt(texto))
-    else:
-        for j, (etiqueta, _) in enumerate(escena["replies"]):
-            st.button(etiqueta, key=f"r{i}_{j}", on_click=elegir, args=(i, j), use_container_width=True)
+# ---------------------------------------------------------
+# SECCIÓN 1: TÍTULO E IDENTIFICACIÓN
+# ---------------------------------------------------------
+if seccion == "1. Título e Identificación":
+    st.markdown('<span class="badge">Trabajo de Grado</span> <span class="badge">Análisis Multivariado</span> <span class="badge">Duración: 6 Meses</span>', unsafe_allow_html=True)
+    st.title("📊 Análisis Departamental de Indicadores de Delitos y Afectación a la Fuerza Pública en Colombia")
+    st.subheader("Un estudio mediante técnicas multivía (2012 – 2024)")
 
-if paso >= total:
-    burbuja("¡Eso es todo! 🎉 Gracias por leer conmigo. Si quieres repasar, toca **Volver a empezar**.")
-    st.button("Volver a empezar", key="fin", on_click=reiniciar, use_container_width=True)
-    if NOMBRE:
-        burbuja(fmt(f"**{"Hasta Pronto.. 👋"}**"))
+    col1, col2 = st.columns([2, 1])
 
-components.html(
-    """<script>
-    const d = window.parent.document;
-    [d.querySelector('[data-testid="stMain"]'), d.querySelector('section.main'), d.documentElement]
-      .forEach(e => { if (e) e.scrollTo({top: e.scrollHeight, behavior: 'smooth'}); });
-    </script>""",
-    height=0,
-)
+    with col1:
+        st.markdown("""
+        <div class="card">
+            <div class="card-title">🧭 Síntesis del Proyecto</div>
+            <p class="highlight-text">
+                Esta investigación modela de forma conjunta la evolución espacio-temporal de <b>delitos estratégicos</b> 
+                y <b>afectaciones a la Fuerza Pública</b> en los <b>32 departamentos de Colombia</b> durante 13 años (2012–2024).
+                <br><br>
+                Mediante técnicas multivía de la familia <b>STATIS (X-STATIS y STATICO)</b>, se busca descubrir trayectorias 
+                territoriales comunes, evaluar qué ocurrió tras el <b>Acuerdo de Paz de 2016</b> e identificar qué variables 
+                explican las desigualdades regionales.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        st.markdown("""
+        <div class="card">
+            <div class="card-title">👥 Equipo Investigador</div>
+            <p class="highlight-text">
+                <b>Autor:</b><br>Miguel Ángel Garatejo Capera<br><br>
+                <b>Directora:</b><br>Dra. Edith Johana Medina Hernández<br><br>
+                <b>Grupo de Investigación:</b><br>GINVAE-UT (Análisis Estadístico)<br><br>
+                <b>Línea:</b> Análisis Multivariado
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Métricas clave del alcance
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Territorios (n)", "32 Dptos.", "Cobertura Nacional")
+    m2.metric("Ventana Temporal (k)", "13 Años", "2012 – 2024")
+    m3.metric("Fuente Principal", "MinDefensa", "Obs. DD.HH.")
+    m4.metric("Enfoque Técnico", "STATIS", "X-STATIS / STATICO")
+
+# ---------------------------------------------------------
+# SECCIÓN 2: PLANTEAMIENTO DEL PROBLEMA
+# ---------------------------------------------------------
+elif seccion == "2. Planteamiento del Problema":
+    st.title("🔍 Planteamiento del Problema")
+    st.write("Las economías ilegales (narcotráfico, minería de oro) y las acciones de los GAO impactan de forma heterogénea al territorio y a la Fuerza Pública.")
+
+    # Tarjetas de cifras reales del documento (2012-2024)
+    st.subheader("📈 Dimensión del Fenómeno en Colombia (Acumulado 2012–2024)")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Fuerza Pública Afectada", "18.630", "16.476 heridos | 2.154 asesinados", delta_color="inverse")
+    c2.metric("Capturas Minería Ilegal", "22.720", "Pico en 2016 (2.560)", delta_color="off")
+    c3.metric("Casos de Terrorismo", "9.164", "Subió de 666 (2012) a 1.126 (2024)", delta_color="inverse")
+    c4.metric("Secuestros Registrados", "3.042", "Repunte: 160 (2021) → 313 (2024)", delta_color="inverse")
+
+    # Gráfico comparativo interactivo de los hitos mencionados en el documento
+    df_hitos = pd.DataFrame({
+        "Indicador": ["Afectación Fuerza Pública", "Afectación Fuerza Pública", "Terrorismo", "Terrorismo", "Minería Ilegal (Capturas)", "Minería Ilegal (Capturas)"],
+        "Año": ["2012", "2024", "2012", "2024", "2016 (Pico)", "2024"],
+        "Casos": [2848, 600, 666, 1126, 2560, 1148]
+    })
+    fig = px.bar(
+        df_hitos, x="Indicador", y="Casos", color="Año", barmode="group",
+        title="Contraste de Cifras Oficiales Reportadas en el Planteamiento (MinDefensa)",
+        template="plotly_dark", color_discrete_sequence=["#00D4FF", "#FF4B4B", "#00E676"]
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Pregunta problema interactiva
+    with st.expander("❓ VER PREGUNTA CENTRAL Y PREGUNTAS ARTICULADORAS", expanded=True):
+        st.markdown("""
+        <div class="card-accent">
+            <div class="card-title" style="color:#FF4B4B;">Pregunta Central de Investigación</div>
+            <p class="highlight-text">
+                ¿Cómo analizar, mediante técnicas multivía, los indicadores de delitos y afectación a la fuerza pública en Colombia, 
+                a partir de información del Ministerio de Defensa Nacional, para describir las similitudes y diferencias entre 
+                los departamentos y su evolución durante el periodo de estudio?
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        col_p1, col_p2, col_p3 = st.columns(3)
+        col_p1.info("**1. Trayectorias:** ¿Qué departamentos siguen trayectorias similares en delitos y afectaciones?")
+        col_p2.warning("**2. Punto de Quiebre:** ¿Se mantienen esas similitudes o cambian tras el Acuerdo de Paz de 2016?")
+        col_p3.success("**3. Peso de Variables:** ¿Qué indicadores explican mejor las diferencias territoriales?")
+
+# ---------------------------------------------------------
+# SECCIÓN 3: JUSTIFICACIÓN Y VACÍO CIENTÍFICO
+# ---------------------------------------------------------
+elif seccion == "3. Justificación y Vacío Científico":
+    st.title("💡 Justificación y Vacío en la Literatura")
+
+    tab1, tab2, tab3 = st.tabs(["🧩 El Problema del Análisis Tradicional", "📚 Vacío en Estudios Previos", "🏛️ Aporte a Políticas Públicas"])
+
+    with tab1:
+        st.markdown("""
+        <div class="card">
+            <div class="card-title">¿Por qué no basta con mirar tablas por separado?</div>
+            <p class="highlight-text">
+                Analizar totales nacionales o un solo año oculta la dinámica real del conflicto:
+                <ul>
+                    <li>Un departamento puede bajar en afectaciones a la Fuerza Pública pero dispararse en <b>minería ilegal o terrorismo</b>.</li>
+                    <li>Las dinámicas cambian antes y después de hitos como el <b>Acuerdo de Paz de 2016</b>.</li>
+                    <li>Se requiere una herramienta que cruce <b>Espacio × Tiempo × Variables</b> al mismo tiempo.</li>
+                </ul>
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with tab2:
+        st.markdown("""
+        <div class="card">
+            <div class="card-title">¿Qué han hecho otros autores y qué falta por hacer?</div>
+            <p class="highlight-text">
+                • <b>Cortes transversales (1 solo año):</b> Estudios como Rodríguez Takeuchi (2005) o Fiandrino et al. (2023) analizan un único año.<br>
+                • <b>Variables aisladas:</b> Holmes et al. (2006), Idrobo et al. (2014) y González et al. (2022) relacionan violencia con coca, oro o inversión.<br>
+                • <b>Nuestro diferencial:</b> Ninguno integra de forma multivía y longitudinal la <b>afectación física a la Fuerza Pública (heridos y asesinados)</b> junto con delitos ambientales, terrorismo y secuestro.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with tab3:
+        st.success("🎯 **Impacto Práctico:** Identificar grupos de departamentos con perfiles delictivos similares permite diseñar **políticas de seguridad focalizadas** según la realidad de cada región, evitando aplicar un mismo esquema uniforme a todo el país.")
+
+# ---------------------------------------------------------
+# SECCIÓN 4: OBJETIVOS
+# ---------------------------------------------------------
+elif seccion == "4. Objetivos":
+    st.title("🎯 Objetivos de la Investigación")
+
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">🏆 Objetivo General</div>
+        <p class="highlight-text">
+            Analizar mediante técnicas multivía indicadores de delitos y afectación a la fuerza pública en Colombia, 
+            desde información del Ministerio de Defensa Nacional, describiendo las similitudes y diferencias observadas 
+            entre departamentos y su evolución en el tiempo.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.subheader("📌 Objetivos Específicos (Haz clic en cada fase)")
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        if st.button("1️⃣ Trayectorias Territoriales", use_container_width=True):
+            st.info("**OE1:** Identificar los departamentos que presentan trayectorias similares en la ocurrencia de delitos y en los indicadores de afectación a la fuerza pública.")
+    with col2:
+        if st.button("2️⃣ Estabilidad y Acuerdo de Paz", use_container_width=True):
+            st.warning("**OE2:** Explorar si las similitudes entre departamentos se mantienen durante el periodo de estudio o cambian en años concretos, en especial después de la firma del Acuerdo de Paz.")
+    with col3:
+        if st.button("3️⃣ Caracterización de Indicadores", use_container_width=True):
+            st.success("**OE3:** Examinar las relaciones existentes entre los indicadores estudiados caracterizando los patrones territoriales observados.")
+
+# ---------------------------------------------------------
+# SECCIÓN 5: DISEÑO METODOLÓGICO (STATIS)
+# ---------------------------------------------------------
+elif seccion == "5. Diseño Metodológico (STATIS)":
+    st.title("⚙️ Diseño Metodológico y Estructura Multivía")
+
+    col_izq, col_der = st.columns([1.2, 1])
+
+    with col_izq:
+        st.markdown("""
+        <div class="card">
+            <div class="card-title">📐 Arquitectura del Cubo de Datos (3 Vías)</div>
+            <p class="highlight-text">
+                • <b>Enfoque:</b> Cuantitativo, longitudinal, descriptivo y exploratorio.<br>
+                • <b>Filas (n = 32):</b> Los 32 departamentos de Colombia.<br>
+                • <b>Estudios (k = 13):</b> Serie anual continua 2012–2024.<br>
+                • <b>Bloque X (Fuerza Pública):</b> Integrantes heridos y asesinados.<br>
+                • <b>Bloque Y (Delitos):</b> Terrorismo, secuestro, capturas por minería ilegal, delitos ambientales e incautaciones (oro/mercurio).
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        metodo = st.radio(
+            "Selecciona la técnica multivía a explorar:",
+            ["X-STATIS (Una sola K-tabla conjunta)", "STATICO (Dos K-tablas pareadas X vs Y)"]
+        )
+        if "X-STATIS" in metodo:
+            st.info("**X-STATIS:** Analiza todos los indicadores (delitos + fuerza pública) en una única estructura tridimensional para extraer el *Compromiso* (estructura común) y las trayectorias departamentales.")
+        else:
+            st.success("**STATICO:** Analiza la covariación entre dos secuencias de tablas pareadas: cómo la estructura de **Delitos (Y)** se relaciona con la **Afectación a la Fuerza Pública (X)** a lo largo de los 13 años.")
+
+    with col_der:
+        # Visualización 3D interactiva del cubo de datos STATIS
+        import numpy as np
+        x, y, z = np.meshgrid(np.arange(1, 6), np.arange(1, 9), np.arange(2012, 2025, 3))
+        fig_3d = go.Figure(data=[go.Scatter3d(
+            x=x.flatten(), y=y.flatten(), z=z.flatten(),
+            mode='markers',
+            marker=dict(size=6, color=z.flatten(), colorscale='Viridis', opacity=0.85)
+        )])
+        fig_3d.update_layout(
+            title="Representación del Cubo Multivía (Dptos × Variables × Años)",
+            scene=dict(
+                xaxis_title="Indicadores (p, q)",
+                yaxis_title="Departamentos (n=32)",
+                zaxis_title="Años (k=13)"
+            ),
+            template="plotly_dark",
+            height=420,
+            margin=dict(l=0, r=0, b=0, t=40)
+        )
+        st.plotly_chart(fig_3d, use_container_width=True)
+
+    # Flujo de procesamiento
+    st.subheader("🔄 Etapas del Procesamiento (R / Python)")
+    p1, p2, p3, p4 = st.columns(4)
+    p1.markdown("**1. Revisión:** Calidad y completitud (2012–2024) + tasas DANE.")
+    p2.markdown("**2. Armonización:** Estandarización territorial y anual.")
+    p3.markdown("**3. STATIS:** Interestructura → Compromiso → Intraestructura.")
+    p4.markdown("**4. Ética:** Investigación sin riesgo (datos agregados públicos).")
+
+# ---------------------------------------------------------
+# SECCIÓN 6: CRONOGRAMA Y RESULTADOS ESPERADOS
+# ---------------------------------------------------------
+elif seccion == "6. Cronograma y Resultados Esperados":
+    st.title("📅 Cronograma (6 Meses) y Resultados Esperados")
+
+    # Diagrama de Gantt interactivo del cronograma del documento
+    df_crono = pd.DataFrame([
+        dict(Actividad="1. Revisión bibliográfica y marco referencial", Inicio=1, Fin=2),
+        dict(Actividad="2. Verificación y documentación base de indicadores", Inicio=2, Fin=2.9),
+        dict(Actividad="3. Implementación STATIS en Python / R", Inicio=2, Fin=2.9),
+        dict(Actividad="4. Análisis e interpretación (Dpto-Año-Indicador)", Inicio=3, Fin=3.9),
+        dict(Actividad="5. Contraste con marco referencial y conclusiones", Inicio=3, Fin=3.9),
+        dict(Actividad="6. Redacción del documento final de tesis", Inicio=4, Fin=5.9),
+        dict(Actividad="7. Revisión, ajustes finales y entrega", Inicio=6, Fin=6.9),
+    ])
+
+    fig_gantt = go.Figure()
+    for _, row in df_crono.iterrows():
+        fig_gantt.add_trace(go.Bar(
+            y=[row["Actividad"]],
+            x=[row["Fin"] - row["Inicio"] + 0.9],
+            base=row["Inicio"],
+            orientation='h',
+            marker_color='#00D4FF',
+            showlegend=False
+        ))
+    fig_gantt.update_layout(
+        title="Plan de Ejecución Semestral (Mes 1 a Mes 6)",
+        xaxis=dict(title="Meses", tickvals=[1, 2, 3, 4, 5, 6], ticktext=["Mes 1", "Mes 2", "Mes 3", "Mes 4", "Mes 5", "Mes 6"]),
+        yaxis=dict(autorange="reversed"),
+        template="plotly_dark",
+        height=350
+    )
+    st.plotly_chart(fig_gantt, use_container_width=True)
+
+    st.subheader("🚀 Productos y Resultados Esperados")
+    r1, r2, r3 = st.columns(3)
+    r1.success("**Mapas y Tipologías:** Agrupación de departamentos según trayectorias de violencia y afectación institucional.")
+    r2.info("**Reproducibilidad:** Código documentado en R/Python para replicar el análisis multivía en otros periodos.")
+    r3.warning("**Insumo Técnico:** Documento de grado y socialización para focalización de políticas públicas de seguridad.")
+
+    st.markdown("---")
+    if st.button("🎉 Finalizar Socialización", type="primary"):
+        st.balloons()
+        st.success("¡Muchas gracias! Quedo atento a sus preguntas y observaciones.")
