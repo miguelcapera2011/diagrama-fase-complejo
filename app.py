@@ -19,7 +19,6 @@ st.set_page_config(
 # CARGA DEL LOGO DE LA UNIVERSIDAD DEL TOLIMA (LOCAL O SVG)
 # ---------------------------------------------------------
 def obtener_logo_ut():
-    # Busca cualquier imagen subida al repositorio (ej. logo_ut.png, escudo.png, ut.jpg)
     for raiz, _, archivos in os.walk("."):
         for archivo in archivos:
             if archivo.lower().endswith((".png", ".jpg", ".jpeg", ".svg", ".webp")):
@@ -30,7 +29,6 @@ def obtener_logo_ut():
                     b64 = base64.b64encode(f.read()).decode()
                 return f"data:image/{mime};base64,{b64}"
     
-    # Respaldo institucional vectorial (nunca falla ni se rompe)
     svg_ut = """
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 135" width="90" height="100">
         <path d="M10,10 H110 V75 C110,105 60,128 60,128 C60,128 10,105 10,75 Z" fill="#B71C1C" stroke="#F0F6FC" stroke-width="4"/>
@@ -174,14 +172,17 @@ def cargar_datos():
 df_base, df_dic, base_cargada, estado_carga = cargar_datos()
 
 # ---------------------------------------------------------
-# BARRA LATERAL CON LOGO UNIVERSIDAD DEL TOLIMA
+# 1. BARRA LATERAL: LOGO Y NOMBRE ARRIBA DEL MENÚ
 # ---------------------------------------------------------
-st.markdown(
-    """
-    <div class="inst-banner">
-        <div>
-            <p class="inst-title">SOCIALIZACIÓN DE ANTEPROYECTO DE TRABAJO DE GRADO</p>
-            <p class="inst-sub">Análisis Departamental de indicadores de delitos y afectación a la fuerza pública en Colombia (2012–2024)</p>
+st.sidebar.markdown(
+    f"""
+    <div style="text-align: center; padding: 10px 0 15px 0;">
+        <img src="{LOGO_SRC}" width="85" alt="Universidad del Tolima">
+        <div style="color: #F0F6FC; font-weight: 700; font-size: 0.95rem; margin-top: 8px;">
+            UNIVERSIDAD DEL TOLIMA
+        </div>
+        <div style="color: #8B949E; font-size: 0.8rem;">
+            Grupo de Investigación GINVAE-UT<br>Línea: Análisis Multivariado
         </div>
     </div>
     """,
@@ -204,17 +205,17 @@ seccion = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
+st.sidebar.caption("Panel izquierdo: Texto literal del formato oficial.\nPanel derecho: Síntesis gráfica e interactiva.")
 
-# Encabezado superior institucional
-st.sidebar.markdown(
-    f"""
-    <div style="text-align: center; padding: 10px 0 15px 0;">
-        <img src="{LOGO_SRC}" width="85" alt="Universidad del Tolima">
-        <div style="color: #F0F6FC; font-weight: 700; font-size: 0.95rem; margin-top: 8px;">
-            UNIVERSIDAD DEL TOLIMA
-        </div>
-        <div style="color: #8B949E; font-size: 0.8rem;">
-            Grupo de Investigación GINVAE-UT<br>Línea: Análisis Multivariado
+# ---------------------------------------------------------
+# 2. ENCABEZADO SUPERIOR INSTITUCIONAL (SIN LOGO)
+# ---------------------------------------------------------
+st.markdown(
+    """
+    <div class="inst-banner">
+        <div>
+            <p class="inst-title">SOCIALIZACIÓN DE ANTEPROYECTO DE TRABAJO DE GRADO</p>
+            <p class="inst-sub">Análisis Departamental de indicadores de delitos y afectación a la fuerza pública en Colombia (2012–2024)</p>
         </div>
     </div>
     """,
@@ -675,7 +676,7 @@ elif seccion == "VIII. Resultados Esperados y Evaluadores":
             <div class="doc-text">
                 <b>16. RESULTADOS ESPERADOS:</b><br>
                 Se espera identificar los departamentos que siguen trayectorias similares en los indicadores de delitos y de afectación a la fuerza pública y los que se apartan del patrón general (estructura compromiso en los resultados de las técnicas de la familia STATIS). También se busca describir si esas similitudes se mantienen durante el periodo de análisis, o si cambian en años concretos, incluidos posibles cambios alrededor de acontecimientos importantes como la firma del Acuerdo de Paz.<br><br>
-                Asimismo, se espera caracterizar las relaciones existentes entre los indicadores seleccionados y mostrar cuáles se asocian más con las diferencias territoriales y con la trayectoria de los fenómenos estudiados. Igualmente, se espera dejar documentado el procesamiento de los datos y las decisiones tomadas sobre la estructura multivía y la técnica elegida, para que el análisis pueda repetirse con otros periodos o indicadores.<br><br>
+                Asimismo, se espera caracterizar las relaciones existentes entre los indicadores seleccionados y mostrar cuáles se as asociado más con las diferencias territoriales y con la trayectoria de los fenómenos estudiados. Igualmente, se espera dejar documentado el procesamiento de los datos y las decisiones tomadas sobre la estructura multivía y la técnica elegida, para que el análisis pueda repetirse con otros periodos o indicadores.<br><br>
                 <b>17. SUGERENCIA DEL PERFIL DE EVALUADORES:</b><br>
                 • <b>Julie Kimberly Ramírez Brinez</b> (jkramirezb@ut.edu.co) — Departamento de Matemáticas y Estadística, Universidad del Tolima.<br>
                 • <b>Gisou Díaz Rojo</b> (gdiazrj@ut.edu.co) — Departamento de Matemáticas y Estadística, Universidad del Tolima.
