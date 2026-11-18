@@ -180,9 +180,6 @@ st.sidebar.markdown(
     f"""
     <div style="text-align: center; padding: 10px 0 15px 0;">
         <img src="{LOGO_SRC}" width="85" alt="Universidad del Tolima">
-        <div style="color: #F0F6FC; font-weight: 700; font-size: 0.95rem; margin-top: 8px;">
-            UNIVERSIDAD DEL TOLIMA
-        </div>
         <div style="color: #8B949E; font-size: 0.8rem;">
             Grupo de Investigación GINVAE-UT<br>Línea: Análisis Multivariado
         </div>
@@ -207,13 +204,12 @@ seccion = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.caption("Panel izquierdo: Texto literal del formato oficial.\nPanel derecho: Síntesis gráfica e interactiva.")
 
 # Encabezado superior institucional
 st.markdown(
     f"""
     <div class="inst-banner">
-        <img src="{LOGO_SRC}" width="44" alt="Escudo UT">
+    
         <div>
             <p class="inst-title">SOCIALIZACIÓN DE ANTEPROYECTO DE TRABAJO DE GRADO</p>
             <p class="inst-sub">Análisis Departamental de indicadores de delitos y afectación a la fuerza pública en Colombia (2012–2024)</p>
