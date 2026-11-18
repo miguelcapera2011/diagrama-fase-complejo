@@ -1,5 +1,6 @@
 import os
 import base64
+import requests
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -14,6 +15,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Control de navegación entre Pantalla Inicial (Mapa) y Sustentación
+if "en_sustentacion" not in st.session_state:
+    st.session_state.en_sustentacion = False
 
 # ---------------------------------------------------------
 # CARGA DEL LOGO DE LA UNIVERSIDAD DEL TOLIMA (LOCAL O SVG)
@@ -76,6 +81,22 @@ st.markdown("""
         color: #8B949E;
         font-size: 0.88rem;
         margin: 2px 0 0 0;
+    }
+    .question-banner {
+        background: linear-gradient(135deg, #161B22 0%, #1D232C 100%);
+        border: 1px solid #30363D;
+        border-left: 6px solid #B71C1C;
+        padding: 22px 26px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        animation: fadeIn 0.5s ease-out;
+    }
+    .question-text {
+        color: #F0F6FC;
+        font-size: 1.45rem;
+        font-weight: 700;
+        line-height: 1.35;
+        margin: 0;
     }
     .doc-box {
         background-color: #161B22;
@@ -150,7 +171,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# CARGA ROBUSTA DE LA BASE REAL (BASE_ESPECIFICA.xlsx)
+# CARGA ROBUSTA DE LA BASE REAL Y GEOJSON DE COLOMBIA
 # ---------------------------------------------------------
 @st.cache_data
 def cargar_datos():
@@ -169,7 +190,179 @@ def cargar_datos():
     except Exception as e:
         return None, None, False, f"Error al leer Excel: {e}"
 
+@st.cache_data
+def cargar_geojson_colombia():
+    url = "https://gist.githubusercontent.com/john-guerra/43c7656821069d00dcbc/raw/be6a6e239cd5b5b803c6e7c2ec405b793a9064dd/Colombia.geo.json"
+    try:
+        resp = requests.get(url, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+    except Exception:
+        pass
+    return None
+
 df_base, df_dic, base_cargada, estado_carga = cargar_datos()
+
+# =========================================================
+# PANTALLA DE APERTURA: MAPA DE COLOMBIA + PREGUNTA + BOTÓN
+# =========================================================
+if not st.session_state.en_sustentacion:
+    # Ocultar barra lateral en la portada para que el mapa se vea grande y limpio
+    st.markdown("<style>[data-testid='stSidebar'] {display: none;}</style>", unsafe_allow_html=True)
+
+    # Pregunta disparadora en la parte superior
+    st.markdown(
+        f"""
+        <div class="question-banner" style="display: flex; align-items: center; gap: 22px;">
+            <img src="{LOGO_SRC}" width="68" alt="Universidad del Tolima">
+            <div>
+                <div style="color: #8B949E; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; margin-bottom: 6px;">
+                    Universidad del Tolima · Grupo de Investigación GINVAE-UT
+                </div>
+                <p class="question-text">
+                    “¿Ustedes creen que el comportamiento de los delitos y las afectaciones a la fuerza pública es igual en todos los departamentos?”
+                </p>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    col_mapa, col_lado = st.columns([2.3, 1], gap="large")
+
+    with col_mapa:
+        geojson_col = cargar_geojson_colombia()
+
+        if geojson_col and base_cargada:
+            # Selector opcional de variable para explorar en vivo si lo deseas
+            opciones_vars = {
+                "Índice Sintético Conjunto (Delitos + Fuerza Pública)": "INDICE_GLOBAL",
+                "Fuerzas Militares Heridos (FM_HER)": "FM_HER",
+                "Fuerzas Militares Asesinados (FM_ASE)": "FM_ASE",
+                "Policía Nacional Heridos (POL_HER)": "POL_HER",
+                "Policía Nacional Asesinados (POL_ASE)": "POL_ASE",
+                "Terrorismo (TERR)": "TERR",
+                "Secuestro (SEC)": "SEC",
+                "Delitos contra el Medio Ambiente (AFE_AMB)": "AFE_AMB",
+                "Capturas por Minería Ilegal (CAP_MIN)": "CAP_MIN",
+                "Incautación de Oro (INC_ORO)": "INC_ORO",
+                "Incautación de Mercurio (INC_MERC)": "INC_MERC",
+            }
+            var_label = st.selectbox("Explorar intensidad promedio departamental (2012–2024):", list(opciones_vars.keys()))
+            var_cod = opciones_vars[var_label]
+
+            # Promedio departamental 2012-2024
+            cols_num = ["FM_HER", "FM_ASE", "POL_HER", "POL_ASE", "TERR", "SEC", "AFE_AMB", "CAP_MIN", "INC_ORO", "INC_MERC"]
+            df_dep = df_base.groupby("Departamento", as_index=False)[cols_num].mean()
+            # Índice estandarizado promedio para vista global
+            df_norm = (df_dep[cols_num] - df_dep[cols_num].min()) / (df_dep[cols_num].max() - df_dep[cols_num].min())
+            df_dep["INDICE_GLOBAL"] = df_norm.mean(axis=1) * 100
+
+            # Mapeo exacto de nombres del GeoJSON oficial de Colombia
+            mapa_nombres = {
+                "Antioquia": "ANTIOQUIA",
+                "Atlántico": "ATLANTICO",
+                "Bolívar": "BOLIVAR",
+                "Boyacá": "BOYACA",
+                "Caldas": "CALDAS",
+                "Caquetá": "CAQUETA",
+                "Cauca": "CAUCA",
+                "Cesar": "CESAR",
+                "Córdoba": "CORDOBA",
+                "Cundinamarca": "CUNDINAMARCA",
+                "Chocó": "CHOCO",
+                "Huila": "HUILA",
+                "La Guajira": "LA GUAJIRA",
+                "Magdalena": "MAGDALENA",
+                "Meta": "META",
+                "Nariño": "NARIÑO",
+                "Norte de Santander": "NORTE DE SANTANDER",
+                "Quindio": "QUINDIO",
+                "Risaralda": "RISARALDA",
+                "Santander": "SANTANDER",
+                "Sucre": "SUCRE",
+                "Tolima": "TOLIMA",
+                "Valle del Cauca": "VALLE DEL CAUCA",
+                "Arauca": "ARAUCA",
+                "Casanare": "CASANARE",
+                "Putumayo": "PUTUMAYO",
+                "Archipiélago de San Andrés": "ARCHIPIELAGO DE SAN ANDRES PROVIDENCIA Y SANTA CATALINA",
+                "Amazonas": "AMAZONAS",
+                "Guainía": "GUAINIA",
+                "Guaviare": "GUAVIARE",
+                "Vaupés": "VAUPES",
+                "Vichada": "VICHADA"
+            }
+            df_dep["NOMBRE_DPT"] = df_dep["Departamento"].map(mapa_nombres)
+
+            # Agregar fila de Bogotá D.C. como referencia fuera del estudio
+            df_bog = pd.DataFrame([{"Departamento": "Bogotá D.C. (No incluido en estudio)", "NOMBRE_DPT": "SANTAFE DE BOGOTA D.C", var_cod: np.nan}])
+            df_mapa_final = pd.concat([df_dep, df_bog], ignore_index=True)
+
+            fig_map = px.choropleth(
+                df_mapa_final,
+                geojson=geojson_col,
+                locations="NOMBRE_DPT",
+                featureidkey="properties.NOMBRE_DPT",
+                color=var_cod,
+                hover_name="Departamento",
+                hover_data={"NOMBRE_DPT": False, var_cod: ":.2f"},
+                color_continuous_scale="YlOrRd",
+                labels={var_cod: "Intensidad"}
+            )
+            fig_map.update_geos(
+                fitbounds="locations",
+                visible=False,
+                bgcolor="#0E1117"
+            )
+            fig_map.update_layout(
+                template="plotly_dark",
+                paper_bgcolor="#0E1117",
+                plot_bgcolor="#0E1117",
+                height=570,
+                margin=dict(l=0, r=0, t=10, b=0),
+                coloraxis_colorbar=dict(title="Nivel<br>Relativo", thickness=14, len=0.7)
+            )
+            st.plotly_chart(fig_map, use_container_width=True)
+        else:
+            st.info("Cargando mapa departamental de Colombia...")
+
+    with col_lado:
+        st.markdown("<div style='height: 35px;'></div>", unsafe_allow_html=True)
+        st.markdown("""
+        <div class="card-red">
+            <div class="card-title">Contexto del Estudio</div>
+            <p class="highlight-text">
+                Cada departamento de Colombia enfrenta dinámicas distintas frente al conflicto armado, las economías ilegales y la seguridad institucional.<br><br>
+                • <b>32 Departamentos</b> analizados<br>
+                • <b>13 Años</b> de seguimiento (2012–2024)<br>
+                • <b>10 Indicadores</b> oficiales (MinDefensa)<br>
+                • <b>Enfoque Multivía:</b> X-STATIS y STATICO
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("""
+        <div class="card">
+            <div class="card-title">Autoría</div>
+            <p class="highlight-text">
+                <b>Estudiante:</b> Miguel Ángel Garatejo Capera<br>
+                <b>Directora:</b> Edith Johana Medina Hernández<br>
+                <b>Grupo:</b> GINVAE-UT
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
+        if st.button("Iniciar Sustentación del Anteproyecto →", type="primary", use_container_width=True):
+            st.session_state.en_sustentacion = True
+            st.rerun()
+
+    st.stop()
+
+# =========================================================
+# APLICACIÓN PRINCIPAL DE SUSTENTACIÓN (INTACTA)
+# =========================================================
 
 # ---------------------------------------------------------
 # 1. BARRA LATERAL: LOGO Y NOMBRE ARRIBA DEL MENÚ
@@ -179,6 +372,7 @@ st.sidebar.markdown(
     <div style="text-align: center; padding: 10px 0 15px 0;">
         <img src="{LOGO_SRC}" width="85" alt="Universidad del Tolima">
         <div style="color: #F0F6FC; font-weight: 700; font-size: 0.95rem; margin-top: 8px;">
+            UNIVERSIDAD DEL TOLIMA
         </div>
         <div style="color: #8B949E; font-size: 0.8rem;">
             Grupo de Investigación GINVAE-UT<br>Línea: Análisis Multivariado
@@ -205,6 +399,10 @@ seccion = st.sidebar.radio(
 
 st.sidebar.markdown("---")
 st.sidebar.caption("Panel izquierdo: Texto literal del formato oficial.\nPanel derecho: Síntesis gráfica e interactiva.")
+
+if st.sidebar.button("← Volver al Mapa de Colombia", use_container_width=True):
+    st.session_state.en_sustentacion = False
+    st.rerun()
 
 # ---------------------------------------------------------
 # 2. ENCABEZADO SUPERIOR INSTITUCIONAL (SIN LOGO)
@@ -524,7 +722,7 @@ elif seccion == "VI. Diseño Metodológico y Cubo 3D":
             with f2:
                 deptos_disp = sorted(df_base["Departamento"].unique().tolist())
                 filtro_deptos = st.multiselect(
-                    "Resaltar departamentos específicos:",
+                    "Resaltar departamentos específicos (opcional):",
                     options=deptos_disp,
                     default=[]
                 )
@@ -675,7 +873,7 @@ elif seccion == "VIII. Resultados Esperados y Evaluadores":
             <div class="doc-text">
                 <b>16. RESULTADOS ESPERADOS:</b><br>
                 Se espera identificar los departamentos que siguen trayectorias similares en los indicadores de delitos y de afectación a la fuerza pública y los que se apartan del patrón general (estructura compromiso en los resultados de las técnicas de la familia STATIS). También se busca describir si esas similitudes se mantienen durante el periodo de análisis, o si cambian en años concretos, incluidos posibles cambios alrededor de acontecimientos importantes como la firma del Acuerdo de Paz.<br><br>
-                Asimismo, se espera caracterizar las relaciones existentes entre los indicadores seleccionados y mostrar cuáles se as asociado más con las diferencias territoriales y con la trayectoria de los fenómenos estudiados. Igualmente, se espera dejar documentado el procesamiento de los datos y las decisiones tomadas sobre la estructura multivía y la técnica elegida, para que el análisis pueda repetirse con otros periodos o indicadores.<br><br>
+                Asimismo, se espera caracterizar las relaciones existentes entre los indicadores seleccionados y mostrar cuáles se asocian más con las diferencias territoriales y con la trayectoria de los fenómenos estudiados. Igualmente, se espera dejar documentado el procesamiento de los datos y las decisiones tomadas sobre la estructura multivía y la técnica elegida, para que el análisis pueda repetirse con otros periodos o indicadores.<br><br>
                 <b>17. SUGERENCIA DEL PERFIL DE EVALUADORES:</b><br>
                 • <b>Julie Kimberly Ramírez Brinez</b> (jkramirezb@ut.edu.co) — Departamento de Matemáticas y Estadística, Universidad del Tolima.<br>
                 • <b>Gisou Díaz Rojo</b> (gdiazrj@ut.edu.co) — Departamento de Matemáticas y Estadística, Universidad del Tolima.
