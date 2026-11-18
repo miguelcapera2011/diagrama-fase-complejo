@@ -176,12 +176,12 @@ df_base, df_dic, base_cargada, estado_carga = cargar_datos()
 # ---------------------------------------------------------
 # BARRA LATERAL CON LOGO UNIVERSIDAD DEL TOLIMA
 # ---------------------------------------------------------
-st.sidebar.markdown(
-    f"""
-    <div style="text-align: center; padding: 10px 0 15px 0;">
-        <img src="{LOGO_SRC}" width="85" alt="Universidad del Tolima">
-        <div style="color: #8B949E; font-size: 0.8rem;">
-            Grupo de Investigación GINVAE-UT<br>Línea: Análisis Multivariado
+st.markdown(
+    """
+    <div class="inst-banner">
+        <div>
+            <p class="inst-title">SOCIALIZACIÓN DE ANTEPROYECTO DE TRABAJO DE GRADO</p>
+            <p class="inst-sub">Análisis Departamental de indicadores de delitos y afectación a la fuerza pública en Colombia (2012–2024)</p>
         </div>
     </div>
     """,
