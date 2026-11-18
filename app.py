@@ -1,4 +1,5 @@
 import os
+import base64
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -6,10 +7,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # ---------------------------------------------------------
-# CONFIGURACIÓN DE PÁGINA Y ENLACE INSTITUCIONAL
+# CONFIGURACIÓN DE PÁGINA
 # ---------------------------------------------------------
-LOGO_UT_URL = "https://es.wikipedia.org/wiki/Archivo:Logo_universidad_del_tolima_version_web.png"
-
 st.set_page_config(
     page_title="Sustentación Anteproyecto | Universidad del Tolima",
     layout="wide",
@@ -17,7 +16,36 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# ESTILOS CSS SOBRIOS E INSTITUCIONALES (SIN EMOJIS)
+# CARGA DEL LOGO DE LA UNIVERSIDAD DEL TOLIMA (LOCAL O SVG)
+# ---------------------------------------------------------
+def obtener_logo_ut():
+    # Busca cualquier imagen subida al repositorio (ej. logo_ut.png, escudo.png, ut.jpg)
+    for raiz, _, archivos in os.walk("."):
+        for archivo in archivos:
+            if archivo.lower().endswith((".png", ".jpg", ".jpeg", ".svg", ".webp")):
+                ruta = os.path.join(raiz, archivo)
+                ext = archivo.split(".")[-1].lower()
+                mime = "svg+xml" if ext == "svg" else ("jpeg" if ext in ["jpg", "jpeg"] else ext)
+                with open(ruta, "rb") as f:
+                    b64 = base64.b64encode(f.read()).decode()
+                return f"data:image/{mime};base64,{b64}"
+    
+    # Respaldo institucional vectorial (nunca falla ni se rompe)
+    svg_ut = """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 135" width="90" height="100">
+        <path d="M10,10 H110 V75 C110,105 60,128 60,128 C60,128 10,105 10,75 Z" fill="#B71C1C" stroke="#F0F6FC" stroke-width="4"/>
+        <path d="M18,18 H102 V72 C102,97 60,118 60,118 C60,118 18,97 18,72 Z" fill="#161B22" stroke="#D4AF37" stroke-width="2"/>
+        <text x="60" y="68" font-family="Georgia, serif" font-size="34" font-weight="bold" fill="#F0F6FC" text-anchor="middle">UT</text>
+        <text x="60" y="90" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#D4AF37" text-anchor="middle">TOLIMA</text>
+    </svg>
+    """
+    b64_svg = base64.b64encode(svg_ut.encode("utf-8")).decode("utf-8")
+    return f"data:image/svg+xml;base64,{b64_svg}"
+
+LOGO_SRC = obtener_logo_ut()
+
+# ---------------------------------------------------------
+# ESTILOS CSS SOBRIOS E INSTITUCIONALES
 # ---------------------------------------------------------
 st.markdown("""
 <style>
@@ -28,7 +56,6 @@ st.markdown("""
     .stApp {
         background-color: #0E1117;
     }
-    /* Encabezado institucional */
     .inst-banner {
         background-color: #161B22;
         border-left: 5px solid #B71C1C;
@@ -52,7 +79,6 @@ st.markdown("""
         font-size: 0.88rem;
         margin: 2px 0 0 0;
     }
-    /* Caja izquierda: Fragmento literal del formato oficial */
     .doc-box {
         background-color: #161B22;
         border: 1px solid #30363D;
@@ -93,7 +119,6 @@ st.markdown("""
         background-color: #21262D;
         color: #F0F6FC;
     }
-    /* Tarjetas derecha: Apoyo visual de exposición */
     .card {
         background-color: #161B22;
         border: 1px solid #30363D;
@@ -127,12 +152,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# CARGA DE LA BASE REAL (BASE_ESPECIFICA.xlsx)
+# CARGA ROBUSTA DE LA BASE REAL (BASE_ESPECIFICA.xlsx)
 # ---------------------------------------------------------
 @st.cache_data
 def cargar_datos():
     try:
-        # Busca el archivo en la carpeta actual o subcarpetas del repositorio
         ruta_archivo = None
         for raiz, _, archivos in os.walk("."):
             for archivo in archivos:
@@ -143,7 +167,7 @@ def cargar_datos():
             df_base = pd.read_excel(ruta_archivo, sheet_name="Base_Statico")
             df_dic = pd.read_excel(ruta_archivo, sheet_name="Diccionario")
             return df_base, df_dic, True, "OK"
-        return None, None, False, f"No se encontró el archivo. Archivos detectados: {os.listdir('.')}"
+        return None, None, False, f"No se encontró BASE_ESPECIFICA.xlsx. Archivos en el repositorio: {os.listdir('.')}"
     except Exception as e:
         return None, None, False, f"Error al leer Excel: {e}"
 
@@ -155,7 +179,7 @@ df_base, df_dic, base_cargada, estado_carga = cargar_datos()
 st.sidebar.markdown(
     f"""
     <div style="text-align: center; padding: 10px 0 15px 0;">
-        <img src="{LOGO_UT_URL}" width="95" onerror="this.style.display='none';" alt="Universidad del Tolima">
+        <img src="{LOGO_SRC}" width="85" alt="Universidad del Tolima">
         <div style="color: #F0F6FC; font-weight: 700; font-size: 0.95rem; margin-top: 8px;">
             UNIVERSIDAD DEL TOLIMA
         </div>
@@ -189,7 +213,7 @@ st.sidebar.caption("Panel izquierdo: Texto literal del formato oficial.\nPanel d
 st.markdown(
     f"""
     <div class="inst-banner">
-        <img src="{LOGO_UT_URL}" width="46" onerror="this.style.display='none';">
+        <img src="{LOGO_SRC}" width="44" alt="Escudo UT">
         <div>
             <p class="inst-title">SOCIALIZACIÓN DE ANTEPROYECTO DE TRABAJO DE GRADO</p>
             <p class="inst-sub">Análisis Departamental de indicadores de delitos y afectación a la fuerza pública en Colombia (2012–2024)</p>
@@ -493,7 +517,6 @@ elif seccion == "VI. Diseño Metodológico y Cubo 3D":
         st.subheader("Cubo Multivía Real: Departamento × Año × Variable")
 
         if base_cargada:
-            # Filtros interactivos para explorar el cubo real
             f1, f2 = st.columns([1, 1])
             with f1:
                 filtro_bloque = st.selectbox(
@@ -508,7 +531,6 @@ elif seccion == "VI. Diseño Metodológico y Cubo 3D":
                     default=[]
                 )
 
-            # Selección de variables según bloque
             if "Bloque X" in filtro_bloque:
                 vars_sel = ["FM_HER", "FM_ASE", "POL_HER", "POL_ASE"]
             elif "Bloque Y" in filtro_bloque:
@@ -516,24 +538,17 @@ elif seccion == "VI. Diseño Metodológico y Cubo 3D":
             else:
                 vars_sel = ["FM_HER", "FM_ASE", "POL_HER", "POL_ASE", "TERR", "SEC", "AFE_AMB", "CAP_MIN", "INC_ORO", "INC_MERC"]
 
-            # Filtrar filas si se seleccionaron departamentos
             df_plot = df_base.copy()
             if filtro_deptos:
                 df_plot = df_plot[df_plot["Departamento"].isin(filtro_deptos)]
 
-            # Transformar a formato largo (Cubo 3D: Departamento x Año x Variable)
             df_long = df_plot.melt(
                 id_vars=["Abrev", "Departamento", "Anio"],
                 value_vars=vars_sel,
                 var_name="Codigo",
                 value_name="Valor"
             )
-            # Unir con diccionario para descripción y bloque
             df_long = df_long.merge(df_dic[["Codigo", "Descripcion", "Cubos", "Unidad_base"]], on="Codigo", how="left")
-
-            # Índices ordenados para los 3 ejes
-            orden_deptos = sorted(df_plot["Departamento"].unique().tolist())
-            orden_anios = sorted(df_plot["Anio"].unique().tolist())
 
             fig_3d = go.Figure(data=[go.Scatter3d(
                 x=df_long["Codigo"],
@@ -580,7 +595,7 @@ elif seccion == "VI. Diseño Metodológico y Cubo 3D":
             with st.expander("Ver Diccionario de Variables de la Base (Bloques X e Y)"):
                 st.dataframe(df_dic[["Codigo", "Descripcion", "Cubos", "Naturaleza", "Unidad_base"]], use_container_width=True, hide_index=True)
         else:
-            st.warning("Coloque el archivo `BASE_ESPECIFICA.xlsx` en la misma carpeta de `app.py` para visualizar el cubo 3D con los 4.160 registros reales.")
+            st.error(estado_carga)
 
 # =========================================================
 # VII. ASPECTOS BIOÉTICOS Y CRONOGRAMA
