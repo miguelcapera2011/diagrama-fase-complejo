@@ -209,7 +209,7 @@ st.sidebar.markdown("---")
 st.markdown(
     f"""
     <div class="inst-banner">
-    
+    <img src="" width="44" alt="Escudo UT">
         <div>
             <p class="inst-title">SOCIALIZACIÓN DE ANTEPROYECTO DE TRABAJO DE GRADO</p>
             <p class="inst-sub">Análisis Departamental de indicadores de delitos y afectación a la fuerza pública en Colombia (2012–2024)</p>
