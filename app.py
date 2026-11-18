@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 # ---------------------------------------------------------
 # CONFIGURACIÓN DE PÁGINA Y ENLACE INSTITUCIONAL
 # ---------------------------------------------------------
-LOGO_UT_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Escudo_de_la_Universidad_del_Tolima.svg/240px-Escudo_de_la_Universidad_del_Tolima.svg.png"
+LOGO_UT_URL = "https://es.wikipedia.org/wiki/Archivo:Logo_universidad_del_tolima_version_web.png"
 
 st.set_page_config(
     page_title="Sustentación Anteproyecto | Universidad del Tolima",
