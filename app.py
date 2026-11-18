@@ -131,13 +131,23 @@ st.markdown("""
 # ---------------------------------------------------------
 @st.cache_data
 def cargar_datos():
-    if os.path.exists("BASE_ESPECIFICA.xlsx"):
-        df_base = pd.read_excel("BASE_ESPECIFICA.xlsx", sheet_name="Base_Statico")
-        df_dic = pd.read_excel("BASE_ESPECIFICA.xlsx", sheet_name="Diccionario")
-        return df_base, df_dic, True
-    return None, None, False
+    try:
+        # Busca el archivo en la carpeta actual o subcarpetas del repositorio
+        ruta_archivo = None
+        for raiz, _, archivos in os.walk("."):
+            for archivo in archivos:
+                if archivo.lower() == "base_especifica.xlsx":
+                    ruta_archivo = os.path.join(raiz, archivo)
+                    break
+        if ruta_archivo:
+            df_base = pd.read_excel(ruta_archivo, sheet_name="Base_Statico")
+            df_dic = pd.read_excel(ruta_archivo, sheet_name="Diccionario")
+            return df_base, df_dic, True, "OK"
+        return None, None, False, f"No se encontró el archivo. Archivos detectados: {os.listdir('.')}"
+    except Exception as e:
+        return None, None, False, f"Error al leer Excel: {e}"
 
-df_base, df_dic, base_cargada = cargar_datos()
+df_base, df_dic, base_cargada, estado_carga = cargar_datos()
 
 # ---------------------------------------------------------
 # BARRA LATERAL CON LOGO UNIVERSIDAD DEL TOLIMA
