@@ -220,7 +220,7 @@ if not st.session_state.en_sustentacion:
                     Universidad del Tolima · Grupo de Investigación GINVAE-UT
                 </div>
                 <p class="question-text">
-                    “¿Ustedes creen que el comportamiento de los delitos y las afectaciones a la fuerza pública es igual en todos los departamentos?”
+                    ¿Ustedes creen que el comportamiento de los delitos y las afectaciones a la fuerza pública es igual en todos los departamentos?
                 </p>
             </div>
         </div>
