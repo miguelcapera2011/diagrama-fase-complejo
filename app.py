@@ -524,7 +524,7 @@ elif seccion == "VI. Diseño Metodológico y Cubo 3D":
             with f2:
                 deptos_disp = sorted(df_base["Departamento"].unique().tolist())
                 filtro_deptos = st.multiselect(
-                    "Resaltar departamentos específicos (opcional):",
+                    "Resaltar departamentos específicos:",
                     options=deptos_disp,
                     default=[]
                 )
