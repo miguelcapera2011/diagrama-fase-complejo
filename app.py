@@ -179,7 +179,6 @@ st.sidebar.markdown(
     <div style="text-align: center; padding: 10px 0 15px 0;">
         <img src="{LOGO_SRC}" width="85" alt="Universidad del Tolima">
         <div style="color: #F0F6FC; font-weight: 700; font-size: 0.95rem; margin-top: 8px;">
-            UNIVERSIDAD DEL TOLIMA
         </div>
         <div style="color: #8B949E; font-size: 0.8rem;">
             Grupo de Investigación GINVAE-UT<br>Línea: Análisis Multivariado
